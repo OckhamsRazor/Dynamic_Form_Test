@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head_css_site %}
+    <link href="{% static 'util/css/ui-darkness/jquery-ui-1.10.4.custom.css' %}" rel="stylesheet">
+    <link href="{% static 'users/css/auth.css' %}" rel="stylesheet">
+{% endblock head_css_site %}
+
+{% block body_main %}
+    {% block body_main_login %}
+        <div id="notifications"></div>
+
+        <form id='login_form' title="Log in">
+            <fieldset>
+                {% csrf_token %}
+                <label for="login">Login</label>
+                <input type="text" name="login" id="login" class="text ui-widget-content ui-corner-all" /><br />
+                <label for="password_login">Password</label>
+                <input type="password" name="password" id="password_login" class="text ui-widget-content ui-corner-all"><br />
+            </fieldset>
+        </form>
+
+        <form id='sign_up_form' title='Sign Up'>
+            <fieldset>
+                {% csrf_token %}
+                <div>
+                    <label for="username_signup" class="required_label">Username</label>
+                    <input type="text" name="username" id="username_signup" class="required_field text ui-widget-content ui-corner-all" />
+                    <span id="username_error" class="form_field_error"></span>
+                </div>
+                <br />
+                <div>
+                    <label for="password_signup" class="required_label">Password</label>
+                    <input type="password" name="password" id="password_signup" class="required_field text ui-widget-content ui-corner-all" />
+                    <span id="password_error" class="form_field_error"></span>
+                </div>
+                <br />
+                <div>
+                    <label class="required_label">Password Confirmation</label>
+                    <input type="password" id="password_confirm" class="required_field text ui-widget-content ui-corner-all" />
+                    <span id="password_confirm_error" class="form_field_error"></span>
+                </div>
+                <br />
+                <div>
+                    <label for="email" class="required_label">Email</label>
+                    <input type="text" name="email" id="email" class="required_field text ui-widget-content ui-corner-all" />
+                    <span id="email_error" class="form_field_error"></span>
+                </div>
+                <br />
+            </fieldset>
+        </form>
+
+        {% if user.logged_in %}
+            <h1>Welcome, {{ user.username }}</h1>
+            <button id="log_out_button">Log out</button>
+        {% else %}
+            <button id="log_in_button">Log In</button>
+        {% endif %}
+    {% endblock body_main_login %}
+    {% block body_main_1 %}{% endblock body_main_1 %}
+{% endblock body_main %}
+{% block footer_javascript_site %}
+    <script src="{% static 'util/js/jquery-1.10.2.js' %}"></script>
+    <script src="{% static 'util/js/jquery-ui-1.10.4.custom.js' %}"></script>
+    <script src="{% static 'util/js/util.js' %}"></script>
+    <script src="{% static 'users/js/auth.js' %}"></script>
+
+    <script>
+        $(document).ready(function() {
+            login_dialog();
+            sign_up_dialog();
+            $("#log_in_button").click(offer_login);
+            $("#log_out_button").click(offer_logout);
+        });
+    </script>
+{% endblock footer_javascript_site %}
