@@ -14,11 +14,11 @@ function generate_user() {
         datatype: "text",
         success: function(data, textStatus, XMLHttpRequest) {
             if (data.result == 'success')
-                alert("SUCCESS creating users.")
+                alert("SUCCESS creating users.");
             else if (data.result == 'failed')
-                alert("ERROR creating users: " + data.reason)
+                alert("ERROR creating users: " + data.reason);
             else
-                alert("ERROR no result.")
+                alert("ERROR no result.");
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
             console.log(XMLHttpRequest);

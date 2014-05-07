@@ -1,17 +1,15 @@
 import json
 import logging
 
-from django.core import serializers
-from django.core.urlresolvers import reverse
+from django.core.mail import EmailMessage
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
 
-from .models import MyUser
+from .models import MyUser, UserActivation
 from .forms import SignUpForm
-from .utils import generate_user, existence_checking
+from .utils import generate_user, existence_checking, random_string
 
 def login_request(request):
     result = "failure"
@@ -80,6 +78,30 @@ def new_account(request):
                 username=data['username'], password=data['password'])
             login(request, user)
 
+            activation = UserActivation()
+            activation.user = new_user
+            activation_code = \
+                random_string(UserActivation.HASH_KEY_LENGTH)
+            activation.activation_code = activation_code
+            activation.save()
+
+            mail = EmailMessage(
+                subject="Activate your EE-Comment account",
+                body= \
+                    """
+                    Dear %(user)s,
+
+                        The following is the code to activate your accout:
+
+                            %(code)s
+
+                    Sincerely,
+                    EE-Comment
+                    """ % {'user': data['username'], 'code': activation_code},
+                to=[data['email']]
+            )
+            mail.send()
+
     return HttpResponse(
         json.dumps(context),
         content_type='application/json'
@@ -97,6 +119,9 @@ def settings(request):
         'user_type': user_type,
 
         'is_admin': request.user.is_superuser,
+
+        # Constants
+        'PENDING': MyUser.PENDING,
     }
 
     context = {
@@ -122,8 +147,29 @@ def generate_user_request(request):
         content_type='application/json'
     )
 
-def email_activation(request, code):
+@login_required
+def email_activation_manual(request):
+    """
+    On manually entering the activation code in the confirmation mail
+    """
+    context = {'result': 'failed', 'reason': 'invalid code'}
+
+    if request.method == "POST":
+        code = request.POST["activation_code"]
+        activation = UserActivation.objects.filter(activation_code=code)
+        if len(activation) == 1:
+            if request.user.id == activation[0].user.id:
+                request.user.type = MyUser.NORMAL_USER
+                request.user.save()
+                activation.delete()
+                context["result"] = 'success'
+
+    return HttpResponse(
+        json.dumps(context),
+        content_type='application/json'
+    )
+
+def email_activation_link(request, code):
     """
     On clicking the activation URL in the confirmation mail
     """
-    pass

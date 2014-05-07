@@ -290,3 +290,32 @@ function sign_up_dialog_existence_check(to_check, content, ack, nak, async) {
 
     return result;
 }
+
+function account_activation() {
+    var code = $("#activation_code").val();
+    if (code.length != 30) {
+        alert("Activation code must be a string with character length of 30.");
+        return;
+    }
+
+    $.ajax({
+        data: $("#account_activation_form").serialize(),
+        datatype: "text",
+        success: function(data, textStatus, XMLHttpRequest) {
+            if (data.result == 'success') {
+                alert("SUCCESS activating your account.");
+                window.location.reload();
+            }
+            else if (data.result == 'failed')
+                alert("ERROR activating your account: " + data.reason);
+            else
+                alert("ERROR no result.");
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            console.log(XMLHttpRequest);
+            alert(textStatus+": "+errorThrown);
+        },
+        type: "POST",
+        url: "/users/activate/",
+    });
+}
