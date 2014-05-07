@@ -130,3 +130,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 FILE_UPLOAD_PERMISSIONS = 0644
+
+# email issues
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'ivegan.service@gmail.com'
+EMAIL_HOST_PASSWORD = 'zrkzwbhbnjdalipd'
+EMAIL_PORT = 587

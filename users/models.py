@@ -74,6 +74,11 @@ class ModeratorData(SpecialUserData):
         self._meta.get_field(name="phone").default = ""
         super(ModeratorData, self).__init__(*args, **kwargs)
 
+class UserActivation(models.Model):
+    HASH_KEY_LENGTH = 30
+    user = models.ForeignKey(MyUser)
+    activation_code = models.CharField(max_length=HASH_KEY_LENGTH)
+
 class Preference(models.Model):
     type = models.CharField(max_length="30")
 
