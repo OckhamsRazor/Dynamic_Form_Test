@@ -6,6 +6,8 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from taggit.managers import TaggableManager
+
 from Web import settings
 from webUtils.models import IP_log, MyListField, MyEmbeddedModelField
 from posts.models import Post
@@ -37,7 +39,7 @@ class MyUser(AbstractUser):
         default='img/default.jpg'
     )
     login_ip = MyListField(MyEmbeddedModelField('IP_log'))
-    special_user_data = MyEmbeddedModelField('SpecialUserData', null=True)
+    special_user_data = MyListField()
     bookmarks = MyListField(models.ForeignKey(Post))
 
     def __init__(self, *args, **kwargs):
@@ -58,15 +60,24 @@ class SpecialUserData(models.Model):
     phone2 = models.CharField(max_length="16", blank=True, default="")
     phone3 = models.CharField(max_length="16", blank=True, default="")
 
-
     class Meta:
         abstract = True
 
 class ShopOwnerData(SpecialUserData):
-    pass
+    address = models.CharField(max_length="100")
+    homepage = models.URLField()
+    service_type = TaggableManager()
 
 class ModeratorData(SpecialUserData):
     def __init__(self, *args, **kwargs):
         self._meta.get_field(name="phone").blank = True
         self._meta.get_field(name="phone").default = ""
         super(ModeratorData, self).__init__(*args, **kwargs)
+
+class Preference(models.Model):
+    type = models.CharField(max_length="30")
+
+class User_Preference(models.Model):
+    user_id = models.ForeignKey(MyUser)
+    preference_id = models.ForeignKey(Preference)
+    score = models.FloatField(default=0.0)
