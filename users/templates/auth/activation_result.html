@@ -1,0 +1,24 @@
+{% extends "login.html" %}
+
+{% block body_main_1 %}
+    {% if result == "success" %}
+        <h1>{{ user }}, you have just activated your account!</h1>
+        <h2>For security reason, please log in again...</h2>
+    {% elif reason == "expired" %}
+        <h1>Oops! It seems that you fail to activate your account in time!</h1>
+        <h2>Please create a new account.</h2>
+    {% else %}
+        <h1>Oops! It seems that something went wrong!</h1>
+        <h2>Maybe you just clicked on an invalid activation code?</h2>
+        <h2>Wait a while and you will be redirected to our homepage...</h2>
+    {% endif %}
+{% endblock body_main_1 %}
+{% block footer_javascript_page %}
+    <script>
+        $(document).ready(function() {
+            setTimeout(function() {
+                window.location.href = "/users/";
+            }, 10000);
+        });
+    </script>
+{% endblock footer_javascript_page %}

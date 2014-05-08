@@ -7,12 +7,12 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
-from .models import MyUser, UserActivation
+from .models import MyUser, HASH_KEY_LENGTH
 from .forms import SignUpForm
 from .utils import generate_user, existence_checking, random_string
 
 def login_request(request):
-    result = "failure"
+    context = {'result': 'failure', 'reason': 'unknown'}
     if request.method == 'POST':
         user = authenticate(
             username=request.POST['login'],
@@ -20,18 +20,22 @@ def login_request(request):
         )
 
         if user is not None:
-            if user.is_active:
-                login(request, user)
-                result = "success"
+            if not user.is_active:
+                context["reason"] = "inactive"
+            elif user.is_expired():
+                context["reason"] = "expired"
+            elif not user.is_activated():
+                context["reason"] = "unactivated"
             else:
-                result = "not active"
+                login(request, user)
+                context["result"] = "success"
+        else:
+            context["reason"] = "wrong"
 
-    response = HttpResponse(
-        json.dumps({'result': result}),
+    return HttpResponse(
+        json.dumps(context),
         content_type='application/json'
     )
-
-    return response
 
 @login_required
 def logout_request(request):
@@ -44,10 +48,9 @@ def passwd_recovery(request):
 def new_account_existence_checking(request):
     """
     Check if certain user attribute (e.g. username) has been taken by others
+    If the existed account has expired, it will be removed
     """
-    context = {
-        "exist": True,
-    }
+    context = {"exist": True}
 
     if request.method == "POST":
         to_check = request.POST["to_check"]
@@ -65,25 +68,18 @@ def new_account(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             data = request.POST
+            activation_code = \
+                random_string(HASH_KEY_LENGTH)
+
             new_user = MyUser.objects.create_user(
                 username=data['username'],
                 email=data['email'],
                 password=data['password'],
+                activation_code=activation_code,
             )
             new_user.save()
             context['result'] = 'success'
             context['reason'] = None
-
-            user = authenticate(
-                username=data['username'], password=data['password'])
-            login(request, user)
-
-            activation = UserActivation()
-            activation.user = new_user
-            activation_code = \
-                random_string(UserActivation.HASH_KEY_LENGTH)
-            activation.activation_code = activation_code
-            activation.save()
 
             mail = EmailMessage(
                 subject="Activate your EE-Comment account",
@@ -91,9 +87,14 @@ def new_account(request):
                     """
                     Dear %(user)s,
 
-                        The following is the code to activate your accout:
+                        Please click the following link to activate your accout:
 
-                            %(code)s
+                            http://localhost:8000/users/activate/%(code)s
+
+                        The link will expire in three days. If you fail to activate your account
+                        in time, you will have to create another new account.
+
+                        For more information, feel free to contact us via service@ee-comment.com
 
                     Sincerely,
                     EE-Comment
@@ -111,7 +112,7 @@ def settings(request):
     if request.user.is_authenticated():
         user_type = request.user.type
     else:
-        user_type = MyUser.PENDING
+        user_type = None
 
     user = {
         'logged_in': request.user.is_authenticated(),
@@ -119,9 +120,6 @@ def settings(request):
         'user_type': user_type,
 
         'is_admin': request.user.is_superuser,
-
-        # Constants
-        'PENDING': MyUser.PENDING,
     }
 
     context = {
@@ -147,29 +145,25 @@ def generate_user_request(request):
         content_type='application/json'
     )
 
-@login_required
-def email_activation_manual(request):
-    """
-    On manually entering the activation code in the confirmation mail
-    """
-    context = {'result': 'failed', 'reason': 'invalid code'}
-
-    if request.method == "POST":
-        code = request.POST["activation_code"]
-        activation = UserActivation.objects.filter(activation_code=code)
-        if len(activation) == 1:
-            if request.user.id == activation[0].user.id:
-                request.user.type = MyUser.NORMAL_USER
-                request.user.save()
-                activation.delete()
-                context["result"] = 'success'
-
-    return HttpResponse(
-        json.dumps(context),
-        content_type='application/json'
-    )
-
-def email_activation_link(request, code):
+def email_activation(request, code):
     """
     On clicking the activation URL in the confirmation mail
     """
+    context = {"result": "failed", 'reason': 'invalid code'}
+    users = MyUser.objects.filter(activation_code=code)
+    if len(users) == 1:
+        user = users[0]
+        if user.is_expired():
+            context["reason"] = "expired"
+            return render(request, "auth/activation_result.html", context)
+
+        if request.user.is_authenticated():
+            logout(request)
+
+        user.activation_code = ""
+        user.save()
+
+        context["result"] = "success"
+        context["user"] = user.username
+
+    return render(request, "auth/activation_result.html", context)
