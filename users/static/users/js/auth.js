@@ -32,21 +32,48 @@ function send_notification(msg) {
 
 function login_success(data, textStatus, XMLHttpRequest) {
     if (data) {
-        switch (data.result) {
-            case "success":
-                send_notification("You have successfully logged in");
-                window.location.reload();
-                break;
-            case "not active":
-            case "failure":
-            default:
-                send_notification(
-                    "Your login was not successful."
-                );
-        }
+        if (data.result == "success") {
+            send_notification("You have successfully logged in");
+            window.location.reload();
+        } else
+            switch (data.reason) {
+                case "wrong":
+                    send_notification(
+                        "Wrong username or password."
+                    );
+                    break;
+                case "inactive":
+                    send_notification(
+                        "This account has been disabled. "
+                        +"Contact us for more information, or follow the "
+                        +"instruction in Help>Account>Recovery to reclaim "
+                        +"your account."
+                    );
+                    break;
+                case "expired":
+                    send_notification(
+                        "This account fails to be activated in time. "
+                        +"Please create another new account. You may use "
+                        +"the same username as this one before others take it."
+                    );
+                    break;
+                case "unactivated":
+                    send_notification(
+                        "This account have not been activated yet. "
+                        +"Please go to your mail box and follow the instruction "
+                        +"in the activation mail to get full access to our services!"
+                    );
+                    break;
+                default:
+                    send_notification(
+                        "Your login was not successful: reason unknown. "
+                        +"Contact us for more information."
+                    );
+            }
     } else {
         send_notification(
-            "Your login was not successful."
+            "Your login was not successful: reason unknown. "
+            +"Contact us for more information."
         );
     }
 }
@@ -57,6 +84,9 @@ function login() {
         data: $("#login_form").serialize(),
         datatype: 'text',
         success: login_success,
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            console.log(XMLHttpRequest.responseText);
+        },
         type: 'POST',
         url: '/users/login/',
     });
@@ -290,7 +320,7 @@ function sign_up_dialog_existence_check(to_check, content, ack, nak, async) {
 
     return result;
 }
-
+/*
 function account_activation() {
     var code = $("#activation_code").val();
     if (code.length != 30) {
@@ -319,3 +349,4 @@ function account_activation() {
         url: "/users/activate/",
     });
 }
+*/

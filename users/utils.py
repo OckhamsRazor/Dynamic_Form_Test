@@ -3,6 +3,8 @@
 import string
 import random
 
+from django.utils import timezone
+
 from .models import MyUser
 
 def random_string(N):
@@ -35,6 +37,7 @@ def generate_user(num):
             password=password,
             first_name=first_name,
             last_name=last_name,
+            activation_code="",
             type=MyUser.TESTING,
         )
         new_user.save
@@ -45,9 +48,14 @@ def existence_checking(to_check, content):
     elif to_check == "email":
         existed = MyUser.objects.filter(email=content)
     else:
-        existed = [0] # By default, returns True
+        return False
+
+    existed.exclude(activation_code__isnull=True).filter(
+        activation_code_expired_time__lt=timezone.now()
+    ).delete()
 
     return len(existed) != 0
+
 
 def confirmation_mail_content():
     pass

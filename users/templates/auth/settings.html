@@ -14,20 +14,6 @@
                     <button id="user_generating_button">Go</button>
                 </li>
             </ul>
-        {% elif user.user_type == user.PENDING %}
-            <ul>
-                <li style="color: red;">
-                    Please enter the account activation code in your confirmation mail!
-                </li>
-                <li>
-                    <form id="account_activation_form">
-                        {% csrf_token %}
-                        <label for="activation_code">code:</label>
-                        <input type="text" id="activation_code" name="activation_code" />
-                    </form>
-                    <button id="account_activation_button">Go</button>
-                </li>
-            </ul>
         {% endif %}
     {% endif %}
 {% endblock body_main_1 %}
@@ -36,7 +22,6 @@
     <script>
         $(document).ready(function() {
             admin_init();
-            $("#account_activation_button").click(account_activation);
         });
     </script>
 {% endblock footer_javascript_page %}

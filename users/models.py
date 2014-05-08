@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import pytz
 from os import path
 
 from django.utils import timezone
@@ -12,6 +13,8 @@ from Web import settings
 from webUtils.models import IP_log, MyListField, MyEmbeddedModelField
 from posts.models import Post
 
+HASH_KEY_LENGTH = 30
+ACTIVATION_EXPIRED_TIME = 3
 SPECIAL_USER_VALID_SPAN = 180
 
 def profile_pic_upload_path(instance, filename):
@@ -21,17 +24,15 @@ class MyUser(AbstractUser):
     NORMAL_USER = 0
     SHOP_OWNER = 1
     MODERATOR = 2
-    TESTING = 98
-    PENDING = 99
+    TESTING = 99
     USER_TYPE_CHOICES = (
         (NORMAL_USER, 'Normal User'),
         (SHOP_OWNER, 'Shop Owner'),
         (MODERATOR, 'Moderator'),
         (TESTING, 'Testing_User'),
-        (PENDING, 'User_Pending_Approval'),
     )
     type = models.IntegerField(
-        default=PENDING,
+        default=NORMAL_USER,
         choices=USER_TYPE_CHOICES,
     )
     profile_pic = models.ImageField(
@@ -42,6 +43,11 @@ class MyUser(AbstractUser):
     special_user_data = MyListField()
     bookmarks = MyListField(models.ForeignKey(Post))
 
+    activation_code = models.CharField(max_length=HASH_KEY_LENGTH)
+    activation_code_expired_time = models.DateTimeField(
+        default=timezone.now()+datetime.timedelta(days=ACTIVATION_EXPIRED_TIME)
+    )
+
     def __init__(self, *args, **kwargs):
         self._meta.get_field(name="first_name").blank = False
         self._meta.get_field(name="last_name").blank = False
@@ -50,6 +56,12 @@ class MyUser(AbstractUser):
 
     def __unicode__(self):
         return self.username
+
+    def is_expired(self):
+        return timezone.now() > pytz.UTC.localize(self.activation_code_expired_time)
+
+    def is_activated(self):
+        return len(self.activation_code) == 0
 
 class SpecialUserData(models.Model):
     valid_from = models.DateTimeField(default=timezone.now())
@@ -73,11 +85,6 @@ class ModeratorData(SpecialUserData):
         self._meta.get_field(name="phone").blank = True
         self._meta.get_field(name="phone").default = ""
         super(ModeratorData, self).__init__(*args, **kwargs)
-
-class UserActivation(models.Model):
-    HASH_KEY_LENGTH = 30
-    user = models.ForeignKey(MyUser)
-    activation_code = models.CharField(max_length=HASH_KEY_LENGTH)
 
 class Preference(models.Model):
     type = models.CharField(max_length="30")
