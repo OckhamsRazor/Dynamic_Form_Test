@@ -1,6 +1,6 @@
 {% extends "login.html" %}
 
-{% block body_main_1 %}
+{% block body_main %}
     {% if result == "success" %}
         <h1>{{ user }}, you have just activated your account!</h1>
         <h2>For security reason, please log in again...</h2>
@@ -12,13 +12,13 @@
         <h2>Maybe you just clicked on an invalid activation code?</h2>
         <h2>Wait a while and you will be redirected to our homepage...</h2>
     {% endif %}
-{% endblock body_main_1 %}
+{% endblock body_main %}
 {% block footer_javascript_page %}
     <script>
         $(document).ready(function() {
             setTimeout(function() {
-                window.location.href = "/users/";
-            }, 10000);
+                window.location.href = "/";
+            }, 5000);
         });
     </script>
 {% endblock footer_javascript_page %}

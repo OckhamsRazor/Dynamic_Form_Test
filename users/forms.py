@@ -9,3 +9,9 @@ class SignUpForm(forms.ModelForm):
         fields = [
             'username', 'password', 'email',
         ]
+
+# class UserProfilePictureForm(forms.ModelForm):
+#     class Meta:
+#         model = MyUser
+#         fields = ['username', 'profile_pic']
+#         exclude = ('username',)

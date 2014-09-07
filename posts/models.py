@@ -3,7 +3,7 @@ from django.db import models
 from taggit.managers import TaggableManager
 
 from Web import settings
-from webUtils.models import MyListField, MyEmbeddedModelField, IP_log
+from utils.models import MyListField, MyEmbeddedModelField, IP_log
 
 class Entry(models.Model):
     """docstring for Entry"""

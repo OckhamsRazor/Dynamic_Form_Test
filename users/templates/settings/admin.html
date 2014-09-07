@@ -1,0 +1,29 @@
+{% extends "login.html" %}
+{% load static %}
+
+{% block head_css_section %}
+{% endblock head_css_section %}
+
+{% block body_main %}
+    {% if user.is_authenticated %}
+        {% if user.user_type == user.ADMIN %}
+            <div class="content_block">
+                <form id="user_generating_form">
+                    {% csrf_token %}
+                    <label for="people">自動產生使用者：</label>
+                    <input type="text" id="people" name="people" />人
+                </form>
+                <button id="user_generating_button">Go</button>
+                <br />
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock body_main %}
+{% block footer_javascript_section %}
+    <script src="{% static 'users/js/admin.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            Admin.init();
+        });
+    </script>
+{% endblock footer_javascript_section %}
