@@ -70,19 +70,19 @@ Users = function() {
                 switch (this.status) {
                     case 200:
                         data = JSON.parse(this.response);
-                        if (data.result == "upload_success") {
+                        if (data.result == Util.Response_status.SUCCESSFUL) {
                             var avatar = $("#user_avatar");
                             avatar.attr("src", "");
                             avatar.load(function() {
-                                _crop(data.avatar_path);
+                                _crop(data.profile_pic_path);
                             });
-                            avatar.attr("src", data.avatar_path);
-                        } else if (data.result == "upload_failed")
+                            avatar.attr("src", data.profile_pic_path);
+                        } else if (data.result == Util.Response_status.FAILED)
                             alert("上傳失敗！");
                         break;
                     default:
                         alert("喔不！出了點錯！");
-                        console.log(this);
+                        // document.write(this.response);
                         break;
                 }
             }
@@ -158,14 +158,13 @@ Users = function() {
             data: $.extend({}, original_img_info, crop_info),
             datatype: 'text',
             success: function(data, textStatus, XMLHttpRequest) {
-                if (data.result == 'failed') {
+                if (data.result == Util.Response_status.FAILED) {
                     alert("切圖失敗");
                 }
-                // window.location.reload();
+                window.location.reload();
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
-                console.log(XMLHttpRequest.responseText);
-                // window.location.reload();
+                window.location.reload();
             },
             type: 'POST',
             url: __crop_avatar_url,
@@ -180,7 +179,7 @@ Users = function() {
             close = confirm("確定不切圖？");
 
         if (close)
-            // window.location.reload();
+            window.location.reload();
 
         return close;
     };

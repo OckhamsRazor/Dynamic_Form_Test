@@ -16,3 +16,9 @@ INACTIVE = 2001
 EXPIRED = 2002
 UNACTIVATED = 2003
 AUTH_FAILED = 2999
+
+Type_to_Ext = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/gif": ".gif",
+}

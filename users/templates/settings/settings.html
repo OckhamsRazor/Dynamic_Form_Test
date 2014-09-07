@@ -59,7 +59,7 @@
             </form>
         {% endblock body_main_2 %}
 
-        {% if user.user_type == user.ADMIN %}
+        {% if user.is_superuser %}
             <div class="content_block">
                 <button id="admin_button">管理介面</button>
             </div>

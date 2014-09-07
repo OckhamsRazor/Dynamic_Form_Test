@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from celery import shared_task
 from taggit.managers import TaggableManager
 
 from Web import settings
@@ -19,7 +20,7 @@ SPECIAL_USER_VALID_SPAN = 180
 DEFAULT_PROFILE_PIC = 'img/default.jpg'
 
 def profile_pic_upload_path(instance, filename):
-    return path.join('img', instance.username, filename)
+    return path.join(instance.user.username, "profile_pic", filename)
 
 class MyUser(AbstractUser):
     NORMAL_USER = 0
@@ -63,6 +64,13 @@ class MyUser(AbstractUser):
 
     def is_activated(self):
         return len(self.activation_code) == 0
+
+class UserProfilePic(models.Model):
+    user = models.ForeignKey(MyUser, related_name="user_profile_pic_user")
+    profile_pic = models.ImageField(
+        upload_to=profile_pic_upload_path,
+        default=DEFAULT_PROFILE_PIC
+    )
 
 class SpecialUserData(models.Model):
     valid_from = models.DateTimeField(default=timezone.now())
