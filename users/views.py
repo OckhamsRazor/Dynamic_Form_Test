@@ -13,8 +13,8 @@ from django.contrib.auth.decorators import login_required
 
 import Web
 import utils.consts as consts
-from .models import MyUser, HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
-from .forms import SignUpForm#, UserProfilePictureForm
+from .models import MyUser, UserProfilePic, HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
+from .forms import SignUpForm, UserProfilePictureForm
 from utils.decorators import post_only_view, post_only_json
 from utils.utils import generate_user, existence_checking, \
     random_string, confirmation_mail_content
@@ -156,36 +156,35 @@ def email_activation(request, code):
     return render(request, "auth/activation_result.html", context)
 
 @login_required
+@post_only_json
 def upload(request):
-    result = "upload_failed"
-    profile_pic_path = DEFAULT_PROFILE_PIC
-    remove_profile_pic(request)
+    result = consts.FAILED
+    new_profile_pic_path = request.user.profile_pic.url
 
-    if request.method == 'POST':
-        print
-        # request.POST["username"] = request.user.username
-        # form = UserProfilePictureForm(request.POST, request.FILES)
-        # print form
-        # if form.is_valid():
-            # new_profile_pic = form.save(commit=False)
-            # request.user.profile_pic = new_profile_pic.profile_pic
-            # request.user.save()
-            # result = "upload_success"
-            # profile_pic_path = request.user.profile_pic.url
+    request.FILES['profile_pic'].name = \
+        str(len(UserProfilePic.objects.filter(user_id=request.user.id))+1) + \
+        consts.Type_to_Ext[request.FILES['profile_pic'].content_type]
+    form = UserProfilePictureForm(request.POST, request.FILES)
+    if form.is_valid():
+        new_profile_pic = form.save(commit=False)
+        new_profile_pic.user = request.user
+        new_profile_pic.save()
+        request.user.profile_pic = new_profile_pic.profile_pic
+        request.user.save()
 
-    return HttpResponse(
-        json.dumps({
-            'result': result,
-            'avatar_path': profile_pic_path,
-        }),
-        content_type='application/json'
-    )
+        result = consts.SUCCESSFUL
+        new_profile_pic_path = new_profile_pic.profile_pic.url
+
+    return {
+        'result': result,
+        'profile_pic_path': new_profile_pic_path
+    }
 
 @login_required
+@post_only_json
 def crop_avatar(request):
-    result = "failed"
-
-    if request.method == "POST":
+    result = consts.FAILED
+    try:
         img_path = path.join(
             Web.settings.BASE_DIR,
             request.user.profile_pic.url.lstrip("/")
@@ -199,18 +198,19 @@ def crop_avatar(request):
             int(int(request.POST["y2"])*ratio),
         )
         img.crop(box).save(img_path)
-        result = "success"
+        result = consts.SUCCESSFUL
+    except Exception as e: # should do security check here!
+        pass
 
-    return HttpResponse(
-        json.dumps({
-            'result': result,
-        }),
-        content_type='application/json'
-    )
+    return {'result': result}
+
+def show_profile_pics(request):
+    pass
 
 @login_required
 def remove_profile_pic(request):
-    request.user.profile_pic = DEFAULT_PROFILE_PIC
-    dir_path = path.join(Web.settings.MEDIA_ROOT, "img", request.user.username)
-    if path.exists(dir_path):
-        rmtree(dir_path)
+    pass
+    # request.user.profile_pic = DEFAULT_PROFILE_PIC
+    # dir_path = path.join(Web.settings.MEDIA_ROOT, "img", request.user.username)
+    # if path.exists(dir_path):
+        # rmtree(dir_path)
