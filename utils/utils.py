@@ -5,7 +5,7 @@ import random
 
 from django.utils import timezone
 
-from .models import MyUser
+from users.models import MyUser
 
 def random_string(N):
     return ''.join(
@@ -57,8 +57,20 @@ def existence_checking(to_check, content):
     return len(existed) != 0
 
 
-def confirmation_mail_content():
-    pass
+def confirmation_mail_content(username, code):
+    return \
+    """
+    Dear %(user)s,
 
-def send_mail(to):
-    pass
+        Please click the following link to activate your accout:
+
+            http://localhost:8000/users/activate/%(code)s
+
+        The link will expire in three days. If you fail to activate your account
+        in time, you will have to create another new account.
+
+        For more information, feel free to contact us via service@counselsior.com
+
+    Sincerely,
+    Counselsior
+    """ % {'user': username, 'code': code}

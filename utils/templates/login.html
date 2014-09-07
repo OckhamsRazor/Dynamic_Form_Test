@@ -2,14 +2,12 @@
 {% load static %}
 
 {% block head_css_site %}
-    <link href="{% static 'util/css/ui-darkness/jquery-ui-1.10.4.custom.css' %}" rel="stylesheet">
+    <link href="{% static 'util/css/Redmond/jquery-ui.css' %}" rel="stylesheet">
     <link href="{% static 'users/css/auth.css' %}" rel="stylesheet">
 {% endblock head_css_site %}
 
 {% block body_main %}
     {% block body_main_login %}
-        <div id="notifications"></div>
-
         <form id='login_form' title="Log in">
             <fieldset>
                 {% csrf_token %}
@@ -50,7 +48,7 @@
             </fieldset>
         </form>
 
-        {% if user.logged_in %}
+        {% if user.is_authenticated %}
             <h1>Welcome, {{ user.username }}</h1>
             <button id="log_out_button">Log out</button>
         {% else %}
@@ -67,10 +65,7 @@
 
     <script>
         $(document).ready(function() {
-            login_dialog();
-            sign_up_dialog();
-            $("#log_in_button").click(offer_login);
-            $("#log_out_button").click(offer_logout);
+            Auth.init();
         });
     </script>
 {% endblock footer_javascript_site %}

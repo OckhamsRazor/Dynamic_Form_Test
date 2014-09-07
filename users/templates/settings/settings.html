@@ -1,0 +1,79 @@
+{% extends "login.html" %}
+{% load static %}
+
+{% block head_css_section %}
+    <link href="{% static 'util/css/jquery.Jcrop.css' %}" rel="stylesheet">
+    <link href="{% static 'util/css/main.css' %}" rel="stylesheet">
+    <link href="{% static 'users/css/users.css' %}" rel="stylesheet">
+{% endblock head_css_section %}
+
+{% block title %} 使用者帳號 {% endblock title %}
+
+{% block body_main_1 %}
+    {% if user.is_authenticated %}
+        <div class="content_block">
+            <img src="{{ user.profile_pic.url }}" id="user_avatar"/>
+        </div>
+        <div class="content_block">
+            <ul class="content_text">
+                <li>帳號：{{ user.username }}</li>
+                <li>使用者類型：{{ user.get_type_display }}</li>
+                <li>姓名：{{ user.last_name }}{{ user.first_name }}</li>
+            </ul>
+        </div>
+
+        {% block body_main_2 %}
+            <div class="content_block">
+                <label for="new_avatar" class="content_title" style="text-align: left;">上傳新大頭貼</label>
+                <input type="file" name="user_avatar" id="new_avatar" />
+                <button id="new_avatar_button">上傳</button>
+            </div>
+
+            <div id="user_avatar_resize">
+                <img id="user_avatar_resize_img" />
+            </div>
+
+            <div class="content_block">
+                <button id="change_password_button">更換密碼</button>
+            </div>
+            <form id="change_password_form" class="dialog">
+                {% csrf_token %}
+                <div>
+                    <label for="password_old" class="required_label">舊密碼</label>
+                    <input type="password" name="password_old" id="password_old" class="required_field text ui-widget-content ui-corner-all" />
+                    <span id="password_old_error" class="form_field_error"></span>
+                </div>
+                <br />
+                <div>
+                    <label for="password_new" class="required_label">新密碼</label>
+                    <input type="password" name="password_new" id="password_new" class="required_field text ui-widget-content ui-corner-all" />
+                    <span id="password_new_error" class="form_field_error"></span>
+                </div>
+                <br />
+                <div>
+                    <label class="required_label">確認新密碼</label>
+                    <input type="password" id="password_new_confirm" class="required_field text ui-widget-content ui-corner-all" />
+                    <span id="password_new_confirm_error" class="form_field_error"></span>
+                </div>
+                <br />
+            </form>
+        {% endblock body_main_2 %}
+
+        {% if user.user_type == user.ADMIN %}
+            <div class="content_block">
+                <button id="admin_button">管理介面</button>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="content_block">尚未登入!</div>
+    {% endif %}
+{% endblock body_main_1 %}
+{% block footer_javascript_section %}
+    <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script>
+    <script src="{% static 'users/js/users.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            Users.init();
+        });
+    </script>
+{% endblock footer_javascript_section %}

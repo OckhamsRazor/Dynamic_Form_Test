@@ -1,0 +1,169 @@
+/* Content */
+
+#content .recommend_bar{
+    margin-top: 0 auto;
+    text-align: center;
+}
+
+#content .styled_hr{
+    border: 0;
+    height: 1px;
+    background-image: -webkit-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,0.75), rgba(0,0,0,0));
+    background-image: -moz-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,0.75), rgba(0,0,0,0));
+    background-image: -ms-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,0.75), rgba(0,0,0,0));
+    background-image: -o-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,0.75), rgba(0,0,0,0));
+}
+
+.recommend_square{
+    display: inline-block;
+    padding: 10px;
+    width: 120px;
+    border: 1px solid #878787;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: center;
+    text-decoration: none;
+    color: #000;
+    border-radius: 4px;
+} .recommend_square:hover{
+    background: #fef3d4;
+    box-shadow: 0px 0px 4px rgba(20%,20%,40%,0.3);
+    -webkit-transition: all .3s ease-out;
+    -moz-transition: all .3s ease-out;
+    -o-transition: all .3s ease-out;
+    transition: all .3s ease-out;
+}
+
+.recommend_square h1{
+    font-size: 16px;
+    line-height: 26px;
+    font-family: Microsoft JhengHei;
+}
+
+/* Choose Role */
+
+.center_wrapper{
+    margin-top: 26px;
+    text-align: center;
+}
+
+.button_square {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.role_container {
+    line-height: 400px;
+}
+
+.role_pic{
+    width: 64%;
+    vertical-align: middle;
+}
+
+.role_button{
+    display: block;
+    float: left;
+    height: 100%;
+    width:  200px;
+    font-size: 25px;
+    color: #FFF;
+    line-height: 60px;
+    text-align: center;
+    text-decoration: none;
+    font-family: Microsoft JhengHei;
+    background: #688695;
+    border-radius: 4px;
+    opacity: 0.5;
+} .role_button:hover{
+    -webkit-transition: all .5s ease-out;
+    -moz-transition: all .5s ease-out;
+    -o-transition: all .5s ease-out;
+    transition: all .5s ease-out;
+    opacity: 1;
+}
+
+/* provider */
+
+.add_button{
+    display: inline-block;
+    height: 35px;
+    width: 80px;
+    font-size: 15px;
+    line-height: 35px;
+    text-align: center;
+    text-decoration: none;
+    font-family: Microsoft JhengHei;
+    background: -webkit-linear-gradient(#fb5, #FF9900, #ffa011); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#fb5, #FF9900, #ffa011);      /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#fb5, #FF9900, #ffa011);    /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#fb5, #FF9900, #ffa011);         /* Standard syntax (must be last) */
+    color: #FFFFFF;
+    border-radius: 4px;
+} .add_button:hover{
+    position: relative;
+    top:  1px;
+    left: 1px;
+    background: -webkit-linear-gradient(#ffc977, #FF9900, #ffa011); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#ffc977, #FF9900, #ffa011);      /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#ffc977, #FF9900, #ffa011);    /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#ffc977, #FF9900, #ffa011);         /* Standard syntax (must be last) */
+    box-shadow: 0px 0px 4px rgba(20%,20%,40%,0.3);
+}
+
+/* Table */
+
+.tablesorter {
+    width: 800px;
+    margin: 0 auto;
+    table-layout: fixed;
+}
+
+
+.tablesorter thead {
+    height: 30px;
+    color: #FFF;
+    font-size: 14px;
+    font-family: Microsoft JhengHei;
+    line-height: 30px;
+    background-color: #413b39;
+    cursor: pointer;
+}
+
+.tablesorter .buttons_th{
+    background-color: #FFF;
+    width: 55px;
+}
+
+.tablesorter thead th{
+    padding-left: 5px;
+    border-right: 3px solid #FFF;
+}
+
+.tablesorter tbody {
+    background-color: #fbfdf1;
+}
+
+.tablesorter td {
+    border-bottom: 1px solid #e1dddc;
+    padding-left: 5px;
+    font-size: 12px;
+}
+
+.buttons_td {
+    background-color: #FFF;
+}
+
+.list_button{
+    display: inline-block;
+    position: relative;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+} .list_button:hover{
+    position: relative;
+    top:  6px;
+    left: 2px;
+}

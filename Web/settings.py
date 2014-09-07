@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     # APPs
     'users',
     'posts',
+    'utils',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -60,14 +61,13 @@ ROOT_URLCONF = 'Web.urls'
 
 WSGI_APPLICATION = 'Web.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine',
-        'NAME': 'EE-Comment',
+        'NAME': 'Metis',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -104,7 +104,7 @@ STATICFILES_DIRS = (
 
     BASE_DIR + '/users/static/',
     BASE_DIR + '/posts/static/',
-    BASE_DIR + '/static/',
+    BASE_DIR + '/utils/static/',
 )
 
 TEMPLATE_DIRS = (
@@ -112,7 +112,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
 
-    BASE_DIR + '/templates/',
+    BASE_DIR + '/utils/templates/',
     BASE_DIR + '/users/templates/',
     BASE_DIR + '/posts/templates/',
 )
@@ -129,7 +129,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Examples: "http://example.com/media/", "http://media.example.com/"
 MEDIA_URL = '/media/'
 
-FILE_UPLOAD_PERMISSIONS = 0644
+FILE_UPLOAD_PERMISSIONS = 0666
 
 # email issues
 EMAIL_USE_TLS = True

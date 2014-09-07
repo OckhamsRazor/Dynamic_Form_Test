@@ -10,12 +10,13 @@ from django.db import models
 from taggit.managers import TaggableManager
 
 from Web import settings
-from webUtils.models import IP_log, MyListField, MyEmbeddedModelField
+from utils.models import IP_log, MyListField, MyEmbeddedModelField
 from posts.models import Post
 
 HASH_KEY_LENGTH = 30
 ACTIVATION_EXPIRED_TIME = 3
 SPECIAL_USER_VALID_SPAN = 180
+DEFAULT_PROFILE_PIC = 'img/default.jpg'
 
 def profile_pic_upload_path(instance, filename):
     return path.join('img', instance.username, filename)
@@ -37,7 +38,7 @@ class MyUser(AbstractUser):
     )
     profile_pic = models.ImageField(
         upload_to=profile_pic_upload_path,
-        default='img/default.jpg'
+        default=DEFAULT_PROFILE_PIC
     )
     login_ip = MyListField(MyEmbeddedModelField('IP_log'))
     special_user_data = MyListField()
