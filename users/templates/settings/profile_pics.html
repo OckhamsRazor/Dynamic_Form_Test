@@ -1,0 +1,19 @@
+{% extends "settings/settings.html" %}
+{% load static %}
+{% load filename_wo_ext from files %}
+
+{% block title %} Profile Picture Setting {% endblock title %}
+
+{% block body_main_1 %}
+    {% if user.is_authenticated %}
+        {% for profile_pic in profile_pics %}
+            <img
+                src="{{ profile_pic.profile_pic.url }}"
+                id="profile_pic_{{ profile_pic.profile_pic|filename_wo_ext }}"
+                class="profile_pics profile_pic_candidates"
+            />
+            <!-- <div>{{ profile_pic.profile_pic|filename_wo_ext }}</div> -->
+            <br />
+        {% endfor %}
+    {% endif %}
+{% endblock body_main_1 %}

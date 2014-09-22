@@ -7,7 +7,6 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from celery import shared_task
 from taggit.managers import TaggableManager
 
 from Web import settings

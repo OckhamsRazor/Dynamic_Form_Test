@@ -8,7 +8,7 @@
 
 {% block body_main %}
     {% block body_main_login %}
-        <form id='login_form' title="Log in">
+        <form id='login_form' class="dialog" title="Log in">
             <fieldset>
                 {% csrf_token %}
                 <label for="login">Login</label>
@@ -18,7 +18,7 @@
             </fieldset>
         </form>
 
-        <form id='sign_up_form' title='Sign Up'>
+        <form id='sign_up_form' class="dialog" title='Sign Up'>
             <fieldset>
                 {% csrf_token %}
                 <div>
@@ -54,6 +54,8 @@
         {% else %}
             <button id="log_in_button">Log In</button>
         {% endif %}
+        <br />
+        <br />
     {% endblock body_main_login %}
     {% block body_main_1 %}{% endblock body_main_1 %}
 {% endblock body_main %}
@@ -65,6 +67,7 @@
 
     <script>
         $(document).ready(function() {
+            Util.init();
             Auth.init();
         });
     </script>

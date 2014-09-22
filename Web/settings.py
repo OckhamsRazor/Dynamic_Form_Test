@@ -45,7 +45,11 @@ INSTALLED_APPS = (
     # APPs
     'users',
     'posts',
+    'scenes',
+    'rentall',
+
     'utils',
+    'utils.templatetags',
 )
 
 MIDDLEWARE_CLASSES = (

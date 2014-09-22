@@ -18,6 +18,7 @@ urlpatterns = patterns('',
     ),
     url(r'^upload_avatar/$', views.upload, name='upload_avatar'),
     url(r'^crop_avatar/$', views.crop_avatar, name='crop_avatar'),
+    url(r'^show_profile_pics/$', views.show_profile_pics, name='show_profile_pics'),
     url(r'^change_password/$', views.change_password, name='change_password'),
 
     # for ADMIN only

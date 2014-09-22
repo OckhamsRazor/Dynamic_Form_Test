@@ -11,6 +11,8 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
+from celery import shared_task
+
 import Web
 import utils.consts as consts
 from .models import MyUser, UserProfilePic, HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
@@ -155,6 +157,7 @@ def email_activation(request, code):
 
     return render(request, "auth/activation_result.html", context)
 
+@shared_task
 @login_required
 @post_only_json
 def upload(request):
@@ -204,8 +207,15 @@ def crop_avatar(request):
 
     return {'result': result}
 
+@login_required
 def show_profile_pics(request):
-    pass
+    user = request.user
+    profile_pics = UserProfilePic.objects.filter(
+        user_id=user.id
+    )
+
+    context = {"profile_pics": profile_pics}
+    return render(request, "settings/profile_pics.html", context)
 
 @login_required
 def remove_profile_pic(request):
