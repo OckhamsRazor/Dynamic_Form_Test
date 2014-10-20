@@ -1,7 +1,7 @@
 # coding=utf-8
 from django import forms
 
-from .models import MyUser, UserProfilePic
+from .models import MyUser
 
 class SignUpForm(forms.ModelForm):
     class Meta:
@@ -12,6 +12,5 @@ class SignUpForm(forms.ModelForm):
 
 class UserProfilePictureForm(forms.ModelForm):
     class Meta:
-        model = UserProfilePic
-        fields = ['user', 'profile_pic']
-        exclude = ('user',)
+        model = MyUser
+        fields = ['profile_pic']

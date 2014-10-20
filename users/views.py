@@ -1,11 +1,13 @@
 # coding=utf-8
 import json
 import logging
+import traceback
 from os import path
 from PIL import Image
 from shutil import rmtree
 
 from django.core.mail import EmailMessage
+from django.db import models
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
@@ -19,7 +21,7 @@ from .models import MyUser, UserProfilePic, HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
 from .forms import SignUpForm, UserProfilePictureForm
 from utils.decorators import post_only_view, post_only_json
 from utils.utils import generate_user, existence_checking, \
-    random_string, confirmation_mail_content
+    random_string, confirmation_mail_content, handle_file_upload
 
 @post_only_json
 def login_request(request):
@@ -162,21 +164,28 @@ def email_activation(request, code):
 @post_only_json
 def upload(request):
     result = consts.FAILED
-    new_profile_pic_path = request.user.profile_pic.url
+    user = request.user
+    new_profile_pic_path = user.profile_pic.url
 
-    request.FILES['profile_pic'].name = \
-        str(len(UserProfilePic.objects.filter(user_id=request.user.id))+1) + \
-        consts.Type_to_Ext[request.FILES['profile_pic'].content_type]
-    form = UserProfilePictureForm(request.POST, request.FILES)
-    if form.is_valid():
-        new_profile_pic = form.save(commit=False)
-        new_profile_pic.user = request.user
-        new_profile_pic.save()
-        request.user.profile_pic = new_profile_pic.profile_pic
-        request.user.save()
+    new_profile_pic = request.FILES['profile_pic']
+    new_profile_pic.name = \
+        str(len(user.profile_pics)+1) + \
+        consts.Type_to_Ext[new_profile_pic.content_type]
+
+        # str(len(UserProfilePic.objects.filter(user_id=user.id))+1) + \
+
+    try:
+        url = path.join(user.username, "profile_pic", new_profile_pic.name)
+        # handle_file_upload(new_profile_pic, path.join(Web.settings.MEDIA_ROOT, url))
+
+        new_profile_pic_field = models.ImageField(request.FILES)
+        MyUser.objects.get(instance=user).update(push__profile_pics=new_profile_pic_field)
+        MyUser.objects.get(instance=user).update(profile_pic=new_profile_pic_field)
 
         result = consts.SUCCESSFUL
-        new_profile_pic_path = new_profile_pic.profile_pic.url
+        new_profile_pic_path = user.profile_pic.url
+    except Exception as e:
+        print traceback.format_exc()
 
     return {
         'result': result,
