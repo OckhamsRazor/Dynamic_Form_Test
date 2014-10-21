@@ -74,17 +74,3 @@ def confirmation_mail_content(username, code):
     Sincerely,
     Counselsior
     """ % {'user': username, 'code': code}
-
-# def absolute_path_to_url(path):
-    # return path.lstrip()
-
-# def url_to_absolute_path(url):
-
-def handle_file_upload(uploaded_file, path):
-    """
-    Should do security check here!
-    """
-    fd = open(path, 'w+')
-    for chunk in uploaded_file.chunks():
-        fd.write(chunk)
-    fd.close()

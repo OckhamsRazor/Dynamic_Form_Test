@@ -19,7 +19,7 @@ SPECIAL_USER_VALID_SPAN = 180
 DEFAULT_PROFILE_PIC = 'img/default.jpg'
 
 def profile_pic_upload_path(instance, filename):
-    return path.join(instance.username, "profile_pic", filename)
+    return path.join(instance.user.username, "profile_pic", filename)
 
 class MyUser(AbstractUser):
     NORMAL_USER = 0
@@ -40,7 +40,6 @@ class MyUser(AbstractUser):
         upload_to=profile_pic_upload_path,
         default=DEFAULT_PROFILE_PIC
     )
-    profile_pics = MyListField(models.ImageField)
     login_ip = MyListField(MyEmbeddedModelField('IP_log'))
     special_user_data = MyListField()
     bookmarks = MyListField(models.ForeignKey(Post))
@@ -60,10 +59,7 @@ class MyUser(AbstractUser):
         return self.username
 
     def is_expired(self):
-        if self.is_activated():
-            return False
-        else:
-            return timezone.now() > pytz.UTC.localize(self.activation_code_expired_time)
+        return timezone.now() > pytz.UTC.localize(self.activation_code_expired_time)
 
     def is_activated(self):
         return len(self.activation_code) == 0
