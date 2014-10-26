@@ -10,6 +10,7 @@ from django.db import models
 from taggit.managers import TaggableManager
 
 from Web import settings
+from utils.consts import MAX_FILENAME_LEN
 from utils.models import IP_log, MyListField, MyEmbeddedModelField
 from posts.models import Post
 
@@ -18,8 +19,36 @@ ACTIVATION_EXPIRED_TIME = 3
 SPECIAL_USER_VALID_SPAN = 180
 DEFAULT_PROFILE_PIC = 'img/default.jpg'
 
-def profile_pic_upload_path(instance, filename):
-    return path.join(instance.user.username, "profile_pic", filename)
+class MyFile(models.Model):
+    """
+    TODO: category, type, uploaded_time, owner...
+    """
+    file = models.CharField(max_length=MAX_FILENAME_LEN, default="")
+
+    def __unicode__(self):
+        return self.file
+
+    def url(self):
+        return settings.MEDIA_URL + self.file
+
+class Directory(models.Model):
+    file_no = models.IntegerField(default=0)
+    files = MyListField(
+        MyEmbeddedModelField(MyFile)
+    )
+
+    def __unicode__(self):
+        return str(self.file_no)
+
+def user_directory_init():
+    d = Directory()
+    d.save()
+    return d
+
+def user_profile_pic_init():
+    p = MyFile(file=DEFAULT_PROFILE_PIC)
+    p.save()
+    return p
 
 class MyUser(AbstractUser):
     NORMAL_USER = 0
@@ -36,10 +65,10 @@ class MyUser(AbstractUser):
         default=NORMAL_USER,
         choices=USER_TYPE_CHOICES,
     )
-    profile_pic = models.ImageField(
-        upload_to=profile_pic_upload_path,
-        default=DEFAULT_PROFILE_PIC
-    )
+
+    profile_pic = MyEmbeddedModelField(MyFile, default=user_profile_pic_init)
+    profile_pics = MyEmbeddedModelField(Directory, default=user_directory_init)
+
     login_ip = MyListField(MyEmbeddedModelField('IP_log'))
     special_user_data = MyListField()
     bookmarks = MyListField(models.ForeignKey(Post))
@@ -59,17 +88,13 @@ class MyUser(AbstractUser):
         return self.username
 
     def is_expired(self):
-        return timezone.now() > pytz.UTC.localize(self.activation_code_expired_time)
+        if self.is_activated():
+            return False
+        else:
+            return timezone.now() > pytz.UTC.localize(self.activation_code_expired_time)
 
     def is_activated(self):
         return len(self.activation_code) == 0
-
-class UserProfilePic(models.Model):
-    user = models.ForeignKey(MyUser, related_name="user_profile_pic_user")
-    profile_pic = models.ImageField(
-        upload_to=profile_pic_upload_path,
-        default=DEFAULT_PROFILE_PIC
-    )
 
 class SpecialUserData(models.Model):
     valid_from = models.DateTimeField(default=timezone.now())
