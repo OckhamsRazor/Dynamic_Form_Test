@@ -1,6 +1,6 @@
 # coding=utf-8
 import json
-import logging
+import traceback
 from os import path
 from PIL import Image
 from shutil import rmtree
@@ -11,11 +11,14 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
+from celery import shared_task
+
 import Web
 import utils.consts as consts
-from .models import MyUser, UserProfilePic, HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
-from .forms import SignUpForm, UserProfilePictureForm
+from .models import MyUser, HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
+from .forms import SignUpForm
 from utils.decorators import post_only_view, post_only_json
+from utils.views import handle_file_upload
 from utils.utils import generate_user, existence_checking, \
     random_string, confirmation_mail_content
 
@@ -120,9 +123,7 @@ def generate_user_request(request):
     try:
         generate_user(int(request.POST["people"]))
     except Exception as e:
-        result = consts.FAILED
-        reason = str(e)
-        logging.exception("Exception from auto generating users:")
+        print traceback.format_exc()
     else:
         result = consts.SUCCESSFUL
         reason = ""
@@ -155,39 +156,58 @@ def email_activation(request, code):
 
     return render(request, "auth/activation_result.html", context)
 
+@shared_task
 @login_required
 @post_only_json
 def upload(request):
     result = consts.FAILED
-    new_profile_pic_path = request.user.profile_pic.url
+    user = request.user
+    new_profile_pic_url = user.profile_pic.file
 
-    request.FILES['profile_pic'].name = \
-        str(len(UserProfilePic.objects.filter(user_id=request.user.id))+1) + \
-        consts.Type_to_Ext[request.FILES['profile_pic'].content_type]
-    form = UserProfilePictureForm(request.POST, request.FILES)
-    if form.is_valid():
-        new_profile_pic = form.save(commit=False)
-        new_profile_pic.user = request.user
-        new_profile_pic.save()
-        request.user.profile_pic = new_profile_pic.profile_pic
-        request.user.save()
+    try:
+        request.FILES['profile_pic'].name = \
+            str(user.profile_pics.file_no+1) + \
+            consts.Type_to_Ext[request.FILES['profile_pic'].content_type]
 
+        new_profile_pic_url_short = path.join(
+            user.username,
+            "profile_pics",
+            request.FILES['profile_pic'].name,
+        )
+        new_profile_pic_url = path.join(
+            Web.settings.MEDIA_URL,
+            new_profile_pic_url_short
+        )
+        new_profile_pic_path = path.join(
+            Web.settings.MEDIA_ROOT,
+            new_profile_pic_url_short
+        )
+        handle_file_upload(
+            request, request.FILES['profile_pic'], new_profile_pic_path
+        )
+
+        user.profile_pic.file = new_profile_pic_url_short
+        user.profile_pics.files.append(user.profile_pic)
+        user.profile_pics.file_no += 1
+        user.save()
         result = consts.SUCCESSFUL
-        new_profile_pic_path = new_profile_pic.profile_pic.url
+    except Exception as e:
+        print traceback.format_exc()
 
     return {
         'result': result,
-        'profile_pic_path': new_profile_pic_path
+        'profile_pic_path': new_profile_pic_url
     }
 
 @login_required
 @post_only_json
 def crop_avatar(request):
     result = consts.FAILED
+    user = request.user
     try:
         img_path = path.join(
-            Web.settings.BASE_DIR,
-            request.user.profile_pic.url.lstrip("/")
+            Web.settings.MEDIA_ROOT,
+            user.profile_pic.file.lstrip("/")
         )
         img = Image.open(img_path)
         ratio = img.size[0] / float(request.POST["img_width"])
@@ -200,12 +220,17 @@ def crop_avatar(request):
         img.crop(box).save(img_path)
         result = consts.SUCCESSFUL
     except Exception as e: # should do security check here!
-        pass
+        print traceback.format_exc()
 
     return {'result': result}
 
+@login_required
 def show_profile_pics(request):
-    pass
+    user = request.user
+    profile_pics = user.profile_pics.files
+
+    context = {"profile_pics": profile_pics}
+    return render(request, "settings/profile_pics.html", context)
 
 @login_required
 def remove_profile_pic(request):

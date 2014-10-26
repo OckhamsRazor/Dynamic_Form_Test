@@ -74,3 +74,4 @@ def confirmation_mail_content(username, code):
     Sincerely,
     Counselsior
     """ % {'user': username, 'code': code}
+

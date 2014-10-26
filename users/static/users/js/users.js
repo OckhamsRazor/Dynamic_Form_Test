@@ -10,6 +10,7 @@ Users = function() {
     /* consts */
     var __upload_avatar_url = '/users/upload_avatar/';
     var __crop_avatar_url = '/users/crop_avatar/';
+    var __show_profile_pics_url = '/users/show_profile_pics/';
     var __change_password_url = '/users/change_password/';
     var __valid_avatar_image_type = [
         "image/jpeg",
@@ -317,6 +318,28 @@ Users = function() {
         window.location.href = "/users/settings/admin";
     };
 
+    var _offer_show_profile_pics = function() {
+        window.location.href = __show_profile_pics_url;
+    };
+
+    var _offer_change_profile_pic = function() {
+
+    };
+
+    var _button_settings = function() {
+        $("#change_password_button").click(_offer_change_password);
+        $("#new_avatar_button").click(_avatar_upload);
+        $("#admin_button").click(_offer_admin_interface);
+        $("#show_profile_pics_button").click(_offer_show_profile_pics);
+    };
+
+    var _href_settings = function() {
+        $(".profile_pic_candidates").click(_offer_change_profile_pic);
+        // function() {
+        //     alert($(this).attr("src"));
+        // });
+    };
+
     /* interface */
     return {
         /* properties */
@@ -325,9 +348,8 @@ Users = function() {
         init: function() {
             _change_password_dialog();
             _user_avatar_resize_dialog();
-            $("#change_password_button").click(_offer_change_password);
-            $("#new_avatar_button").click(_avatar_upload);
-            $("#admin_button").click(_offer_admin_interface);
+            _button_settings();
+            _href_settings();
         },
     };
 } ();

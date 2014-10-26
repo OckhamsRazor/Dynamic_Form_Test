@@ -17,6 +17,13 @@ EXPIRED = 2002
 UNACTIVATED = 2003
 AUTH_FAILED = 2999
 
+
+# #
+# about file
+#
+
+MAX_FILENAME_LEN = 120
+
 Type_to_Ext = {
     "image/jpeg": ".jpg",
     "image/png": ".png",

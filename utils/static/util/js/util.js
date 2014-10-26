@@ -95,5 +95,8 @@ Util = function() {
         status_OK: _status_OK,
         status_loading: _status_loading,
         status_error: _status_error,
+        init: function() {
+            $(".dialog").css("display", "inline");
+        },
     };
 } ();
