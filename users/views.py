@@ -126,11 +126,9 @@ def generate_user_request(request):
         print traceback.format_exc()
     else:
         result = consts.SUCCESSFUL
-        reason = ""
 
     return {
         'result': result,
-        'reason': reason
     }
 
 def email_activation(request, code):
