@@ -13,7 +13,7 @@ from taggit.managers import TaggableManager
 from Web import settings
 from utils.consts import MAX_FILENAME_LEN
 from utils.models import IP_log, MyListField, MyEmbeddedModelField
-from posts.models import Post
+from wiki.models import Post
 
 HASH_KEY_LENGTH = 30
 ACTIVATION_EXPIRED_TIME = 3
@@ -67,7 +67,6 @@ class MyUser(AbstractUser):
         default=NORMAL_USER,
         choices=USER_TYPE_CHOICES,
     )
-
 
     # the one being selected
     profile_pic = MyEmbeddedModelField(MyFile, default=user_profile_pic_init)

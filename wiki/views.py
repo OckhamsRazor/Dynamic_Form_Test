@@ -1,3 +1,32 @@
+# coding=utf-8
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
-# Create your views here.
+# from celery import shared_task
+
+from .models import Page, Post
+from utils.decorators import post_only_view, post_only_json
+from utils.views import handle_file_upload
+
+def main(request):
+    # context = {}
+    user = request.user
+    if user.is_authenticated():
+        posts = Post.objects.filter(author_id=user.id)
+    else:
+        posts = Post.objects.all()
+    context = {"posts": posts}
+    return render(request, "wiki/main.html", context)
+
+@login_required
+def create_post(request):
+    pass
+
+@login_required
+def update_post(request):
+    pass
+
+@login_required
+def delete_post(request):
+    pass

@@ -1,0 +1,28 @@
+{% extends "login.html" %}
+{% load static %}
+
+{% block head_css_section %}
+    <link href="{% static 'util/css/main.css' %}" rel="stylesheet">
+{% endblock head_css_section %}
+
+{% block title %} Create your new page {% endblock title %}
+
+{% block body_main_1 %}
+    {% if user.is_authenticated %}
+
+    {% else %}
+        <div class="content_block">尚未登入!</div>
+    {% endif %}
+
+
+{% endblock body_main_1 %}
+
+{% block footer_javascript_section %}
+    <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
+    <!-- <script src="{% static 'users/js/users.js' %}"></script> -->
+    <script>
+        // $(document).ready(function() {
+            // Users.init();
+        // });
+    </script>
+{% endblock footer_javascript_section %}

@@ -5,15 +5,15 @@ from os import path
 from PIL import Image
 from shutil import rmtree
 
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 
 from celery import shared_task
 
-from Web import settings
+import Web
 import utils.consts as consts
 from .models import MyUser, MyFile, \
     HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
@@ -22,7 +22,6 @@ from utils.decorators import post_only_view, post_only_json
 from utils.utils import generate_user, existence_checking, \
     random_string, confirmation_mail_content
 from utils.views import handle_file_upload
-
 
 @post_only_json
 def login_request(request):
@@ -181,11 +180,11 @@ def upload_profile_pic(request):
             request.FILES['profile_pic'].name,
         )
         new_profile_pic_url = path.join(
-            settings.MEDIA_URL,
+            Web.settings.MEDIA_URL,
             new_profile_pic_url_short
         )
         new_profile_pic_path = path.join(
-            settings.MEDIA_ROOT,
+            Web.settings.MEDIA_ROOT,
             new_profile_pic_url_short
         )
         handle_file_upload(
@@ -213,7 +212,7 @@ def crop_profile_pic(request):
     user = request.user
     try:
         img_path = path.join(
-            settings.MEDIA_ROOT,
+            Web.settings.MEDIA_ROOT,
             user.profile_pic.file.lstrip("/")
         )
         img = Image.open(img_path)
@@ -251,6 +250,6 @@ def change_profile_pic(request):
 def delete_profile_pics(request):
     pass
     # request.user.profile_pic = DEFAULT_PROFILE_PIC
-    # dir_path = path.join(settings.MEDIA_ROOT, "img", request.user.username)
+    # dir_path = path.join(Web.settings.MEDIA_ROOT, "img", request.user.username)
     # if path.exists(dir_path):
         # rmtree(dir_path)
