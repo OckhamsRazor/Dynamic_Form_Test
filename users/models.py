@@ -31,7 +31,10 @@ class MyFile(models.Model):
         return self.file
 
     def url(self):
-        return settings.MEDIA_URL + self.file
+        if self.file == "":
+            return DEFAULT_PROFILE_PIC
+        else:
+            return settings.MEDIA_URL + self.file
 
 class Directory(models.Model):
     file_no = models.IntegerField(default=0)

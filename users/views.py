@@ -114,10 +114,7 @@ def new_account(request):
 def settings(request):
     context = {}
     if request.user.is_authenticated():
-        if request.user.profile_pic.file == "":
-            context["profile_pic"] = DEFAULT_PROFILE_PIC
-        else:
-            context["profile_pic"] = request.user.profile_pic.url()
+        context["profile_pic"] = request.user.profile_pic.url()
 
     return render(request, "settings/settings.html", context)
 

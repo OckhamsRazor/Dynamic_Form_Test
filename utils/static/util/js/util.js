@@ -9,7 +9,6 @@ Util = function() {
     var __OK_icon_url = '/static/util/img/OK.gif';
     var __error_icon_url = '/static/util/img/error.gif';
     var __loading_icon_url = '/static/util/img/loading.gif';
-
     var __response_status = {
         /**
          * general request response status code
@@ -29,6 +28,7 @@ Util = function() {
         AUTH_FAILED: 2999,
     };
 
+    /* private methods */
     var _get_cookie = function(name) {
         var cookieValue = null;
         if (document.cookie && document.cookie != '') {
@@ -79,6 +79,23 @@ Util = function() {
         error_span.append(msg);
     };
 
+    var _button_default = function(f) {
+        function wrapper() {
+            e = arguments[0];
+
+            e.preventDefault();
+            $(this).attr("disabled");
+            $(this).hide();
+
+            f($(this));
+
+            $(this).removeAttr("disabled");
+            $(this).show();
+        }
+
+        return wrapper;
+    }
+
     /* interface */
     return {
         /* properties */
@@ -95,6 +112,7 @@ Util = function() {
         status_OK: _status_OK,
         status_loading: _status_loading,
         status_error: _status_error,
+        button_default: _button_default,
         init: function() {
             $(".dialog").css("display", "inline");
         },
