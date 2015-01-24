@@ -6,30 +6,35 @@ from os import path
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from djangotoolbox.fields import DictField
 
 from taggit.managers import TaggableManager
 
 from Web import settings
 from utils.consts import MAX_FILENAME_LEN
 from utils.models import IP_log, MyListField, MyEmbeddedModelField
-from posts.models import Post
+from wiki.models import Post
 
 HASH_KEY_LENGTH = 30
 ACTIVATION_EXPIRED_TIME = 3
 SPECIAL_USER_VALID_SPAN = 180
-DEFAULT_PROFILE_PIC = 'img/default.jpg'
+DEFAULT_PROFILE_PIC = settings.MEDIA_URL + 'img/default.jpg'
 
 class MyFile(models.Model):
     """
     TODO: category, type, uploaded_time, owner...
     """
     file = models.CharField(max_length=MAX_FILENAME_LEN, default="")
+    # status = DictField(models.IntegerField())
 
     def __unicode__(self):
         return self.file
 
     def url(self):
-        return settings.MEDIA_URL + self.file
+        if self.file == "":
+            return DEFAULT_PROFILE_PIC
+        else:
+            return settings.MEDIA_URL + self.file
 
 class Directory(models.Model):
     file_no = models.IntegerField(default=0)
@@ -46,7 +51,7 @@ def user_directory_init():
     return d
 
 def user_profile_pic_init():
-    p = MyFile(file=DEFAULT_PROFILE_PIC)
+    p = MyFile()
     p.save()
     return p
 
@@ -66,7 +71,9 @@ class MyUser(AbstractUser):
         choices=USER_TYPE_CHOICES,
     )
 
+    # the one being selected
     profile_pic = MyEmbeddedModelField(MyFile, default=user_profile_pic_init)
+    # the other ones
     profile_pics = MyEmbeddedModelField(Directory, default=user_directory_init)
 
     login_ip = MyListField(MyEmbeddedModelField('IP_log'))

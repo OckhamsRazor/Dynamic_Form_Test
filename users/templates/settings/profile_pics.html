@@ -6,14 +6,28 @@
 
 {% block body_main_1 %}
     {% if user.is_authenticated %}
-        {% for profile_pic in profile_pics %}
+        <div class="content_block">
+            <button id="change_profile_pic_button">Change Profile Picture</button>
+            <button id="delete_profile_pics_button">Delete Profile Pictures</button>
+        </div>
+        <div id="current_profile_pic" class="content_block">
+            <p>Current Profile Picture</p>
             <img
                 src="{{ profile_pic.url }}"
                 id="profile_pic_{{ profile_pic.url|filename_wo_ext }}"
-                class="profile_pics profile_pic_candidates"
+                class="profile_pics"
             />
-            <!-- <div>{{ profile_pic.profile_pic|filename_wo_ext }}</div> -->
-            <br />
+        </div>
+
+        <div id="profile_pic_candidates" class="content_block">
+        <p>Uploaded Profile Pictures</p>
+        {% for profile_pic_candidate in profile_pic_candidates %}
+            <img
+                src="{{ profile_pic_candidate.url }}"
+                id="profile_pic_{{ profile_pic_candidate.url|filename_wo_ext }}"
+                class="profile_pics"
+            />
         {% endfor %}
+        </div>
     {% endif %}
 {% endblock body_main_1 %}

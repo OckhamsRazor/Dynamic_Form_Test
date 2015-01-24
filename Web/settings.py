@@ -44,7 +44,7 @@ INSTALLED_APPS = (
 
     # APPs
     'users',
-    'posts',
+    'wiki',
     'scenes',
     'rentall',
 
@@ -107,7 +107,7 @@ STATICFILES_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 
     BASE_DIR + '/users/static/',
-    BASE_DIR + '/posts/static/',
+    BASE_DIR + '/wiki/static/',
     BASE_DIR + '/utils/static/',
 )
 
@@ -118,7 +118,7 @@ TEMPLATE_DIRS = (
 
     BASE_DIR + '/utils/templates/',
     BASE_DIR + '/users/templates/',
-    BASE_DIR + '/posts/templates/',
+    BASE_DIR + '/wiki/templates/',
 )
 
 LOGIN_URL = '/users/'

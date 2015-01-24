@@ -5,7 +5,29 @@ from taggit.managers import TaggableManager
 from Web import settings
 from utils.models import MyListField, MyEmbeddedModelField, IP_log
 
-class Entry(models.Model):
+class Template(models.Model):
+    """docstring for Template"""
+    name = models.CharField(max_length="30")
+    entries = MyListField(MyEmbeddedModelField("Entry"))
+    description = models.TextField(max_length="300")
+
+class Page(models.Model):
+    """
+    Wiki page with certain topic (e.g. Cell Phone)
+    Page contains many Posts (user-customed wiki page)
+    """
+    posts = MyListField(models.ForeignKey('Post'))
+
+class PostElement(models.Model):
+    """docstring for PostElement"""
+    author = models.ForeignKey(settings.AUTH_USER_MODEL)
+    credit = models.FloatField(default=0.0)
+    date_published_and_source_ip = MyEmbeddedModelField('IP_log')
+
+    class Meta:
+        abstract = True
+
+class Entry(PostElement):
     """docstring for Entry"""
     INT = 0
     DOUBLE = 1
@@ -44,38 +66,13 @@ class Entry(models.Model):
         default=STR,
         choices=ENTRY_TYPE_CHOICES,
     )
-
-class TextEntry(models.Model):
-    content = models.CharField(max_length="300")
-
-class Template(models.Model):
-    """docstring for Template"""
-    name = models.CharField(max_length="30")
-    entries = MyListField()
-    description = models.TextField(max_length="300")
-
-class Thread(models.Model):
-    """docstring for Thread"""
-    original_post = models.ForeignKey('Post', related_name='op')
-    posts = MyListField(models.ForeignKey('Post'))
-
-class PostElement(models.Model):
-    """docstring for PostElement"""
-    author = models.ForeignKey(settings.AUTH_USER_MODEL)
-    content = Entry(
-        key="",
-        value=[TextEntry()],
-        type=Entry.STR
-    )
-    credit = models.FloatField(default=0.0)
-    date_published_and_source_ip = MyEmbeddedModelField('IP_log')
-
-    class Meta:
-        abstract = True
+    comments = MyListField(MyEmbeddedModelField('Comment'))
 
 class Post(PostElement):
-    """docstring for Post"""
-    thread = models.ForeignKey('Thread', related_name='thread')
+    """
+    Wiki page that belongs to user
+    """
+    page = models.ForeignKey('Page', related_name='thread')
     title = models.CharField(max_length="30", default="")
     comments = MyListField(MyEmbeddedModelField('Comment'))
     entries = MyListField(MyEmbeddedModelField('Entry'))

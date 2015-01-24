@@ -1,0 +1,53 @@
+{% extends "login.html" %}
+{% load static %}
+
+{% block head_css_section %}
+    <link href="{% static 'util/css/main.css' %}" rel="stylesheet">
+    <link href="{% static 'wiki/css/wiki.css' %}" rel="stylesheet">
+{% endblock head_css_section %}
+
+{% block title %} Create your new page {% endblock title %}
+
+{% block body_main_1 %}
+    {% if user.is_authenticated %}
+        <div id="option bar" class="content_block">
+            <button id="change_template_button">Change Template</button>
+            <button id="save_template_as_button">Save Template As ...</button>
+        </div>
+        <div class="content_block">
+            <form id="new_post_form">
+                {% csrf_token %}
+                <div id="new_post_form_body">
+                    <div id="new_post_title">
+                        <label class="required_label">Title</label>
+                        <input type="text" name="title" class="required_field text" />
+                        <span id="new_post_title_error" class="form_field_error"></span>
+                    </div>
+                </div>
+                <div id="new_post_form_footer">
+                    <div id="new_post_new_entry">
+                        <button type="button" id="add_entry_button">+</button>
+                    </div>
+                    <div id="new_post_submit">
+                        <button type="button" id="new_post_submit_button">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <div class="content_block">尚未登入!</div>
+    {% endif %}
+
+{% endblock body_main_1 %}
+
+{% block footer_javascript_section %}
+    <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
+    <script src="{% static 'wiki/js/posts.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            Posts.init();
+        });
+    </script>
+{% endblock footer_javascript_section %}

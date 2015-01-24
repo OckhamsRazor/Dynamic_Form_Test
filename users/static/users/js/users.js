@@ -8,8 +8,10 @@ Users = function() {
     var _jcrop;
 
     /* consts */
-    var __upload_avatar_url = '/users/upload_avatar/';
-    var __crop_avatar_url = '/users/crop_avatar/';
+    var __upload_avatar_url = '/users/upload_profile_pic/';
+    var __crop_avatar_url = '/users/crop_profile_pic/';
+    var __change_profile_pic_url = '/users/change_profile_pic';
+    var __delete_profile_pic_url = 'users/delete_profile_pics';
     var __show_profile_pics_url = '/users/show_profile_pics/';
     var __change_password_url = '/users/change_password/';
     var __valid_avatar_image_type = [
@@ -323,7 +325,11 @@ Users = function() {
     };
 
     var _offer_change_profile_pic = function() {
+        // alert("change!");
+    };
 
+    var _offer_delete_profile_pics = function() {
+        // alert("delete!");
     };
 
     var _button_settings = function() {
@@ -331,11 +337,12 @@ Users = function() {
         $("#new_avatar_button").click(_avatar_upload);
         $("#admin_button").click(_offer_admin_interface);
         $("#show_profile_pics_button").click(_offer_show_profile_pics);
+        $("#change_profile_pic_button").click(_offer_change_profile_pic);
+        $("#delete_profile_pics_button").click(_offer_delete_profile_pics);
     };
 
     var _href_settings = function() {
-        $(".profile_pic_candidates").click(_offer_change_profile_pic);
-        // function() {
+        // $("#profile_pic_candidates img").click(function() {
         //     alert($(this).attr("src"));
         // });
     };

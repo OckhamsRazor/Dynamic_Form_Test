@@ -98,9 +98,9 @@ Auth = function() {
             success: _login_success,
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 // console.log(XMLHttpRequest.responseText);
-                // window.document.write(XMLHttpRequest.responseText);
+                window.document.write(XMLHttpRequest.responseText);
                 Util.send_notification("出了點錯！");
-                window.location.reload();
+                // window.location.reload();
             },
             type: 'POST',
             url: __login_url,

@@ -20,12 +20,10 @@ Admin = function() {
             data: $("#user_generating_form").serialize(),
             datatype: "text",
             success: function(data, textStatus, XMLHttpRequest) {
-                if (data.result == 'success')
+                if (data.result == Util.Response_status.SUCCESSFUL)
                     alert("SUCCESS creating users.");
-                else if (data.result == 'failed')
-                    alert("ERROR creating users: " + data.reason);
                 else
-                    alert("ERROR no result.");
+                    alert("ERROR creating users.");
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 console.log(XMLHttpRequest);

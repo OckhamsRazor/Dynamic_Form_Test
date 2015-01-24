@@ -12,7 +12,7 @@
 {% block body_main_1 %}
     {% if user.is_authenticated %}
         <div class="content_block">
-            <img src="{{ user.profile_pic.url }}" id="user_avatar"/>
+            <img src="{{ profile_pic }}" id="user_avatar"/>
             <br />
             <button id="show_profile_pics_button">Show Uploaded Profile Pictures</button>
         </div>

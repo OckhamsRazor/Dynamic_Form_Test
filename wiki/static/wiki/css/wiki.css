@@ -1,0 +1,56 @@
+#new_post_form_footer > div {
+    padding: 10px;
+    margin: 10px;
+}
+
+#new_post_new_entry {
+    z-index: 1;
+    background-color: #BBBBBB;
+    height: 20px;
+    text-align: center;
+}
+
+#add_entry_button, #new_post_submit_button {
+    z-index: 2;
+    background-color: white;
+    width: 200px;
+    text-align: center;
+}
+
+#new_post_submit {
+    z-index: 1;
+    background-color: #AAAAAA;
+    height: 20px;
+    text-align: center;
+}
+
+.entry_options button {
+    margin: 10px;
+    display: block;
+}
+
+#new_post_form_body input {
+    display: block;
+}
+
+#new_post_form_body > div {
+    margin: 10px;
+    overflow: hidden;
+}
+
+#new_post_form_body > div > div {
+    margin: 10px;
+    float: left;
+}
+
+/*.delete_entry {
+    float: left;
+}
+
+.entry_name {
+    float: left;
+}
+
+.entry_value {
+    float: left;
+}*/

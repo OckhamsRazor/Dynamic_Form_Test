@@ -1,0 +1,40 @@
+{% extends "login.html" %}
+{% load static %}
+
+{% block head_css_section %}
+    <link href="{% static 'util/css/main.css' %}" rel="stylesheet">
+{% endblock head_css_section %}
+
+{% block title %} Main Page {% endblock title %}
+
+{% block body_main_1 %}
+    <div id="create_post" class="content_block">
+    {% if user.is_authenticated %}
+        <button id="new_post_button">New Post</button>
+    {% else %}
+        尚未登入!
+    {% endif %}
+    </div>
+
+    <!-- #list_all_page for testing -->
+    <div id="list_all_posts" class="content_block">
+    {% if posts %}
+        <ul>
+        {% for post in posts %}
+            <li><a href="#">{{ post.title }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        There are currently no posts -- create one today!
+    {% endif %}
+    </div>
+{% endblock body_main_1 %}
+
+{% block footer_javascript_section %}
+    <script src="{% static 'wiki/js/wiki.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            Wiki.init();
+        });
+    </script>
+{% endblock footer_javascript_section %}

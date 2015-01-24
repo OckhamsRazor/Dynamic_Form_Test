@@ -5,22 +5,23 @@ from os import path
 from PIL import Image
 from shutil import rmtree
 
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 
 from celery import shared_task
 
 import Web
 import utils.consts as consts
-from .models import MyUser, HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
+from .models import MyUser, MyFile, \
+    HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
 from .forms import SignUpForm
 from utils.decorators import post_only_view, post_only_json
-from utils.views import handle_file_upload
 from utils.utils import generate_user, existence_checking, \
     random_string, confirmation_mail_content
+from utils.views import handle_file_upload
 
 @post_only_json
 def login_request(request):
@@ -112,6 +113,9 @@ def new_account(request):
 
 def settings(request):
     context = {}
+    if request.user.is_authenticated():
+        context["profile_pic"] = request.user.profile_pic.url()
+
     return render(request, "settings/settings.html", context)
 
 def admin(request):
@@ -126,11 +130,9 @@ def generate_user_request(request):
         print traceback.format_exc()
     else:
         result = consts.SUCCESSFUL
-        reason = ""
 
     return {
         'result': result,
-        'reason': reason
     }
 
 def email_activation(request, code):
@@ -159,7 +161,7 @@ def email_activation(request, code):
 @shared_task
 @login_required
 @post_only_json
-def upload(request):
+def upload_profile_pic(request):
     result = consts.FAILED
     user = request.user
     new_profile_pic_url = user.profile_pic.file
@@ -186,9 +188,10 @@ def upload(request):
             request, request.FILES['profile_pic'], new_profile_pic_path
         )
 
-        user.profile_pic.file = new_profile_pic_url_short
-        user.profile_pics.files.append(user.profile_pic)
+        if user.profile_pic.file != "":
+            user.profile_pics.files.append(user.profile_pic)
         user.profile_pics.file_no += 1
+        user.profile_pic = MyFile(file=new_profile_pic_url_short)
         user.save()
         result = consts.SUCCESSFUL
     except Exception as e:
@@ -201,7 +204,7 @@ def upload(request):
 
 @login_required
 @post_only_json
-def crop_avatar(request):
+def crop_profile_pic(request):
     result = consts.FAILED
     user = request.user
     try:
@@ -219,7 +222,7 @@ def crop_avatar(request):
         )
         img.crop(box).save(img_path)
         result = consts.SUCCESSFUL
-    except Exception as e: # should do security check here!
+    except Exception as e:
         print traceback.format_exc()
 
     return {'result': result}
@@ -227,13 +230,21 @@ def crop_avatar(request):
 @login_required
 def show_profile_pics(request):
     user = request.user
+    profile_pic = user.profile_pic
     profile_pics = user.profile_pics.files
 
-    context = {"profile_pics": profile_pics}
+    context = {
+        "profile_pic": profile_pic,
+        "profile_pic_candidates": profile_pics
+    }
     return render(request, "settings/profile_pics.html", context)
 
 @login_required
-def remove_profile_pic(request):
+def change_profile_pic(request):
+    pass
+
+@login_required
+def delete_profile_pics(request):
     pass
     # request.user.profile_pic = DEFAULT_PROFILE_PIC
     # dir_path = path.join(Web.settings.MEDIA_ROOT, "img", request.user.username)

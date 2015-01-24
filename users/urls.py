@@ -16,9 +16,11 @@ urlpatterns = patterns('',
         r'^activate/(?P<code>[A-Za-z0-9]{%d})$' % HASH_KEY_LENGTH,
         views.email_activation, name='email_activation'
     ),
-    url(r'^upload_avatar/$', views.upload, name='upload_avatar'),
-    url(r'^crop_avatar/$', views.crop_avatar, name='crop_avatar'),
+    url(r'^upload_profile_pic/$', views.upload_profile_pic, name='upload_profile_pic'),
+    url(r'^crop_profile_pic/$', views.crop_profile_pic, name='crop_avatar'),
     url(r'^show_profile_pics/$', views.show_profile_pics, name='show_profile_pics'),
+    url(r'^change_profile_pic/$', views.change_profile_pic, name='change_profile_pic'),
+    url(r'^delete_profile_pics/$', views.delete_profile_pics, name='delete_profile_pics'),
     url(r'^change_password/$', views.change_password, name='change_password'),
 
     # for ADMIN only
