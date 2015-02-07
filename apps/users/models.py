@@ -11,9 +11,9 @@ from djangotoolbox.fields import DictField
 from taggit.managers import TaggableManager
 
 from Web import settings
+from apps.wiki.models import Post
 from utils.consts import MAX_FILENAME_LEN
 from utils.models import IP_log, MyListField, MyEmbeddedModelField
-from wiki.models import Post
 
 HASH_KEY_LENGTH = 30
 ACTIVATION_EXPIRED_TIME = 3

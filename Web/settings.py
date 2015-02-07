@@ -43,11 +43,10 @@ INSTALLED_APPS = (
     'taggit_templatetags',
 
     # APPs
-    'users',
-    'wiki',
-    'scenes',
-    'rentall',
-
+    'apps.users',
+    'apps.wiki',
+    'apps.scenes',
+    'apps.rentall',
     'utils',
     'utils.templatetags',
 )
@@ -98,7 +97,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = '/home/ockhamsrazor/static/'
+STATIC_ROOT = BASE_DIR + '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -106,8 +105,8 @@ STATICFILES_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
 
-    BASE_DIR + '/users/static/',
-    BASE_DIR + '/wiki/static/',
+    BASE_DIR + '/apps/users/static/',
+    BASE_DIR + '/apps/wiki/static/',
     BASE_DIR + '/utils/static/',
 )
 
@@ -117,8 +116,8 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 
     BASE_DIR + '/utils/templates/',
-    BASE_DIR + '/users/templates/',
-    BASE_DIR + '/wiki/templates/',
+    BASE_DIR + '/apps/users/templates/',
+    BASE_DIR + '/apps/wiki/templates/',
 )
 
 LOGIN_URL = '/users/'
@@ -133,7 +132,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Examples: "http://example.com/media/", "http://media.example.com/"
 MEDIA_URL = '/media/'
 
-FILE_UPLOAD_PERMISSIONS = 0666
+FILE_UPLOAD_PERMISSIONS = 0o666
 
 # email issues
 EMAIL_USE_TLS = True

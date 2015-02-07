@@ -1,11 +1,12 @@
 # coding=utf-8
 
-import string
 import random
+import string
+import traceback
 
 from django.utils import timezone
 
-from users.models import MyUser
+from apps.users.models import MyUser
 
 def random_string(N):
     return ''.join(
@@ -15,6 +16,8 @@ def random_string(N):
 def random_number(N):
     return ''.join(random.choice(string.digits) for _ in range(N))
 
+def general_exception_handling(e):
+    print(traceback.format_exc())
 
 def generate_user(num):
     for _ in range(num):

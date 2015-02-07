@@ -11,10 +11,9 @@ from utils.decorators import post_only_view, post_only_json
 from utils.views import handle_file_upload
 
 def main(request):
-    # context = {}
     user = request.user
     if user.is_authenticated():
-        posts = Post.objects.filter(author_id=user.id)
+        posts = Post.objects.filter(author__id=user.id)
     else:
         posts = Post.objects.all()
     context = {"posts": posts}

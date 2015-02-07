@@ -23,6 +23,7 @@ class PostElement(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL)
     credit = models.FloatField(default=0.0)
     date_published_and_source_ip = MyEmbeddedModelField('IP_log')
+    comments = MyListField(MyEmbeddedModelField('Comment'))
 
     class Meta:
         abstract = True
@@ -66,7 +67,6 @@ class Entry(PostElement):
         default=STR,
         choices=ENTRY_TYPE_CHOICES,
     )
-    comments = MyListField(MyEmbeddedModelField('Comment'))
 
 class Post(PostElement):
     """
@@ -74,7 +74,6 @@ class Post(PostElement):
     """
     page = models.ForeignKey('Page', related_name='thread')
     title = models.CharField(max_length="30", default="")
-    comments = MyListField(MyEmbeddedModelField('Comment'))
     entries = MyListField(MyEmbeddedModelField('Entry'))
     tags = TaggableManager()
 

@@ -19,8 +19,8 @@ from .models import MyUser, MyFile, \
     HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
 from .forms import SignUpForm
 from utils.decorators import post_only_view, post_only_json
-from utils.utils import generate_user, existence_checking, \
-    random_string, confirmation_mail_content
+from utils.utils import generate_user, general_exception_handling, \
+    random_string, confirmation_mail_content, existence_checking
 from utils.views import handle_file_upload
 
 @post_only_json
@@ -127,7 +127,7 @@ def generate_user_request(request):
     try:
         generate_user(int(request.POST["people"]))
     except Exception as e:
-        print traceback.format_exc()
+        general_exception_handling(e)
     else:
         result = consts.SUCCESSFUL
 
@@ -195,7 +195,7 @@ def upload_profile_pic(request):
         user.save()
         result = consts.SUCCESSFUL
     except Exception as e:
-        print traceback.format_exc()
+        general_exception_handling(e)
 
     return {
         'result': result,
@@ -223,7 +223,7 @@ def crop_profile_pic(request):
         img.crop(box).save(img_path)
         result = consts.SUCCESSFUL
     except Exception as e:
-        print traceback.format_exc()
+        general_exception_handling(e)
 
     return {'result': result}
 
