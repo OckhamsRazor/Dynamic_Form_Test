@@ -1,24 +1,24 @@
 # coding=utf-8
 import datetime
 import pytz
-from os import path
 
-from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from djangotoolbox.fields import DictField
+from django.utils import timezone
 
 from taggit.managers import TaggableManager
 
-from Web import settings
 from apps.wiki.models import Post
 from utils.consts import MAX_FILENAME_LEN
-from utils.models import IP_log, MyListField, MyEmbeddedModelField
+from utils.models import MyListField, MyEmbeddedModelField, IP_log
+from Web import settings
+
 
 HASH_KEY_LENGTH = 30
 ACTIVATION_EXPIRED_TIME = 3
 SPECIAL_USER_VALID_SPAN = 180
 DEFAULT_PROFILE_PIC = settings.MEDIA_URL + 'img/default.jpg'
+
 
 class MyFile(models.Model):
     """
@@ -36,6 +36,7 @@ class MyFile(models.Model):
         else:
             return settings.MEDIA_URL + self.file
 
+
 class Directory(models.Model):
     file_no = models.IntegerField(default=0)
     files = MyListField(
@@ -45,15 +46,18 @@ class Directory(models.Model):
     def __unicode__(self):
         return str(self.file_no)
 
+
 def user_directory_init():
     d = Directory()
     d.save()
     return d
 
+
 def user_profile_pic_init():
     p = MyFile()
     p.save()
     return p
+
 
 class MyUser(AbstractUser):
     NORMAL_USER = 0
@@ -72,9 +76,11 @@ class MyUser(AbstractUser):
     )
 
     # the one being selected
-    profile_pic = MyEmbeddedModelField(MyFile, default=user_profile_pic_init)
+    profile_pic = MyEmbeddedModelField(
+        MyFile, default=user_profile_pic_init)
     # the other ones
-    profile_pics = MyEmbeddedModelField(Directory, default=user_directory_init)
+    profile_pics = MyEmbeddedModelField(
+        Directory, default=user_directory_init)
 
     login_ip = MyListField(MyEmbeddedModelField('IP_log'))
     special_user_data = MyListField()
@@ -82,7 +88,8 @@ class MyUser(AbstractUser):
 
     activation_code = models.CharField(max_length=HASH_KEY_LENGTH)
     activation_code_expired_time = models.DateTimeField(
-        default=timezone.now()+datetime.timedelta(days=ACTIVATION_EXPIRED_TIME)
+        default=timezone.now()
+               +datetime.timedelta(days=ACTIVATION_EXPIRED_TIME)
     )
 
     def __init__(self, *args, **kwargs):
@@ -98,10 +105,12 @@ class MyUser(AbstractUser):
         if self.is_activated():
             return False
         else:
-            return timezone.now() > pytz.UTC.localize(self.activation_code_expired_time)
+            return timezone.now() > pytz.UTC.localize( # pylint: disable=E1120
+                self.activation_code_expired_time)
 
     def is_activated(self):
         return len(self.activation_code) == 0
+
 
 class SpecialUserData(models.Model):
     valid_from = models.DateTimeField(default=timezone.now())
@@ -115,10 +124,12 @@ class SpecialUserData(models.Model):
     class Meta:
         abstract = True
 
+
 class ShopOwnerData(SpecialUserData):
     address = models.CharField(max_length="100")
     homepage = models.URLField()
     service_type = TaggableManager()
+
 
 class ModeratorData(SpecialUserData):
     def __init__(self, *args, **kwargs):
@@ -126,8 +137,10 @@ class ModeratorData(SpecialUserData):
         self._meta.get_field(name="phone").default = ""
         super(ModeratorData, self).__init__(*args, **kwargs)
 
+
 class Preference(models.Model):
     type = models.CharField(max_length="30")
+
 
 class User_Preference(models.Model):
     user_id = models.ForeignKey(MyUser)

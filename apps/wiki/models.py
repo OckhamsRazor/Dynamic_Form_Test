@@ -1,9 +1,11 @@
 # coding=utf-8
 from django.db import models
+
 from taggit.managers import TaggableManager
 
-from Web import settings
 from utils.models import MyListField, MyEmbeddedModelField, IP_log
+from Web import settings
+
 
 class Template(models.Model):
     """docstring for Template"""
@@ -11,12 +13,14 @@ class Template(models.Model):
     entries = MyListField(MyEmbeddedModelField("Entry"))
     description = models.TextField(max_length="300")
 
+
 class Page(models.Model):
     """
     Wiki page with certain topic (e.g. Cell Phone)
     Page contains many Posts (user-customed wiki page)
     """
     posts = MyListField(models.ForeignKey('Post'))
+
 
 class PostElement(models.Model):
     """docstring for PostElement"""
@@ -27,6 +31,7 @@ class PostElement(models.Model):
 
     class Meta:
         abstract = True
+
 
 class Entry(PostElement):
     """docstring for Entry"""
@@ -68,6 +73,7 @@ class Entry(PostElement):
         choices=ENTRY_TYPE_CHOICES,
     )
 
+
 class Post(PostElement):
     """
     Wiki page that belongs to user
@@ -76,6 +82,7 @@ class Post(PostElement):
     title = models.CharField(max_length="30", default="")
     entries = MyListField(MyEmbeddedModelField('Entry'))
     tags = TaggableManager()
+
 
 class Comment(PostElement):
     """docstring for Comment"""
