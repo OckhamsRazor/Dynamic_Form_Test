@@ -9,8 +9,8 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^users/', include('users.urls')),
-    url(r'^wiki/', include('wiki.urls')),
+    url(r'^users/', include('apps.users.urls')),
+    url(r'^wiki/', include('apps.wiki.urls')),
     url(r'^$', RedirectView.as_view(url='/users/')),
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

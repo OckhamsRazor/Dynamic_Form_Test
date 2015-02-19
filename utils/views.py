@@ -4,6 +4,8 @@ import traceback
 
 from django.contrib.auth.decorators import login_required
 
+from .utils import general_exception_handling
+
 def default_img_path(instance, filename):
     pass
 
@@ -24,6 +26,6 @@ def handle_file_upload(request, file, destination):
             for chunk in file.chunks():
                 dest.write(chunk)
     except Exception as e:
-        print traceback.format_exc()
+        general_exception_handling(e)
 
     # END_WARNING #

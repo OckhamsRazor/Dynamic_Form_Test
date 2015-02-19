@@ -1,18 +1,21 @@
 /**
- * ModuleName    [ Util ]
- * Synopsis      [ Global constants & JS utility functions for Metis-Project ]
- * Author        [ OckhamsRazor (yl871804@gmail.com) ]
-*/
+ * @fileoverview Utilities for Metis-Project.
+ * @author yl871804@gmail.com (Lang-Chi Yu)
+ */
 
 Util = function() {
-    /* consts */
-    var __OK_icon_url = '/static/util/img/OK.gif';
-    var __error_icon_url = '/static/util/img/error.gif';
-    var __loading_icon_url = '/static/util/img/loading.gif';
-    var __response_status = {
+
+    /**
+     * consts
+     */
+    var OK_ICON_URL_ = '/static/util/img/OK.gif';
+    var ERROR_ICON_URL_ = '/static/util/img/error.gif';
+    var LOADING_ICON_URL_ = '/static/util/img/loading.gif';
+    var ResponseStatus_ = Object.freeze({
+
         /**
          * general request response status code
-        */
+         */
         SUCCESSFUL: 0,
         FAILED: 1000, // reason unknown; catch-all case
         FORM_INVALID: 1001,
@@ -20,16 +23,18 @@ Util = function() {
 
         /**
          * user status code
-        */
+         */
         ACTIVE: 2000,
         INACTIVE: 2001,
         EXPIRED: 2002,
         UNACTIVATED: 2003,
         AUTH_FAILED: 2999,
-    };
+    });
 
-    /* private methods */
-    var _get_cookie = function(name) {
+    /**
+     * private methods
+     */
+    var getCookie_ = function(name) {
         var cookieValue = null;
         if (document.cookie && document.cookie != '') {
             var cookies = document.cookie.split(';');
@@ -45,41 +50,50 @@ Util = function() {
         return cookieValue;
     }
 
-    var _send_notification = function(msg) {
+    var sendNotification_ = function(msg) {
         alert(msg);
     };
 
-    var _length_check = function(to_check, content, min, max) {
+    var lengthCheck_ = function(
+        toCheck, content, min, max, opt_errorHandler) {
+
+        opt_errorHandler = (typeof opt_errorHandler == "undefined")
+            ? checkFailedDefault_ : opt_errorHandler;
+
         var result = true;
         if (content.length < min) {
-            _status_error($("#"+to_check+"_error"), "至少"+min+"個字符");
+            opt_errorHandler(toCheck, "至少"+min+"個字符");
             result = false;
         } else if (content.length > max) {
-            _status_error($("#"+to_check+"_error"), "至多"+max+"個字符");
+            opt_errorHandler(toCheck, "至多"+max+"個字符");
             result = false;
         }
         return result;
     };
 
-    var _form_show_error = function(obj) {
+    var checkFailedDefault_ = function(toCheck, errorMessage) {
+        statusError_($("#"+toCheck+"_error"), errorMessage);
+    };
+
+    var formShowError_ = function(obj) {
         obj.effect("highlight", {color: "red"}, 3000);
     }
 
-    var _status_OK = function(OK_span, msg) {
-        OK_span.html("<img src='"+__OK_icon_url+"'>");
-        OK_span.append(msg);
+    var statusOk_ = function(okSpan, msg) {
+        okSpan.html("<img src='"+OK_ICON_URL_+"'>");
+        okSpan.append(msg);
     };
 
-    var _status_loading = function(loading_span) {
-        loading_span.html("<img src='"+__loading_icon_url+"'>");
+    var statusLoading_ = function(loadingSpan) {
+        loadingSpan.html("<img src='"+LOADING_ICON_URL_+"'>");
     };
 
-    var _status_error = function(error_span, msg) {
-        error_span.html("<img src='"+__error_icon_url+"' />");
-        error_span.append(msg);
+    var statusError_ = function(errorSpan, msg) {
+        errorSpan.html("<img src='"+ERROR_ICON_URL_+"' />");
+        errorSpan.append(msg);
     };
 
-    var _button_default = function(f) {
+    var buttonDefault_ = function(f) {
         function wrapper() {
             e = arguments[0];
 
@@ -96,23 +110,30 @@ Util = function() {
         return wrapper;
     }
 
-    /* interface */
+    /**
+     * interface
+     */
     return {
-        /* properties */
-        OK_icon_url: __OK_icon_url,
-        error_icon_url: __error_icon_url,
-        loading_icon_url: __loading_icon_url,
-        Response_status: __response_status,
 
-        /* public methods */
-        get_cookie: _get_cookie,
-        send_notification: _send_notification,
-        length_check: _length_check,
-        form_show_error: _form_show_error,
-        status_OK: _status_OK,
-        status_loading: _status_loading,
-        status_error: _status_error,
-        button_default: _button_default,
+        /**
+         * properties
+         */
+        OK_ICON_URL: OK_ICON_URL_,
+        ERROR_ICON_URL: ERROR_ICON_URL_,
+        LOADING_ICON_URL: LOADING_ICON_URL_,
+        ResponseStatus: ResponseStatus_,
+
+        /**
+         * public methods
+         */
+        getCookie: getCookie_,
+        sendNotification: sendNotification_,
+        lengthCheck: lengthCheck_,
+        formShowError: formShowError_,
+        statusOk: statusOk_,
+        statusLoading: statusLoading_,
+        statusError: statusError_,
+        buttonDefault: buttonDefault_,
         init: function() {
             $(".dialog").css("display", "inline");
         },

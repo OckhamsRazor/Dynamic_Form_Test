@@ -1,27 +1,24 @@
 # coding=utf-8
-import json
-import traceback
 from os import path
 from PIL import Image
-from shutil import rmtree
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import render
 
 from celery import shared_task
 
-import Web
 import utils.consts as consts
-from .models import MyUser, MyFile, \
-    HASH_KEY_LENGTH, DEFAULT_PROFILE_PIC
+import Web
 from .forms import SignUpForm
-from utils.decorators import post_only_view, post_only_json
-from utils.utils import generate_user, existence_checking, \
-    random_string, confirmation_mail_content
+from .models import HASH_KEY_LENGTH, MyFile, MyUser
+from utils.decorators import post_only_json
+from utils.utils import confirmation_mail_content, existence_checking, \
+    general_exception_handling, generate_user, random_string
 from utils.views import handle_file_upload
+
 
 @post_only_json
 def login_request(request):
@@ -46,14 +43,17 @@ def login_request(request):
 
     return {'result': result}
 
+
 @login_required
 @post_only_json
 def logout_request(request):
     logout(request)
     return {'result': consts.SUCCESSFUL}
 
+
 def passwd_recovery(request):
     return HttpResponse("NOT IMPLEMENTED.")
+
 
 @login_required
 @post_only_json
@@ -67,11 +67,12 @@ def change_password(request):
 
     return {'result': result}
 
+
 @post_only_json
 def new_account_existence_checking(request):
     """
-    Check if certain user attribute (e.g. username) has been taken by others
-    If the existed account has expired, it will be removed
+    Check if certain user attribute (e.g. username) has been taken
+    by others. If the existed account has expired, it will be removed.
     """
     to_check = request.POST["to_check"]
     content = request.POST["content"]
@@ -83,13 +84,13 @@ def new_account_existence_checking(request):
 
     return {'result': result}
 
+
 @post_only_json
 def new_account(request):
     form = SignUpForm(request.POST)
-    if form.is_valid():
+    if form.is_valid(): # pylint: disable=E1101
         data = request.POST
-        activation_code = \
-            random_string(HASH_KEY_LENGTH)
+        activation_code = random_string(HASH_KEY_LENGTH)
 
         new_user = MyUser.objects.create_user(
             username=data['username'],
@@ -102,7 +103,8 @@ def new_account(request):
 
         mail = EmailMessage(
             subject="Activate your Counselsior account",
-            body=confirmation_mail_content(data['username'], activation_code),
+            body=confirmation_mail_content(
+                data['username'], activation_code),
             to=[data['email']]
         )
         mail.send()
@@ -111,6 +113,7 @@ def new_account(request):
 
     return {'result': result}
 
+
 def settings(request):
     context = {}
     if request.user.is_authenticated():
@@ -118,22 +121,25 @@ def settings(request):
 
     return render(request, "settings/settings.html", context)
 
+
 def admin(request):
     context = {}
     return render(request, "settings/admin.html", context)
+
 
 @post_only_json
 def generate_user_request(request):
     try:
         generate_user(int(request.POST["people"]))
     except Exception as e:
-        print traceback.format_exc()
+        general_exception_handling(e)
     else:
         result = consts.SUCCESSFUL
 
     return {
         'result': result,
     }
+
 
 def email_activation(request, code):
     """
@@ -157,6 +163,7 @@ def email_activation(request, code):
         context["user"] = user.username
 
     return render(request, "auth/activation_result.html", context)
+
 
 @shared_task
 @login_required
@@ -195,12 +202,13 @@ def upload_profile_pic(request):
         user.save()
         result = consts.SUCCESSFUL
     except Exception as e:
-        print traceback.format_exc()
+        general_exception_handling(e)
 
     return {
         'result': result,
         'profile_pic_path': new_profile_pic_url
     }
+
 
 @login_required
 @post_only_json
@@ -223,9 +231,10 @@ def crop_profile_pic(request):
         img.crop(box).save(img_path)
         result = consts.SUCCESSFUL
     except Exception as e:
-        print traceback.format_exc()
+        general_exception_handling(e)
 
     return {'result': result}
+
 
 @login_required
 def show_profile_pics(request):
@@ -239,9 +248,11 @@ def show_profile_pics(request):
     }
     return render(request, "settings/profile_pics.html", context)
 
+
 @login_required
 def change_profile_pic(request):
     pass
+
 
 @login_required
 def delete_profile_pics(request):

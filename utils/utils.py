@@ -1,11 +1,12 @@
 # coding=utf-8
 
-import string
 import random
+import string
+import traceback
 
 from django.utils import timezone
 
-from users.models import MyUser
+from apps.users.models import MyUser
 
 def random_string(N):
     return ''.join(
@@ -15,6 +16,8 @@ def random_string(N):
 def random_number(N):
     return ''.join(random.choice(string.digits) for _ in range(N))
 
+def general_exception_handling(e): # TODO
+    print(traceback.format_exc())
 
 def generate_user(num):
     for _ in range(num):
@@ -40,7 +43,7 @@ def generate_user(num):
             activation_code="",
             type=MyUser.TESTING,
         )
-        new_user.save
+        new_user.save()
 
 def existence_checking(to_check, content):
     if to_check == "username":
@@ -69,7 +72,8 @@ def confirmation_mail_content(username, code):
         The link will expire in three days. If you fail to activate your account
         in time, you will have to create another new account.
 
-        For more information, feel free to contact us via service@counselsior.com
+        For more information, feel free to contact us via
+        service@counselsior.com
 
     Sincerely,
     Counselsior

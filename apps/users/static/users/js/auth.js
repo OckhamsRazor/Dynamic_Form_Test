@@ -1,74 +1,79 @@
 /**
- * ModuleName    [ Auth ]
- * Synopsis      [ Front-end methods and constants for Django Authentication System ]
- * Author        [ OckhamsRazor (yl871804@gmail.com) ]
-*/
+ * @fileoverview Front-end methods and constants for
+ *      Django Authentication System
+ * @author yl871804@gmail.com (Lang-Chi Yu)
+ */
 
 Auth = function() {
-    /* consts */
-    var __login_url = '/users/login/';
-    var __logout_url = '/users/logout/';
-    var __signup_url = '/users/signup/';
-    var __existence_check_url = '/users/check/';
 
-    /* private methods */
-    var _offer_login = function () {
+    /**
+     * consts
+     */
+    var LOGIN_URL_ = '/users/login/';
+    var LOGOUT_URL_ = '/users/logout/';
+    var SIGNUP_URL_ = '/users/signup/';
+    var EXISTENCE_CHECK_URL_ = '/users/check/';
+
+    /**
+     * private methods
+     */
+    var offerLogin_ = function () {
         $("#login_form").dialog("open");
         $('.ui-widget-overlay').click(function() {
-            _close_login();
+            closeLogin_();
         });
     };
 
-    var _offer_logout = function() {
+    var offerLogout_ = function() {
         $.ajax({
             data: {
-                'csrfmiddlewaretoken': Util.get_cookie('csrftoken'),
+                'csrfmiddlewaretoken': Util.getCookie('csrftoken'),
             },
             datatype: 'text',
             success: function(data, textStatus, XMLHttpRequest) {
-                if (data.result != Util.Response_status.SUCCESSFUL) {
-                    Util.send_notification("出了點錯！");
+                if (data.result != Util.ResponseStatus.SUCCESSFUL) {
+                    Util.sendNotification("出了點錯！");
                 }
                 window.location.reload();
             },
             error: function() {
-                Util.send_notification("出了點錯！");
+                Util.sendNotification("出了點錯！");
             },
             type: 'POST',
-            url: __logout_url,
+            url: LOGOUT_URL_,
         });
     };
 
-    var _close_login = function() {
+    var closeLogin_ = function() {
         $("#login_form input").val('');
         $("#login_form").dialog("close");
         $(".ui-widget-overlay").unbind("click");
     };
 
-    var _login_success = function(data, textStatus, XMLHttpRequest) {
-        _close_login();
+    var loginSuccess_ = function(data, textStatus, XMLHttpRequest) {
+        closeLogin_();
         if (data) {
             switch (data.result) {
-                case Util.Response_status.SUCCESSFUL:
+                case Util.ResponseStatus.SUCCESSFUL:
                     break;
-                case Util.Response_status.AUTH_FAILED:
-                    Util.send_notification(
+                case Util.ResponseStatus.AUTH_FAILED:
+                    Util.sendNotification(
                         "使用者帳號或密碼錯誤。"
                     );
                     break;
-                case Util.Response_status.INACTIVE:
-                    Util.send_notification(
+                case Util.ResponseStatus.INACTIVE:
+                    Util.sendNotification(
                         "這個帳號已被停權，請與客服人員聯絡。"
                     );
                     break;
-                case Util.Response_status.EXPIRED:
-                    Util.send_notification(
+                case Util.ResponseStatus.EXPIRED:
+                    Util.sendNotification(
                         "您未在有效期限內活化您的帳號。\n"
                         +"請註冊新帳號，只要其他人還未使用，您可以用相同的帳號註冊。"
                     );
                     break;
-                case Util.Response_status.UNACTIVATED:
-                    Util.send_notification(
+                case Util.ResponseStatus.UNACTIVATED:
+                    Util.sendNotification(
                         "此帳號尚未被活化。\n"
                         +"請到您註冊時用的信箱收認證信，依照信中指示活化您的帳號。\n"
                         +"帳號活化後客服人員會審核您的身份，請耐心等候，\n"
@@ -76,13 +81,13 @@ Auth = function() {
                     );
                     break;
                 default:
-                    Util.send_notification(
+                    Util.sendNotification(
                         "登入失敗，原因未知。\n"
                         +"請聯絡客服人員。"
                     );
             }
         } else {
-            Util.send_notification(
+            Util.sendNotification(
                 "登入失敗，原因未知。\n"
                 +"請聯絡客服人員。"
             );
@@ -90,71 +95,71 @@ Auth = function() {
         window.location.reload();
     };
 
-    var _login = function() {
+    var login_ = function() {
         $("#login_form").dialog("close");
         $.ajax({
             data: $("#login_form").serialize(),
             datatype: 'text',
-            success: _login_success,
+            success: loginSuccess_,
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 // console.log(XMLHttpRequest.responseText);
                 window.document.write(XMLHttpRequest.responseText);
-                Util.send_notification("出了點錯！");
+                Util.sendNotification("出了點錯！");
                 // window.location.reload();
             },
             type: 'POST',
-            url: __login_url,
+            url: LOGIN_URL_,
         });
     };
 
-    var _offer_sign_up = function() {
-        _close_login();
+    var offerSignUp_ = function() {
+        closeLogin_();
         $("#sign_up_form").dialog("open");
     };
 
-    var _login_dialog = function() {
+    var loginDialog_ = function() {
         $("#login_form").dialog({
             autoOpen: false,
             height: 300,
             width: 450,
             modal: true,
             buttons: {
-                '登入': _login,
+                '登入': login_,
                 '忘記密碼': function() {
-                    Util.send_notification("請聯絡客服人員。");
+                    Util.sendNotification("請聯絡客服人員。");
                 },
-                '註冊': _offer_sign_up,
+                '註冊': offerSignUp_,
             },
         });
     };
 
-    var _sign_up_submit = function() {
+    var signUpSubmit_ = function() {
         $("#sign_up_form .form_field_error").html("");
 
         var omitted = false;
         $("#sign_up_form .required_field").each(function(idx) {
             if ($(this).val().length == 0) {
                 omitted = true;
-                Util.status_error($(this).next("span"), "這一欄是必須的！");
-                Util.form_show_error($(this).parent());
+                Util.statusError($(this).next("span"), "這一欄是必須的！");
+                Util.formShowError($(this).parent());
             }
         });
         if (omitted) return;
 
-        if (!_sign_up_dialog_username(false)) {
-            Util.form_show_error($("#username_signup").parent());
+        if (!signUpDialogUsername_(false)) {
+            Util.formShowError($("#username_signup").parent());
             return;
         }
-        if (!_sign_up_dialog_password()) {
-            Util.form_show_error($("#password_signup").parent());
+        if (!signUpDialogPassword_()) {
+            Util.formShowError($("#password_signup").parent());
             return;
         }
-        if (!_sign_up_dialog_password_confirm()) {
-            Util.form_show_error($("#password_confirm").parent());
+        if (!signUpDialogPasswordConfirm_()) {
+            Util.formShowError($("#password_confirm").parent());
             return;
         }
-        if (!_sign_up_dialog_email(false)) {
-            Util.form_show_error($("#email").parent());
+        if (!signUpDialogEmail_(false)) {
+            Util.formShowError($("#email").parent());
             return;
         }
 
@@ -164,29 +169,29 @@ Auth = function() {
             success: function(data, textStatus, XMLHttpRequest) {
                 if (textStatus != "success") {
                     alert("註冊失敗。請重試，或聯絡客服人員。");
-                } else if (data.result == Util.Response_status.FORM_INVALID) {
+                } else if (data.result == Util.ResponseStatus.FORM_INVALID) {
                     alert("註冊失敗：表單錯誤");
                 } else {
-                    Util.send_notification(
+                    Util.sendNotification(
                         "Thanks for joining Counselsior! "+
                         "Please activate your account with your email "+
                         "within three days."
                     );
                 }
-                _sign_up_close(false);
+                signUpClose_(false);
                 window.location.reload();
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 // console.log(XMLHttpRequest.responseText);
-                Util.send_notification("出了點錯！");
+                Util.sendNotification("出了點錯！");
                 window.location.reload();
             },
             type: 'POST',
-            url: __signup_url,
+            url: SIGNUP_URL_,
         });
     };
 
-    var _sign_up_reset = function() {
+    var signUpReset_ = function() {
         var reset = confirm("確定要清空表單？");
         if (reset) {
             $("#sign_up_form input").val('');
@@ -194,11 +199,11 @@ Auth = function() {
         }
     };
 
-    var _sign_up_close = function(toConfirm) {
-        toConfirm = (typeof toConfirm == "undefined") ? true : toConfirm;
+    var signUpClose_ = function(opt_toConfirm) {
+        opt_toConfirm = (typeof opt_toConfirm == "undefined") ? true : opt_toConfirm;
 
         var close = true;
-        if (toConfirm)
+        if (opt_toConfirm)
             close = confirm("確定要取消註冊程序？");
 
         if (close) {
@@ -209,23 +214,23 @@ Auth = function() {
         else return false;
     };
 
-    var _sign_up_dialog = function() {
+    var signUpDialog_ = function() {
         $("#sign_up_form").dialog({
             autoOpen: false,
             height: 600,
             width: 450,
             modal: true,
-            beforeClose: _sign_up_close,
+            beforeClose: signUpClose_,
             buttons: {
-                '送出': _sign_up_submit,
-                '重填': _sign_up_reset,
+                '送出': signUpSubmit_,
+                '重填': signUpReset_,
             },
         });
 
         $("#sign_up_form .required_field").blur(function() {
             var content = $(this).val();
             if (content.length == 0) {
-                Util.status_error($(this).next("span"), "這一欄是必須的！");
+                Util.statusError($(this).next("span"), "這一欄是必須的！");
             }
         });
 
@@ -236,110 +241,120 @@ Auth = function() {
             }
         });
 
-        $("#username_signup").change(_sign_up_dialog_username);
-        $("#password_signup").change(_sign_up_dialog_password);
-        $("#password_confirm").change(_sign_up_dialog_password_confirm);
-        $("#email").change(_sign_up_dialog_email);
+        $("#username_signup").change(signUpDialogUsername_);
+        $("#password_signup").change(signUpDialogPassword_);
+        $("#password_confirm").change(signUpDialogPasswordConfirm_);
+        $("#email").change(signUpDialogEmail_);
     };
 
-    var _sign_up_dialog_username = function(async) {
-        async = (typeof async == "undefined") ? true : async;
+    var signUpDialogUsername_ = function(opt_async) {
+        opt_async = (typeof opt_async == "undefined") ? true : opt_async;
         var username = $("#username_signup").val();
-        if (Util.length_check("username", username, 4, 30)) {
-            return _sign_up_dialog_existence_check('username', username, "可用", "此帳號已有人使用", async);
+        if (Util.lengthCheck("username", username, 4, 30)) {
+            return signUpDialogExistenceCheck_('username', username, "可用", "此帳號已有人使用", opt_async);
         }
         else return false;
     };
 
-    var _sign_up_dialog_password = function() {
+    var signUpDialogPassword_ = function() {
         var password = $("#password_signup").val();
-        if (Util.length_check("password", password, 8, 128)) {
-            Util.status_OK($("#password_error"), "OK");
+        if (Util.lengthCheck("password", password, 8, 128)) {
+            Util.statusOk($("#password_error"), "OK");
             return true;
         }
         else return false;
     };
 
-    var _sign_up_dialog_password_confirm = function() {
+    var signUpDialogPasswordConfirm_ = function() {
         var password = $("#password_signup").val();
-        var password_confirm = $("#password_confirm").val();
-        if (Util.length_check("password_confirm", password_confirm, 8, 128)) {
-            if (password != password_confirm) {
-                Util.status_error($("#password_confirm_error"), "與密碼不符");
+        var passwordConfirm = $("#password_confirm").val();
+        if (Util.lengthCheck("password_confirm", passwordConfirm, 8, 128)) {
+            if (password != passwordConfirm) {
+                Util.statusError($("#password_confirm_error"), "與密碼不符");
                 return false;
             } else {
-                Util.status_OK($("#password_confirm_error"), "OK");
+                Util.statusOk($("#password_confirm_error"), "OK");
                 return true;
             }
         }
         else return false;
     };
 
-    var _sign_up_dialog_email = function(async) {
-        async = (typeof async == "undefined") ? true : async;
+    var signUpDialogEmail_ = function(opt_async) {
+        opt_async = (typeof opt_async == "undefined") ? true : opt_async;
         var email = $("#email").val();
-        var email_regex = /^[^@]+@[^@]+\.[^@]+$/;
-        if (_sign_up_dialog_regex_check("email", email, email_regex)) {
-            return _sign_up_dialog_existence_check("email", email, "可用", "此信箱已有人使用", async);
+        var emailRegex = /^[^@]+@[^@]+\.[^@]+$/; // TODO
+        if (signUpDialogRegexCheck_("email", email, emailRegex)) {
+            return signUpDialogExistenceCheck_(
+                "email", email, "可用", "此信箱已有人使用", opt_async
+            );
         }
         else return false;
     };
 
-    var _sign_up_dialog_regex_check = function(to_check, content, regex) {
+    var signUpDialogRegexCheck_ = function(toCheck, content, regex) {
         var result = true;
         if (content.match(regex) == null) {
-            Util.status_error($("#"+to_check+"_error"), "無效的"+to_check+"格式");
+            Util.statusError($("#"+toCheck+"_error"), "無效的"+toCheck+"格式");
             result = false;
         }
         return result;
     };
 
-    var _sign_up_dialog_existence_check = function(to_check, content, ack, nak, async) {
+    var signUpDialogExistenceCheck_ = function(
+        toCheck, content, ack, nak, opt_async) {
         var result = false;
-        async = (typeof async == "undefined") ? true : async;
-        var checking_span = $("#"+to_check+"_error");
-        Util.status_loading(checking_span);
+        opt_async = (typeof opt_async == "undefined") ? true : opt_async;
+        var checkingSpan = $("#"+toCheck+"_error");
+        Util.statusLoading(checkingSpan);
         $.ajax({
-            async: async,
+            async: opt_async,
             data: {
-                'to_check': to_check,
+                'to_check': toCheck,
                 'content': content,
-                'csrfmiddlewaretoken': Util.get_cookie('csrftoken'),
+                'csrfmiddlewaretoken': Util.getCookie('csrftoken'),
             },
             datatype: 'text',
             success: function(data, textStatus, XMLHttpRequest) {
                 if (textStatus != "success") {
-                    Util.status_error(checking_span, "出了點錯！");
-                } else if (data.result == Util.Response_status.FAILED) {
-                    Util.status_OK($("#"+to_check+"_error"), ack);
+                    Util.statusError(checkingSpan, "出了點錯！");
+                } else if (data.result == Util.ResponseStatus.FAILED) {
+                    Util.statusOk($("#"+toCheck+"_error"), ack);
                     result = true;
                 } else {
-                    Util.status_error($("#"+to_check+"_error"), nak);
+                    Util.statusError($("#"+toCheck+"_error"), nak);
                 }
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 console.log(XMLHttpRequest.responseText);
-                Util.status_error(checking_span, "出了點錯！");
+                Util.statusError(checkingSpan, "出了點錯！");
                 return false;
             },
             type: 'POST',
-            url: __existence_check_url,
+            url: EXISTENCE_CHECK_URL_,
         });
 
         return result;
     };
 
-    /* interface */
+    /**
+     * interface
+     */
     return {
-        /* properties */
 
-        /* public methods */
+        /**
+         * properties
+         */
+
+        /**
+         * public methods
+         */
         init: function() {
-            _login_dialog();
-            _sign_up_dialog();
-            $("#log_in_button").click(_offer_login);
-            $("#log_out_button").click(_offer_logout);
-            $("#signup_button").click(_offer_sign_up);
+            loginDialog_();
+            signUpDialog_();
+            $("#log_in_button").click(offerLogin_);
+            $("#log_out_button").click(offerLogout_);
+            $("#signup_button").click(offerSignUp_);
 
             $(".dialog").css("display", "block");
         },
