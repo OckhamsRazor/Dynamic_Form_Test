@@ -33,27 +33,22 @@ Posts = function() {
         var content = $("#"+div+" .entry_value");
         var idx = div.match(/new_post_(\d+)/)[1];
         var name = idx+"_content";
-        alert($(this).val());
         switch($(this).val()) {
             case EntryTypeName_.NIL:
-                alert("NIL");
                 content.children().prop("readonly", "readonly");
                 break;
             case EntryTypeName_.INT:
-                alert("INT");
                 content.html("<input type='text' name='"+name+"' />");
                 content.append("<span id='"+name+"_error' class='form_field_error'></span>");
                 // content.change();
                 break;
             case EntryTypeName_.DBL:
-                alert("DBL");
                 content.html("<input type='text' name='"+idx+"_content' />");
                 content.append("<span id='"+name+"_error' class='form_field_error'></span>");
                 // content.change();
                 break;
             case EntryTypeName_.STR:
             default:
-                alert("DEF");
                 content.html("<textarea rows='4' cols='50' name='"+idx+"_content' />");
                 break;
         }
@@ -81,10 +76,6 @@ Posts = function() {
             );
         }
         $("#"+newDivId+" .entry_type"+" select").change(onEntryTypeChange_);
-
-        // $("#"+newDivId+" .entry_value").append(
-            // "<textarea rows='4' cols='50' name='"+idx+"_content' />"
-        // );
 
         // $("#"+newDivId+" .entry_options").html(
             // "<button type='button' class='edit_entry_button'>Edit</button>"
