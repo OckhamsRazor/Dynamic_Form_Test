@@ -1,15 +1,19 @@
 /**
- * ModuleName    [ Admin ]
- * Synopsis      [ Administrator tools ]
- * Author        [ OckhamsRazor (yl871804@gmail.com) ]
-*/
+ * @fileoverview Administrator tools.
+ * @author yl871804@gmail.com (Lang-Chi Yu)
+ */
 
 Admin = function() {
-    /* consts */
-    var __generate_user_url = '/users/generate_user/';
 
-    /* private methods */
-    var _generate_user = function() {
+    /**
+     * consts
+     */
+    var GENERATE_USER_URL_ = '/users/generate_user/';
+
+    /**
+     * private methods
+     */
+    var generateUser_ = function() {
         var people = $("#people").val();
         if (people == '' || parseInt(people) == NaN) {
             alert("Invalid input number of people!");
@@ -20,7 +24,7 @@ Admin = function() {
             data: $("#user_generating_form").serialize(),
             datatype: "text",
             success: function(data, textStatus, XMLHttpRequest) {
-                if (data.result == Util.Response_status.SUCCESSFUL)
+                if (data.result == Util.ResponseStatus.SUCCESSFUL)
                     alert("SUCCESS creating users.");
                 else
                     alert("ERROR creating users.");
@@ -30,17 +34,24 @@ Admin = function() {
                 alert(textStatus+": "+errorThrown);
             },
             type: "POST",
-            url: __generate_user_url,
+            url: GENERATE_USER_URL_,
         });
     };
 
-    /* interface */
+    /**
+     * interface
+     */
     return {
-        /* properties */
 
-        /* public methods */
+        /**
+         * properties
+         */
+
+        /**
+         * public methods
+         */
         init: function() {
-            $("#user_generating_button").click(_generate_user);
+            $("#user_generating_button").click(generateUser_);
         },
     };
 } ();

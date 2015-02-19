@@ -1,62 +1,69 @@
 /**
- * ModuleName    [ Users ]
- * Synopsis      [ For user settings AFTER log-in; used with module Auth ]
- * Author        [ OckhamsRazor (yl871804@gmail.com) ]
-*/
+ * @fileoverview For user settings AFTER log-in; used with module Auth.
+ * @author yl871804@gmail.com (Lang-Chi Yu)
+ */
 
 Users = function() {
-    var _jcrop;
+    var jcrop_;
 
-    /* consts */
-    var __upload_avatar_url = '/users/upload_profile_pic/';
-    var __crop_avatar_url = '/users/crop_profile_pic/';
-    var __change_profile_pic_url = '/users/change_profile_pic';
-    var __delete_profile_pic_url = 'users/delete_profile_pics';
-    var __show_profile_pics_url = '/users/show_profile_pics/';
-    var __change_password_url = '/users/change_password/';
-    var __valid_avatar_image_type = [
+    /**
+     * consts
+     */
+    var UPLOAD_PROFILE_PIC_URL_ = '/users/upload_profile_pic/';
+    var CROP_PROFILE_PIC_URL_ = '/users/crop_profile_pic/';
+    var CHANGE_PROFILE_PIC_URL_ = '/users/change_profile_pic';
+    var DELETE_PROFILE_PIC_URL_ = 'users/delete_profile_pics';
+    var SHOW_PROFILE_PICS_URL_ = '/users/show_profile_pics/';
+    var CHANGE_PASSWORD_URL_ = '/users/change_password/';
+    var VALID_PROFILE_PIC_IMAGE_TYPE_ = [
         "image/jpeg",
         "image/gif",
         "image/png"
     ];
-    var __max_avatar_image_size = 10485760;
-    var __avatar_default_width = 150;
-    var __avatar_resizing_width = 400;
-    var __avatar_resizing_width_min = 30;
-    var __avatar_resizing_dialog_width
-        = __avatar_resizing_width + 20;
+    var MAX_PROFILE_PIC_IMAGE_SIZE_ = 10485760;
+    var PROFILE_PIC_DEFAULT_WIDTH_ = 150;
+    var PROFILE_PIC_RESIZING_WIDTH_ = 400;
+    var PROFILE_PIC_RESIZING_WIDTH_MIN_ = 30;
+    var PROFILE_PIC_RESIZING_DIALOG_WIDTH_
+        = PROFILE_PIC_RESIZING_WIDTH_ + 20;
 
-    /* private methods */
-    var _file_validation = function(id, max_size, types) {
-        max_size = (typeof max_size == "undefined") ? __max_avatar_image_size : max_size;
-        types = (typeof types == "undefined") ? __valid_avatar_image_type : types;
+    /**
+     * private methods
+     */
+    var fileValidation_ = function(id, opt_maxSize, opt_types) {
+        opt_maxSize = (typeof opt_maxSize == "undefined") ?
+                  MAX_PROFILE_PIC_IMAGE_SIZE_ :
+                  opt_max_size;
+        opt_types = (typeof opt_types == "undefined") ?
+                VALID_PROFILE_PIC_IMAGE_TYPE_ :
+                opt_types;
 
         var file = document.getElementById(id).files[0];
         if (!file) {
             alert("未選擇檔案！");
             return;
         }
-        if (file.size > max_size) {
+        if (file.size > opt_maxSize) {
             alert("檔案過大！(限20MB以下)");
             return;
         }
-        if (types.indexOf(file.type) == -1) {
-            alert("大頭貼只能使用: JPG, GIF, 或PNG檔");
+        if (opt_types.indexOf(file.type) == -1) {
+            alert("大頭貼只能使用: JPG, GIF, 或PNG檔"); // TODO: Too specific!
             return;
         }
 
         return file;
     };
 
-    var _avatar_upload = function() {
-        var new_avatar = _file_validation("new_avatar");
-        if (!new_avatar) {
+    var profilePicUpload_ = function() {
+        var newProfilePic = fileValidation_("new_avatar");
+        if (!newProfilePic) {
             return;
         }
 
         var data = new FormData();
-        data.append('csrfmiddlewaretoken', Util.get_cookie('csrftoken'));
-        data.append('profile_pic', new_avatar);
+        data.append('csrfmiddlewaretoken', Util.getCookie('csrftoken'));
+        data.append('profile_pic', newProfilePic);
 
         var xhr = new XMLHttpRequest();
         xhr.file = data;
@@ -73,14 +80,17 @@ Users = function() {
                 switch (this.status) {
                     case 200:
                         data = JSON.parse(this.response);
-                        if (data.result == Util.Response_status.SUCCESSFUL) {
-                            var avatar = $("#user_avatar");
-                            avatar.attr("src", "");
-                            avatar.load(function() {
-                                _crop(data.profile_pic_path);
+                        if (data.result ==
+                            Util.ResponseStatus.SUCCESSFUL) {
+                            var profilePic = $("#user_avatar");
+                            profilePic.attr("src", "");
+                            profilePic.load(function() {
+                                crop_(data.profile_pic_path);
                             });
-                            avatar.attr("src", data.profile_pic_path);
-                        } else if (data.result == Util.Response_status.FAILED)
+                            profilePic.attr(
+                                "src", data.profile_pic_path);
+                        } else if (data.result ==
+                            Util.ResponseStatus.FAILED)
                             alert("上傳失敗！");
                         break;
                     default:
@@ -90,18 +100,18 @@ Users = function() {
                 }
             }
         };
-        xhr.open('POST', __upload_avatar_url, true);
+        xhr.open('POST', UPLOAD_PROFILE_PIC_URL_, true);
         xhr.send(data);
     };
 
-    var _user_avatar_resize_dialog = function() {
+    var userProfilePicResizeDialog_ = function() {
         $("#user_avatar_resize").dialog({
             autoOpen: false,
-            width: __avatar_resizing_dialog_width,
+            width: PROFILE_PIC_RESIZING_DIALOG_WIDTH_,
             modal: true,
-            beforeClose: _user_avatar_resize_close,
+            beforeClose: userProfilePicResizeClose_,
             buttons: {
-                '切圖': _user_avatar_resize_done,
+                '切圖': userProfilePicResizeDone_,
                 '保持原樣': function() {
                     $("#user_avatar_resize").dialog("close");
                 },
@@ -109,59 +119,67 @@ Users = function() {
         });
     };
 
-    var _crop = function(avatar_path) {
-        if (typeof _jcrop != "undefined") {
-            _jcrop.destroy();
+    var crop_ = function(profilePicPath) {
+        if (typeof jcrop_ != "undefined") {
+            jcrop_.destroy();
         }
 
-        var resizing_img = window.document.getElementById("user_avatar_resize_img");
-        $(resizing_img).attr("src", "");
-        $(resizing_img).load(function() {
-            var original_w = resizing_img.width;
-            var original_h = resizing_img.height;
-            if (original_w > original_h) {
-                resizing_img.width = __avatar_resizing_width;
-                resizing_img.height = original_h*__avatar_resizing_width/original_w;
+        var resizingImg =
+            window.document.getElementById("user_avatar_resize_img");
+        $(resizingImg).attr("src", "");
+        $(resizingImg).load(function() {
+            var originalW = resizingImg.width;
+            var originalH = resizingImg.height;
+            if (originalW > originalH) {
+                resizingImg.width = PROFILE_PIC_RESIZING_WIDTH_;
+                resizingImg.height =
+                    originalH*PROFILE_PIC_RESIZING_WIDTH_/originalW;
             }
             else {
-                resizing_img.height = __avatar_resizing_width;
-                resizing_img.width = original_w*__avatar_resizing_width/original_h;
+                resizingImg.height = PROFILE_PIC_RESIZING_WIDTH_;
+                resizingImg.width =
+                    original_w*PROFILE_PIC_RESIZING_WIDTH_/original_h;
             }
 
-            $(resizing_img).Jcrop({
+            $(resizingImg).Jcrop({
                 aspectRatio: 1,
-                minSize: [__avatar_resizing_width_min, __avatar_resizing_width_min],
+                minSize: [PROFILE_PIC_RESIZING_WIDTH_MIN_,
+                    PROFILE_PIC_RESIZING_WIDTH_],
                 setSelect: [
-                    __avatar_resizing_width/2 - __avatar_resizing_width_min/2,
-                    __avatar_resizing_width/2 - __avatar_resizing_width_min/2,
-                    __avatar_resizing_width/2 + __avatar_resizing_width_min/2,
-                    __avatar_resizing_width/2 + __avatar_resizing_width_min/2,
+                    PROFILE_PIC_RESIZING_WIDTH_/2 -
+                        PROFILE_PIC_RESIZING_WIDTH_MIN_/2,
+                    PROFILE_PIC_RESIZING_WIDTH_/2 -
+                        PROFILE_PIC_RESIZING_WIDTH_MIN_/2,
+                    PROFILE_PIC_RESIZING_WIDTH_/2 +
+                        PROFILE_PIC_RESIZING_WIDTH_MIN_/2,
+                    PROFILE_PIC_RESIZING_WIDTH_/2 +
+                        PROFILE_PIC_RESIZING_WIDTH_MIN_/2,
                 ],
             }, function() {
-                _jcrop = this;
+                jcrop_ = this;
             });
 
             $("#user_avatar_resize").dialog("open");
         });
 
-        $(resizing_img).attr("src", avatar_path);
+        $(resizingImg).attr("src", profilePicPath);
     };
 
-    var _user_avatar_resize_done = function() {
-        var img_width = $("#user_avatar_resize_img").css("width");
-        var img_height = $("#user_avatar_resize_img").css("height");
-        var original_img_info = {
-            "csrfmiddlewaretoken": Util.get_cookie('csrftoken'),
-            "img_width": parseInt(img_width),
-            "img_height": parseInt(img_height),
+    var userProfilePicResizeDone_ = function() {
+        var imgWidth = $("#user_avatar_resize_img").css("width");
+        var imgHeight = $("#user_avatar_resize_img").css("height");
+        var originalImgInfo = {
+            "csrfmiddlewaretoken": Util.getCookie('csrftoken'),
+            "img_width": parseInt(imgWidth),
+            "img_height": parseInt(imgHeight),
         };
-        var crop_info = _jcrop.tellSelect();
+        var cropInfo = jcrop_.tellSelect();
 
         $.ajax({
-            data: $.extend({}, original_img_info, crop_info),
+            data: $.extend({}, originalImgInfo, cropInfo),
             datatype: 'text',
             success: function(data, textStatus, XMLHttpRequest) {
-                if (data.result == Util.Response_status.FAILED) {
+                if (data.result == Util.ResponseStatus.FAILED) {
                     alert("切圖失敗");
                 }
                 window.location.reload();
@@ -170,15 +188,17 @@ Users = function() {
                 window.location.reload();
             },
             type: 'POST',
-            url: __crop_avatar_url,
+            url: CROP_PROFILE_PIC_URL_,
         });
     };
 
-    var _user_avatar_resize_close = function(toConfirm) {
-        toConfirm = (typeof toConfirm == "undefined") ? true : toConfirm;
+    var userProfilePicResizeClose_ = function(opt_toConfirm) {
+        opt_toConfirm = (typeof opt_toConfirm == "undefined") ?
+                        true :
+                        opt_toConfirm;
 
         var close = false;
-        if (toConfirm)
+        if (opt_toConfirm)
             close = confirm("確定不切圖？");
 
         if (close)
@@ -187,19 +207,19 @@ Users = function() {
         return close;
     };
 
-    var _offer_change_password = function() {
+    var offerChangePassword_ = function() {
         $("#change_password_form").dialog("open");
     };
 
-    var _change_password_dialog = function() {
+    var changePasswordDialog_ = function() {
         $("#change_password_form").dialog({
             autoOpen: false,
             height: 400,
             width: 500,
             modal: true,
-            beforeClose: _change_password_close,
+            beforeClose: changePasswordClose_,
             buttons: {
-                '送出': _change_password_submit,
+                '送出': changePasswordSubmit_,
                 '重填': function() {
                     if (confirm("清空表單？")) {
                         $("#change_password_form input").val('');
@@ -212,7 +232,8 @@ Users = function() {
         $("#change_password_form .required_field").blur(function() {
             var content = $(this).val();
             if (content.length == 0) {
-                Util.status_error($(this).next("span"), "這一欄是必須的！");
+                Util.statusError(
+                    $(this).next("span"), "這一欄是必須的！");
             }
         });
 
@@ -223,53 +244,57 @@ Users = function() {
             }
         });
 
-        $("#password_new").change(_change_password_dialog_password_new);
-        $("#password_new_confirm").change(_change_password_dialog_password_new_confirm);
+        $("#password_new").change(changePasswordDialogPasswordNew_);
+        $("#password_new_confirm").
+            change(changePasswordDialogPasswordNewConfirm_);
     };
 
-    var _change_password_dialog_password_new = function() {
+    var changePasswordDialogPasswordNew_ = function() {
         var password = $("#password_new").val();
-        if (Util.length_check("password_new", password, 8, 128)) {
-            Util.status_OK($("#password_new_error"), "OK");
+        if (Util.lengthCheck("password_new", password, 8, 128)) {
+            Util.statusOk($("#password_new_error"), "OK");
             return true;
         }
         else return false;
     };
 
-    var _change_password_dialog_password_new_confirm = function() {
+    var changePasswordDialogPasswordNewConfirm_ = function() {
         var password = $("#password_new").val();
-        var password_confirm = $("#password_new_confirm").val();
-        if (Util.length_check("password_new_confirm", password_confirm, 8, 128)) {
-            if (password != password_confirm) {
-                Util.status_error($("#password_new_confirm_error"), "與密碼不符！");
+        var passwordConfirm = $("#password_new_confirm").val();
+        if (Util.lengthCheck(
+                "password_new_confirm", passwordConfirm, 8, 128)) {
+            if (password != passwordConfirm) {
+                Util.statusError(
+                    $("#password_new_confirm_error"), "與密碼不符！");
                 return false;
             } else {
-                Util.status_OK($("#password_new_confirm_error"), "OK");
+                Util.statusOk($("#password_new_confirm_error"), "OK");
                 return true;
             }
         }
         else return false;
     };
 
-    var _change_password_submit = function() {
+    var changePasswordSubmit_ = function() {
         $("#change_password_form .form_field_error").html("");
 
         var omitted = false;
         $("#change_password_form .required_field").each(function(idx) {
             if ($(this).val().length == 0) {
                 omitted = true;
-                Util.status_error($(this).next("span"), "這一欄是必須的！");
-                Util.form_show_error($(this).parent());
+                Util.statusError(
+                    $(this).next("span"), "這一欄是必須的！");
+                Util.formShowError($(this).parent());
             }
         });
         if (omitted) return;
 
-        if (!_change_password_dialog_password_new()) {
-            Util.form_show_error($("#password_new").parent());
+        if (!changePasswordDialogPasswordNew_()) {
+            Util.formShowError($("#password_new").parent());
             return;
         }
-        if (!_change_password_dialog_password_new_confirm()) {
-            Util.form_show_error($("#password_new_confirm").parent());
+        if (!changePasswordDialogPasswordNewConfirm_()) {
+            Util.formShowError($("#password_new_confirm").parent());
             return;
         }
 
@@ -279,33 +304,38 @@ Users = function() {
             success: function(data, textStatus, XMLHttpRequest) {
                 if (textStatus != "success") {
                     alert("更改密碼失敗：原因未知");
-                } else if (data.result == Util.Response_status.SUCCESSFUL) {
+                } else if (data.result ==
+                    Util.ResponseStatus.SUCCESSFUL) {
                     alert("更改密碼成功。");
-                } else if (data.result == Util.Response_status.FORM_INVALID) {
+                } else if (data.result ==
+                    Util.ResponseStatus.FORM_INVALID) {
                     alert("更改密碼失敗：表單錯誤");
-                } else if (data.result == Util.Response_status.AUTH_FAILED) {
+                } else if (data.result ==
+                    Util.ResponseStatus.AUTH_FAILED) {
                     alert("更改密碼失敗：舊密碼錯誤");
                 } else {
                     alert("更改密碼失敗：原因未知");
                 }
-                _change_password_close(false);
+                changePasswordClose_(false);
                 window.location.reload();
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 console.log(XMLHttpRequest.responseText);
                 alert("FAILED");
-                _change_password_close(false);
+                changePasswordClose_(false);
             },
             type: 'POST',
-            url: __change_password_url,
+            url: CHANGE_PASSWORD_URL_,
         });
     };
 
-    var _change_password_close = function(toConfirm) {
-        toConfirm = (typeof toConfirm == "undefined") ? true : toConfirm;
+    var changePasswordClose_ = function(opt_toConfirm) {
+        opt_toConfirm = (typeof opt_toConfirm == "undefined") ?
+                        true :
+                        opt_toConfirm;
 
         var close = false;
-        if (toConfirm)
+        if (opt_toConfirm)
             close = confirm("取消更改密碼？");
 
         if (close) {
@@ -316,47 +346,54 @@ Users = function() {
         else return false;
     };
 
-    var _offer_admin_interface = function() {
+    var offerAdminInterface_ = function() {
         window.location.href = "/users/settings/admin";
     };
 
-    var _offer_show_profile_pics = function() {
-        window.location.href = __show_profile_pics_url;
+    var offerShowProfilePics_ = function() {
+        window.location.href = SHOW_PROFILE_PICS_URL_;
     };
 
-    var _offer_change_profile_pic = function() {
+    var offerChangeProfilePic_ = function() {
         // alert("change!");
     };
 
-    var _offer_delete_profile_pics = function() {
+    var offerDeleteProfilePics_ = function() {
         // alert("delete!");
     };
 
-    var _button_settings = function() {
-        $("#change_password_button").click(_offer_change_password);
-        $("#new_avatar_button").click(_avatar_upload);
-        $("#admin_button").click(_offer_admin_interface);
-        $("#show_profile_pics_button").click(_offer_show_profile_pics);
-        $("#change_profile_pic_button").click(_offer_change_profile_pic);
-        $("#delete_profile_pics_button").click(_offer_delete_profile_pics);
+    var buttonSettings_ = function() {
+        $("#change_password_button").click(offerChangePassword_);
+        $("#new_avatar_button").click(profilePicUpload_);
+        $("#admin_button").click(offerAdminInterface_);
+        $("#show_profile_pics_button").click(offerShowProfilePics_);
+        $("#change_profile_pic_button").click(offerChangeProfilePic_);
+        $("#delete_profile_pics_button").click(offerDeleteProfilePics_);
     };
 
-    var _href_settings = function() {
+    var hrefSettings_ = function() {
         // $("#profile_pic_candidates img").click(function() {
         //     alert($(this).attr("src"));
         // });
     };
 
-    /* interface */
+    /**
+     * interface
+     */
     return {
-        /* properties */
 
-        /* public methods */
+        /**
+         * properties
+         */
+
+        /**
+         * public methods
+         */
         init: function() {
-            _change_password_dialog();
-            _user_avatar_resize_dialog();
-            _button_settings();
-            _href_settings();
+            changePasswordDialog_();
+            userProfilePicResizeDialog_();
+            buttonSettings_();
+            hrefSettings_();
         },
     };
 } ();

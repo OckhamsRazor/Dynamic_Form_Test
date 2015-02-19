@@ -1,126 +1,135 @@
 /**
- * ModuleName    [ Posts ]
- * Synopsis      [ Wiki Post-related issues ]
- * Author        [ OckhamsRazor (yl871804@gmail.com) ]
-*/
+ * @fileoverview Wiki Post-related issues.
+ * @author yl871804@gmail.com (Lang-Chi Yu)
+ */
 
 Posts = function() {
 
     /**
      * variables
-    */
-
-    var _num_entries = 1;
+     */
+    var numEntries_ = 1;
 
     /**
      * consts
-    */
-
-    var __create_post_url = "/wiki/create_post/";
-    var __entry_types = {
-        "nil": "--",
-        "int": "Integer",
-        "dbl": "Real Number",
-        "str": "Text",
-        "mail": "Email Address",
-        "url": "Link",
-        "gps": "Position",
-        "datetime": "Date/Time"
-    };
+     */
+    var CREATE_POST_URL = "/wiki/create_post/";
+    var EntryTypeName_ = Object.freeze({
+        NIL: "--",
+        INT: "Integer",
+        DBL: "Real Number",
+        STR: "Text",
+        MAIL: "Email Address",
+        URL: "Link",
+        GPS: "Position",
+        DATETIME: "Date/Time"
+    });
 
     /**
      * class methods
-    */
-
-    var _on_entry_type_change = function() {
+     */
+    var onEntryTypeChange_ = function() {
         var div = $(this).parent().parent().parent().attr("id");
         var content = $("#"+div+" .entry_value");
         var idx = div.match(/new_post_(\d+)/)[1];
+        var name = idx+"_content";
+        alert($(this).val());
         switch($(this).val()) {
-            case "nil":
+            case EntryTypeName_.NIL:
+                alert("NIL");
                 content.children().prop("readonly", "readonly");
                 break;
-            case "str":
+            case EntryTypeName_.INT:
+                alert("INT");
+                content.html("<input type='text' name='"+name+"' />");
+                content.append("<span id='"+name+"_error' class='form_field_error'></span>");
+                // content.change();
+                break;
+            case EntryTypeName_.DBL:
+                alert("DBL");
+                content.html("<input type='text' name='"+idx+"_content' />");
+                content.append("<span id='"+name+"_error' class='form_field_error'></span>");
+                // content.change();
+                break;
+            case EntryTypeName_.STR:
             default:
+                alert("DEF");
                 content.html("<textarea rows='4' cols='50' name='"+idx+"_content' />");
                 break;
         }
     };
 
-    var _add_entry = function(e) {
-        _num_entries += 1;
-        var idx = _num_entries.toString();
-        var new_div_id = "new_post_"+idx;
+    var addEntry_ = function(e) {
+        numEntries_ += 1;
+        var idx = numEntries_.toString();
+        var newDivId = "new_post_"+idx;
 
         $("#new_post_form_body").append(
-            "<div id='"+new_div_id+"'></div>"
+            "<div id='"+newDivId+"'></div>"
         );
-        $("#"+new_div_id).append(
+        $("#"+newDivId).append(
             "<div class='entry_header'><div class='entry_name'></div><div class='entry_type'></div></div><div class='entry_value'></div><div class='entry_options'></div>"
         );
 
-        $("#"+new_div_id+" .entry_name").html(
+        $("#"+newDivId+" .entry_name").html(
             "<input type='text' name='"+idx+"_name' class='text' />"
         );
-        $("#"+new_div_id+" .entry_type").html("<select name='"+idx+"_type', function></select>");
-        for (type in __entry_types) {
-            $("#"+new_div_id+" .entry_type"+" select").append(
-                "<option value='"+type+"'>"+__entry_types[type]+"</option>"
+        $("#"+newDivId+" .entry_type").html("<select name='"+idx+"_type', function></select>");
+        for (type in EntryTypeName_) {
+            $("#"+newDivId+" .entry_type"+" select").append(
+                "<option value='"+EntryTypeName_[type]+"'>"+EntryTypeName_[type]+"</option>"
             );
         }
-        $("#"+new_div_id+" .entry_type"+" select").change(_on_entry_type_change);
+        $("#"+newDivId+" .entry_type"+" select").change(onEntryTypeChange_);
 
-        // $("#"+new_div_id+" .entry_value").append(
+        // $("#"+newDivId+" .entry_value").append(
             // "<textarea rows='4' cols='50' name='"+idx+"_content' />"
         // );
 
-        // $("#"+new_div_id+" .entry_options").html(
+        // $("#"+newDivId+" .entry_options").html(
             // "<button type='button' class='edit_entry_button'>Edit</button>"
         // );
-        $("#"+new_div_id+" .entry_options").append(
+        $("#"+newDivId+" .entry_options").append(
             "<button type='button' class='delete_entry_button'>Delete</button>"
         );
-        // $("#"+new_div_id+" .edit_entry_button").click(Util.button_default(_edit_entry));
+        // $("#"+newDivId+" .edit_entry_button").click(Util.button_default(_edit_entry));
 
-        $("#"+new_div_id+" .delete_entry_button").click(Util.button_default(_delete_entry));
+        $("#"+newDivId+" .delete_entry_button").click(Util.buttonDefault(deleteEntry_));
     };
 
-    var _edit_entry = function() {
+    var editEntry_ = function() {
 
     };
 
-    var _delete_entry = function(button) {
+    var deleteEntry_ = function(button) {
         $("#"+button.parent().parent().attr("id")).remove();
     };
 
-    var _offer_template_setting = function() {
+    var offerTemplateSetting_ = function() {
 
     };
 
-    var _button_settings = function() {
-        $("#template_setting_button").click(Util.button_default(_offer_template_setting));
-        $("#add_entry_button").click(Util.button_default(_add_entry));
+    var buttonSettings_ = function() {
+        $("#template_setting_button").click(Util.buttonDefault(offerTemplateSetting_));
+        $("#add_entry_button").click(Util.buttonDefault(addEntry_));
     };
 
     /**
      * interface
-    */
-
+     */
     return {
 
         /**
          * properties
-        */
-
-        num_entries: _num_entries,
+         */
+        numEntries: numEntries_,
 
         /**
          * public methods
-        */
-
+         */
         init: function() {
-            _button_settings();
-            _num_entries = $("#new_post_form_body").length;
+            buttonSettings_();
+            numEntries_ = $("#new_post_form_body").length;
         },
     };
 } ();

@@ -13,7 +13,7 @@ from utils.views import handle_file_upload
 def main(request):
     user = request.user
     if user.is_authenticated():
-        posts = Post.objects.filter(author__id=user.id)
+        posts = Post.objects.filter(author_id=user.id)
     else:
         posts = Post.objects.all()
     context = {"posts": posts}

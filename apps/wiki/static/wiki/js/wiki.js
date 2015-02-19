@@ -1,32 +1,32 @@
 /**
- * ModuleName    [ Wiki ]
- * Synopsis      [ Utilities for Wiki ]
- * Author        [ OckhamsRazor (yl871804@gmail.com) ]
-*/
+ * @fileoverview Utilities for Wiki.
+ * @author yl871804@gmail.com (Lang-Chi Yu)
+ */
 
 Wiki = function() {
+
     /**
      * consts
     */
-    __wiki_main_url = "/wiki/main/";
-    __new_post_url = "/wiki/new_post/";
+    var WIKI_MAIN_URL_ = "/wiki/main/";
+    var NEW_POST_URL_ = "/wiki/new_post/";
 
     /**
      * private methods
     */
-
-    var _offer_new_post = function() {
-        window.location.href = __new_post_url;
+    var offerNewPost_ = function() {
+        window.location.href = NEW_POST_URL_;
     };
 
-    var _button_settings = function() {
-        $("#new_post_button").click(Util.button_default(_offer_new_post));
+    var buttonSettings_ = function() {
+        $("#new_post_button").click(Util.buttonDefault(offerNewPost_));
     };
 
     /**
      * interface
     */
     return {
+
         /**
          * properties
         */
@@ -35,7 +35,7 @@ Wiki = function() {
          * public methods
         */
         init: function() {
-            _button_settings();
+            buttonSettings_();
         },
     };
 } ();
