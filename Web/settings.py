@@ -108,6 +108,7 @@ STATICFILES_DIRS = (
     BASE_DIR + '/apps/users/static/',
     BASE_DIR + '/apps/wiki/static/',
     BASE_DIR + '/utils/static/',
+    BASE_DIR + '/vendor/',
 )
 
 TEMPLATE_DIRS = (
