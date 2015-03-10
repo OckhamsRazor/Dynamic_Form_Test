@@ -43,6 +43,46 @@
                 </div>
             </div>
         </div>
+
+        <div class="ui first coupled modal save_template_as_modal">
+            <i class="close icon"></i>
+            <div class="header">
+                Template Content
+            </div>
+            <div class="content">
+            </div>
+            <div class="actions">
+                <div class="ui negative button">
+                    Discard
+                </div>
+                <div class="ui primary button">
+                    Proceed
+                    <i class="ui right chevron icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="ui second coupled modal save_template_as_modal">
+            <i class="close icon"></i>
+            <div class="header">
+                Save Template As...
+            </div>
+            <div class="content">
+                The quick brown fox jumps over the lazy dog.
+            </div>
+            <div class="actions">
+                <div class="ui negative button">
+                    Discard
+                </div>
+                <div class="ui secondary button">
+                    Prev
+                    <i class="ui left chevron icon"></i>
+                </div>
+                <div class="ui positive button">
+                    Submit
+                    <i class="ui checkmark icon"></i>
+                </div>
+            </div>
+        </div>
     {% else %}
         <div class="content_block">尚未登入!</div>
     {% endif %}
@@ -52,7 +92,7 @@
 {% block footer_javascript_section %}
     <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
     <script src="{% static 'wiki/js/posts.js' %}"></script>
-    <script src="{% static 'semantic/semantic.min.js' %}"></script>>
+    <script src="{% static 'semantic/semantic.min.js' %}"></script>
 
     <script>
         $(document).ready(function() {
