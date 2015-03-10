@@ -111,6 +111,26 @@ Util = function() {
     }
 
     /**
+     * @serializeObject Transform form data to hash
+     * @author http://stackoverflow.com/a/1186309 (Tobias Cohen)
+     */
+    var serializeObject_ = function(rawData) {
+        var o = {};
+        var a = rawData.serializeArray();
+        $.each(a, function() {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+
+    /**
      * interface
      */
     return {
@@ -134,6 +154,7 @@ Util = function() {
         statusLoading: statusLoading_,
         statusError: statusError_,
         buttonDefault: buttonDefault_,
+        serializeObject: serializeObject_,
         init: function() {
             $(".dialog").css("display", "inline");
         },

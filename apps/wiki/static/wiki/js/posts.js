@@ -10,6 +10,7 @@ Posts = function() {
      */
     var numEntries_;
     var postFormValidationRules_;
+    var postFormValidationSettings_;
 
     /**
      * consts
@@ -29,6 +30,14 @@ Posts = function() {
     /**
      * class methods
      */
+
+    var setPostForm_ = function() {
+        $("#new_post_form").form(
+            postFormValidationRules_,
+            postFormValidationSettings_
+        );
+    };
+
     var onEntryTypeChange_ = function(val) {
         var idx = $(this).children("input").attr("name")
                           .match(/(\d+)_type/)[1];
@@ -54,14 +63,7 @@ Posts = function() {
                         }
                     ]
                 };
-                $("#new_post_form").form(
-                    postFormValidationRules_, {
-                    on: 'blur',
-                    inline: 'true',
-                    rules: {
-                        number: function(e) { return !isNaN(e); }
-                    }
-                });
+                setPostForm_();
                 break;
             case EntryTypeName_.MAIL:
                 content.html(
@@ -82,11 +84,7 @@ Posts = function() {
                         }
                     ]
                 };
-                $("#new_post_form").form(
-                    postFormValidationRules_, {
-                    on: 'blur',
-                    inline: 'true',
-                });
+                setPostForm_();
                 break;
             case EntryTypeName_.URL:
                 content.html(
@@ -101,20 +99,9 @@ Posts = function() {
                             type: 'empty',
                             prompt: 'Please enter the content.'
                         },
-                        // {
-                        //     type: 'url',
-                        //     prompt: 'Invalid URL!'
-                        // }
                     ]
                 };
-                $("#new_post_form").form(
-                    postFormValidationRules_, {
-                    on: 'blur',
-                    inline: 'true',
-                    // rules: {
-                    //     number: function(e) { return !isNaN(e); }
-                    // }
-                });
+                setPostForm_();
                 break;
             case EntryTypeName_.STR:
             default:
@@ -189,11 +176,7 @@ Posts = function() {
                 }
             ]
         };
-        $("#new_post_form").form(
-            postFormValidationRules_, {
-            on: 'change',
-            inline: 'true'
-        });
+        setPostForm_();
     };
 
     var editEntry_ = function() {
@@ -212,14 +195,38 @@ Posts = function() {
         });
     };
 
+    /* UPDATE, DELETE */
+    var templateSetting_ = function() {
+
+    };
+
     var offerTemplateSetting_ = function() {
 
+    };
+
+    /* READ */
+    var changeTemplate_ = function() {
+
+    };
+
+    /* CREATE */
+    var saveTemplateAs_ = function() {
+
+    };
+
+    var offerSaveTemplateAs_ = function() {
+        var formData = Util.serializeObject($("#new_post_form"));
+        $(".save_template_as_modal.first")
+            .modal("show")
+        ;
     };
 
     var buttonSettings_ = function() {
         $("#template_setting_button")
             .click(Util.buttonDefault(offerTemplateSetting_));
         $("#add_entry_button").click(Util.buttonDefault(addEntry_));
+        $("#save_template_as_button")
+            .click(Util.buttonDefault(offerSaveTemplateAs_));
         // $("#new_post_submit_button").click(function() {
         //     console.log($("#new_post_form").serialize());
         // });
@@ -252,11 +259,31 @@ Posts = function() {
                     ]
                 }
             };
-            $("#new_post_form").form(
-                postFormValidationRules_, {
+            postFormValidationSettings_ = {
                 on: 'blur',
                 inline: 'true'
-            });
+            };
+
+            $.fn.form.settings.rules["number"] = function(e) {
+                return !isNaN(e);
+            };
+            setPostForm_();
+
+            $(".save_template_as_modal.coupled.modal")
+                .modal({
+                    allowMultiple: false
+                })
+            ;
+            $(".save_template_as_modal.second")
+                .modal(
+                    "attach events",
+                    ".save_template_as_modal.first .primary"
+                )
+                .modal("setting", "transition", "horizontal flip")
+            ;
+            $(".save_template_as_modal.first")
+                .modal("setting", "transition", "horizontal flip")
+            ;
         },
     };
 } ();
