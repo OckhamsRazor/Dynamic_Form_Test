@@ -16,6 +16,7 @@ Posts = function() {
      * consts
      */
     var CREATE_POST_URL = "/wiki/create_post/";
+    var SAVE_TEMPLATE_AS_URL = "/wiki/save_template_as/";
     var EntryTypeName_ = Object.freeze({
         CHOICE: "Choice",
         DBL: "Real Number",
@@ -216,6 +217,20 @@ Posts = function() {
 
     var offerSaveTemplateAs_ = function() {
         var formData = Util.serializeObject($("#new_post_form"));
+        /*
+            3/18 TODO
+                Finish Template CRUD
+        */
+
+        console.log(formData);
+
+        for (key in formData) {
+            if (re = key.match(/^(\d+)_name$/)) {
+                var idx = re[1];
+
+            }
+        }
+
         $(".save_template_as_modal.first")
             .modal("show")
         ;
@@ -230,6 +245,33 @@ Posts = function() {
         // $("#new_post_submit_button").click(function() {
         //     console.log($("#new_post_form").serialize());
         // });
+    };
+
+    var semanticUiInit_ = function() {
+        $.fn.form.settings.rules["number"] = function(e) {
+            return !isNaN(e);
+        };
+        setPostForm_();
+
+        $(".save_template_as_modal.coupled.modal")
+            .modal({
+                allowMultiple: false
+            })
+        ;
+        $(".save_template_as_modal.second")
+            .modal(
+                "attach events",
+                ".save_template_as_modal.first .actions .primary"
+            )
+            .modal("setting", "transition", "horizontal flip")
+        ;
+        $(".save_template_as_modal.first")
+            .modal("setting", "transition", "horizontal flip")
+        ;
+
+        $(".save_template_as_modal .checkbox")
+            .checkbox()
+        ;
     };
 
     /**
@@ -263,27 +305,7 @@ Posts = function() {
                 on: 'blur',
                 inline: 'true'
             };
-
-            $.fn.form.settings.rules["number"] = function(e) {
-                return !isNaN(e);
-            };
-            setPostForm_();
-
-            $(".save_template_as_modal.coupled.modal")
-                .modal({
-                    allowMultiple: false
-                })
-            ;
-            $(".save_template_as_modal.second")
-                .modal(
-                    "attach events",
-                    ".save_template_as_modal.first .primary"
-                )
-                .modal("setting", "transition", "horizontal flip")
-            ;
-            $(".save_template_as_modal.first")
-                .modal("setting", "transition", "horizontal flip")
-            ;
+            semanticUiInit_();
         },
     };
 } ();

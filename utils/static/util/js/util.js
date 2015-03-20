@@ -111,7 +111,7 @@ Util = function() {
     }
 
     /**
-     * @serializeObject Transform form data to hash
+     * @serializeObject_ Transform form data to hash
      * @author http://stackoverflow.com/a/1186309 (Tobias Cohen)
      */
     var serializeObject_ = function(rawData) {
