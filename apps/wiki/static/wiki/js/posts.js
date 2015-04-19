@@ -146,6 +146,25 @@ Posts = function() {
             })
             .modal("setting", "transition", "horizontal flip")
         ;
+
+        $("#template_title_form")
+            .form(
+                {
+                    title: {
+                        identifier: "title",
+                        rules: [
+                            {
+                                type: "empty",
+                                prompt: "Please enter the template name."
+                            }
+                        ]
+                    }
+                },
+                {
+                    inline: true
+                }
+            )
+        ;
     };
 
     var onEntryEditorTypeChange_ = function(newType) {
@@ -196,6 +215,15 @@ Posts = function() {
         });
     };
 
+    var saveTemplateAsModalTitleRemoveError_ = function() {
+        $("#template_title_form .prompt").each(function() {
+            $(this).remove();
+        });
+        $("#template_title_form .error").each(function() {
+            $(this).removeClass("error");
+        });
+    };
+
     /**
      * interface
      */
@@ -220,6 +248,8 @@ Posts = function() {
         },
         onEntryEditorTypeChange: onEntryEditorTypeChange_,
         saveTemplateAsModalEditRemoveError:
-            saveTemplateAsModalEditRemoveError_
+            saveTemplateAsModalEditRemoveError_,
+        saveTemplateAsModalTitleRemoveError:
+            saveTemplateAsModalTitleRemoveError_
     };
 } ();
