@@ -2,8 +2,10 @@
 {% load static %}
 
 {% block head_css_site %}
+    <link href="{% static 'util/css/main.css' %}" rel="stylesheet">
+    <link href="{% static 'semantic/semantic.min.css' %}" rel="stylesheet">
     <link href="{% static 'util/css/Redmond/jquery-ui.css' %}" rel="stylesheet">
-    <link href="{% static 'users/css/auth.css' %}" rel="stylesheet">
+    <!-- <link href="{% static 'users/css/auth.css' %}" rel="stylesheet"> -->
 {% endblock head_css_site %}
 
 {% block body_main %}
@@ -54,8 +56,19 @@
         {% else %}
             <button id="log_in_button">Log In</button>
         {% endif %}
-        <br />
-        <br />
+        <div id="notification_modal" class="ui modal">
+            <i class="close icon"></i>
+            <div class="header">
+            </div>
+            <div class="content">
+            </div>
+            <div class="actions">
+                <div class="ui positive button">
+                    OK
+                    <i class="ui checkmark icon"></i>
+                </div>
+            </div>
+        </div>
     {% endblock body_main_login %}
     {% block body_main_1 %}{% endblock body_main_1 %}
 {% endblock body_main %}

@@ -2,10 +2,7 @@
 {% load static %}
 
 {% block head_css_section %}
-    <link href="{% static 'util/css/main.css' %}" rel="stylesheet">
     <link href="{% static 'wiki/css/wiki.css' %}" rel="stylesheet">
-
-    <link href="{% static 'semantic/semantic.min.css' %}" rel="stylesheet">
 {% endblock head_css_section %}
 
 {% block title %} Create your new page {% endblock title %}
@@ -21,63 +18,85 @@
             </div>
         </div>
         <div class="content_block">
+            {% csrf_token %}
             <form id="new_post_form" class="ui form">
-                {% csrf_token %}
-                <div class="field">
-                    <label class="required_label">Title</label>
-                    <div class="ui input">
-                        <input type="text" name="title"
-                        placeholder="Title">
-                    </div>
-                </div>
             </form>
-            <div class="ui dividing header"></div>
-
-            <div id="new_post_form_footer">
-                <div id="add_entry_button" class="ui button">
-                    +
-                </div>
-                <div id="new_post_submit_button"
-                     class="ui primary button">
-                    Submit
-                </div>
-            </div>
         </div>
 
-        <div class="ui first coupled modal save_template_as_modal">
+        <div class="ui main united modal save_template_as_modal">
             <i class="close icon"></i>
             <div class="header">
                 Template Content
             </div>
-            <div class="content">
+            <div class="content" id="save_template_as_modal_1_content">
             </div>
             <div class="actions">
                 <div class="ui negative button">
                     Discard
                 </div>
                 <div class="ui primary button">
-                    Proceed
+                    Next
                     <i class="ui right chevron icon"></i>
                 </div>
             </div>
         </div>
-        <div class="ui second coupled modal save_template_as_modal">
+        <div class="ui edit united modal save_template_as_modal">
             <i class="close icon"></i>
             <div class="header">
-                Save Template As...
+                Entry Editor
             </div>
             <div class="content">
-                The quick brown fox jumps over the lazy dog.
+                <form id="entry_editor" class="ui form">
+                    <div>
+                        <div class="field">
+                            <label>Name</label>
+                            <input type="text" name="name"
+                                id="entry_editor_name"/>
+                        </div>
+                        <div class="field">
+                            <label>Type</label>
+                            <div class='ui selection dropdown'>
+                                <input type='hidden'
+                                    name="type" id="entry_editor_type"/>
+                                <div class="default text"></div>
+                                <i class='dropdown icon'></i>
+                                <div class='menu'
+                                    id="entry_editor_type_menu"></div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Default Value</label>
+                            <textarea name="value" id="entry_editor_value">
+                            </textarea>
+                        </div>
+                        <div class="field">
+                            <label>Description</label>
+                            <textarea name="description"
+                                id="entry_editor_description">
+                            </textarea>
+                        </div>
+                    </div>
+                </form>
             </div>
             <div class="actions">
                 <div class="ui negative button">
                     Discard
                 </div>
-                <div class="ui secondary button">
-                    Prev
-                    <i class="ui left chevron icon"></i>
-                </div>
                 <div class="ui positive button">
+                    Confirm
+                    <i class="ui checkmark icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="ui confirm united modal save_template_as_modal">
+            <i class="close icon"></i>
+            <div class="content">
+            </div>
+            <div class="actions">
+                <div class="ui negative button">
+                    Prev
+                </div>
+                <div class="ui primary button">
                     Submit
                     <i class="ui checkmark icon"></i>
                 </div>
@@ -93,6 +112,9 @@
     <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
     <script src="{% static 'wiki/js/posts.js' %}"></script>
     <script src="{% static 'semantic/semantic.min.js' %}"></script>
+    <script src="{% static 'react/react.js' %}"></script>
+    <script src="{% static 'react/JSXTransformer.js' %}"></script>
+    <script type="text/jsx" src="{% static 'wiki/js/posts.jsx' %}"></script>
 
     <script>
         $(document).ready(function() {
