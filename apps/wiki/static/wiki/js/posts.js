@@ -8,9 +8,12 @@ Posts = function() {
     /**
      * variables
      */
-    var numEntries_;
-    var postFormValidationRules_;
-    var postFormValidationSettings_;
+    var postFormValidationRules_ = {};
+    var postFormValidationSettings_ = {};
+    var entryEditorValidationRules_ = {};
+    var entryEditorValidationSettings_ = {};
+
+    var newPostEntries_ = [];
 
     /**
      * consts
@@ -20,7 +23,7 @@ Posts = function() {
     var EntryTypeName_ = Object.freeze({
         CHOICE: "Choice",
         DBL: "Real Number",
-        STR: "Text", // no need to validate
+        STR: "Text",
         MAIL: "Email Address",
         URL: "Link",
         GPS: "Position",
@@ -32,168 +35,15 @@ Posts = function() {
      * class methods
      */
 
-    var setPostForm_ = function() {
-        $("#new_post_form").form(
-            postFormValidationRules_,
-            postFormValidationSettings_
-        );
-    };
-
-    var onEntryTypeChange_ = function(val) {
-        var idx = $(this).children("input").attr("name")
-                          .match(/(\d+)_type/)[1];
-        var content = $("#new_post_"+idx+" .entry_content");
-        content.attr("class", "field entry_content");
-        switch(val) {
-            case EntryTypeName_.DBL:
-                content.html(
-                    "<div class='ui input'>"+
-                        "<input type='text' name='"+idx+"_content' />"+
-                    "</div>"
-                );
-                postFormValidationRules_[idx+"_content"] = {
-                    identifier: idx+"_content",
-                    rules: [
-                        {
-                            type: 'empty',
-                            prompt: 'Please enter the content.'
-                        },
-                        {
-                            type: 'number',
-                            prompt: 'Invalid Number!'
-                        }
-                    ]
-                };
-                setPostForm_();
-                break;
-            case EntryTypeName_.MAIL:
-                content.html(
-                    "<div class='ui input'>"+
-                        "<input type='text' name='"+idx+"_content' />"+
-                    "</div>"
-                );
-                postFormValidationRules_[idx+"_content"] = {
-                    identifier: idx+"_content",
-                    rules: [
-                        {
-                            type: 'empty',
-                            prompt: 'Please enter the content.'
-                        },
-                        {
-                            type: 'email',
-                            prompt: 'Invalid Email Address!'
-                        }
-                    ]
-                };
-                setPostForm_();
-                break;
-            case EntryTypeName_.URL:
-                content.html(
-                    "<div class='ui input'>"+
-                        "<input type='text' name='"+idx+"_content' />"+
-                    "</div>"
-                );
-                postFormValidationRules_[idx+"_content"] = {
-                    identifier: idx+"_content",
-                    rules: [
-                        {
-                            type: 'empty',
-                            prompt: 'Please enter the content.'
-                        },
-                    ]
-                };
-                setPostForm_();
-                break;
-            case EntryTypeName_.STR:
-            default:
-                content.html("<textarea name='"+idx+"_content' />");
-                break;
-        }
-    };
-
-    var addEntry_ = function() {
-        numEntries_ += 1;
-        var idx = numEntries_.toString();
-        var newDivId = "new_post_"+idx;
-
-        $("#new_post_form").append(
-            "<div id='"+newDivId+"' class='three fields'></div>"
-        );
-        $("#"+newDivId).append(
-            "<div class='ui dividing header'></div>"+
-            "<div class='field entry_header'>"+
-                "<div class='field'>"+
-                    "<div class='ui input'>"+
-                        "<input type='text' placeholder='Name'"+
-                        " name='"+idx+"_name' />"+
-                    "</div>"+
-                "</div>"+
-                "<div class='field'>"+
-                    "<div class='ui selection dropdown entry_type'>"+
-                        "<input type='hidden' name='"+idx+"_type' />"+
-                        "<div class='default text'>Type</div>"+
-                        "<i class='dropdown icon'></i>"+
-                        "<div class='menu'></div>"+
-                    "</div>"+
-                "</div>"+
-            "</div>"
-        );
-        for (type in EntryTypeName_) {
-            $("#"+newDivId+" .menu").append(
-                "<div class='item' data-value='"+EntryTypeName_[type]+
-                "'>"+EntryTypeName_[type]+"</div>"
-            );
-        }
-        $("#"+newDivId+" .entry_type").dropdown({
-            onChange: onEntryTypeChange_
-        });
-
-        $("#"+newDivId).append(
-            "<div class='field entry_content'></div>"+
-            "<div class='field entry_options'>"+
-                "<div class='ui negative button delete_entry_button'>"+
-                    "Delete"+
-                "</div>"+
-            "</div>"
-        );
-        $("#"+newDivId+" .delete_entry_button")
-            .click(Util.buttonDefault(deleteEntry_));
-
-        postFormValidationRules_[idx+"_name"] = {
-            identifier: idx+"_name",
-            rules: [
-                {
-                    type: 'empty',
-                    prompt: 'Please enter the entry name.'
-                }
-            ]
-        };
-        postFormValidationRules_[idx+"_type"] = {
-            identifier: idx+"_type",
-            rules: [
-                {
-                    type: 'empty',
-                    prompt: 'Please choose the data type.'
-                }
-            ]
-        };
-        setPostForm_();
-    };
-
     var editEntry_ = function() {
 
     };
 
-    var deleteEntry_ = function(button) {
-        $("#"+button.parent().parent().attr("id")).remove();
-        numEntries_ -= 1;
-    };
-
     var submit_ = function() {
         var data = $("#new_post_form").serialize();
-        $.ajax({
+        // $.ajax({
 
-        });
+        // });
     };
 
     /* UPDATE, DELETE */
@@ -216,20 +66,10 @@ Posts = function() {
     };
 
     var offerSaveTemplateAs_ = function() {
-        var formData = Util.serializeObject($("#new_post_form"));
         /*
             3/18 TODO
                 Finish Template CRUD
         */
-
-        console.log(formData);
-
-        for (key in formData) {
-            if (re = key.match(/^(\d+)_name$/)) {
-                var idx = re[1];
-
-            }
-        }
 
         $(".save_template_as_modal.first")
             .modal("show")
@@ -238,40 +78,122 @@ Posts = function() {
 
     var buttonSettings_ = function() {
         $("#template_setting_button")
-            .click(Util.buttonDefault(offerTemplateSetting_));
-        $("#add_entry_button").click(Util.buttonDefault(addEntry_));
-        $("#save_template_as_button")
-            .click(Util.buttonDefault(offerSaveTemplateAs_));
-        // $("#new_post_submit_button").click(function() {
-        //     console.log($("#new_post_form").serialize());
-        // });
+            .click(Util.buttonDefault(offerTemplateSetting_))
+        ;
     };
 
     var semanticUiInit_ = function() {
         $.fn.form.settings.rules["number"] = function(e) {
             return !isNaN(e);
         };
-        setPostForm_();
 
-        $(".save_template_as_modal.coupled.modal")
-            .modal({
-                allowMultiple: false
+        for (var typeEnum in EntryTypeName_) {
+            var type = EntryTypeName_[typeEnum];
+            $("#entry_editor_type_menu")
+                .append(
+                    "<div class='item' data-value='"+type+"'>"
+                        +type+
+                    "</div>"
+                )
+            ;
+        }
+        entryEditorValidationRules_["entry_editor_name"] = {
+            identifier: "entry_editor_name",
+            rules: [
+                {
+                    type: 'empty',
+                    prompt: 'Please enter the entry name.'
+                },
+            ]
+        };
+        entryEditorValidationRules_["entry_editor_type"] = {
+            identifier: "entry_editor_type",
+            rules: [
+                {
+                    type: 'empty',
+                    prompt: 'Please choose the entry type.'
+                },
+            ]
+        };
+        entryEditorValidationSettings_ = {
+            // on: 'blur',
+            inline: 'true',
+            onSuccess: function() {
+                return true;
+            },
+            onFailure: function() {
+                return false;
+            }
+        };
+        $("#entry_editor")
+            .form(
+                entryEditorValidationRules_,
+                entryEditorValidationSettings_
+            )
+        ;
+        $("#entry_editor .dropdown")
+            .dropdown({
+                onChange: onEntryEditorTypeChange_
             })
         ;
-        $(".save_template_as_modal.second")
-            .modal(
-                "attach events",
-                ".save_template_as_modal.first .actions .primary"
-            )
-            .modal("setting", "transition", "horizontal flip")
-        ;
-        $(".save_template_as_modal.first")
-            .modal("setting", "transition", "horizontal flip")
-        ;
 
-        $(".save_template_as_modal .checkbox")
-            .checkbox()
+        $(".save_template_as_modal.main")
+            .modal({
+                closable: false,
+                selector: {
+                    approve: ".actions .primary"
+                }
+            })
+            .modal("setting", "transition", "horizontal flip")
         ;
+    };
+
+    var onEntryEditorTypeChange_ = function(newType) {
+        saveTemplateAsModalEditRemoveError_();
+        switch(newType) {
+            case EntryTypeName_.DBL:
+                entryEditorValidationRules_["entry_editor_value"] = {
+                    identifier: "entry_editor_value",
+                    rules: [
+                        {
+                           type: 'number',
+                           prompt: "Invalid Number!"
+                        }
+                    ]
+                };
+                break;
+            case EntryTypeName_.MAIL:
+                entryEditorValidationRules_["entry_editor_value"] =
+                {
+                    identifier: "entry_editor_value",
+                    rules: [
+                        {
+                            type: 'email',
+                            prompt: "Invalid Email Address!"
+                        }
+                    ]
+                };
+                break;
+            case EntryTypeName_.URL:
+            default:
+                entryEditorValidationRules_["entry_editor_value"] = undefined;
+                break;
+        }
+        $("#entry_editor")
+            .form(
+                entryEditorValidationRules_,
+                entryEditorValidationSettings_
+            )
+        ;
+    };
+
+    var saveTemplateAsModalEditRemoveError_ = function() {
+        $("#entry_editor .prompt").each(function() {
+            $(this).remove();
+        });
+        $("#entry_editor .error").each(function() {
+            $(this).removeClass("error");
+        });
     };
 
     /**
@@ -282,30 +204,22 @@ Posts = function() {
         /**
          * properties
          */
-        getNumEntries: function() { return numEntries_; },
-        getPostFormValidationRules: function() { return postFormValidationRules_; },
+        getEntryTypeName: function() { return EntryTypeName_; },
+        postFormValidationRules: postFormValidationRules_,
+        postFormValidationSettings: postFormValidationSettings_,
+        entryEditorValidationRules: entryEditorValidationRules_,
+        entryEditorValidationSettings: entryEditorValidationSettings_,
+        newPostEntries: newPostEntries_,
+
         /**
          * public methods
          */
         init: function() {
             buttonSettings_();
-            numEntries_ = $("#new_post_form_body").length;
-            postFormValidationRules_ = {
-                title: {
-                    identifier: "title",
-                    rules: [
-                        {
-                            type: 'empty',
-                            prompt: 'Please enter the title.'
-                        }
-                    ]
-                }
-            };
-            postFormValidationSettings_ = {
-                on: 'blur',
-                inline: 'true'
-            };
             semanticUiInit_();
         },
+        onEntryEditorTypeChange: onEntryEditorTypeChange_,
+        saveTemplateAsModalEditRemoveError:
+            saveTemplateAsModalEditRemoveError_
     };
 } ();

@@ -50,8 +50,22 @@ Util = function() {
         return cookieValue;
     }
 
-    var sendNotification_ = function(msg) {
-        alert(msg);
+    var sendNotification_ = function(header, msg) {
+        $("#notification_modal .header")
+            .html(header)
+        ;
+        $("#notification_modal .content")
+            .html(msg)
+        ;
+        $("#notification_modal")
+            .modal("show")
+        ;
+    };
+
+    var isNonEmptyStr_ = function(str) {
+        return (typeof str == "string")
+            && (str.trim().length != 0)
+        ;
     };
 
     var lengthCheck_ = function(
@@ -148,6 +162,7 @@ Util = function() {
          */
         getCookie: getCookie_,
         sendNotification: sendNotification_,
+        isNonEmptyStr: isNonEmptyStr_,
         lengthCheck: lengthCheck_,
         formShowError: formShowError_,
         statusOk: statusOk_,
