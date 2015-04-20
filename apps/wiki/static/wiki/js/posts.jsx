@@ -587,9 +587,11 @@ var NewPostForm = React.createClass({
     submitTemplate: function(saveTemplateAsModalMain) {
         Posts.saveTemplateAsModalTitleRemoveError();
 
-        var title = $("#template_title_form").find("input").val();
+        var title = $("#template_title_value").val();
+        var description = $("#template_description").val();
         var data = {
-            title: title
+            title: title,
+            description: description
         };
         for (var entryIdx in saveTemplateAsModalMain.state.entries) {
             var entry = saveTemplateAsModalMain.state.entries[entryIdx];
@@ -600,10 +602,23 @@ var NewPostForm = React.createClass({
                 data[entryIdx] = entry;
             }
         }
-        // console.log(data);
-        /*
-            AJAX !
-        */
+
+        /* check if template with same title exists  */
+        $.ajax({
+            data: {
+                "csrfmiddlewaretoken": Util.getCookie("csrftoken"),
+                "new_title": title
+            },
+            datatype: "text",
+            success: function(data, textStatus, XMLHttpRequest) {
+                // console.log(data.title_exists);
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                console.log(XMLHttpRequest.responseText);
+            },
+            type: "POST",
+            url: Posts.getUrl("TEMPLATE_TITLE_EXISTS_URL")
+        });
     },
     render: function() {
         var NewEntries = this.state.entries.map(function(entry, idx) {

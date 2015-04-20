@@ -18,8 +18,11 @@ Posts = function() {
     /**
      * consts
      */
-    var CREATE_POST_URL = "/wiki/create_post/";
-    var SAVE_TEMPLATE_AS_URL = "/wiki/save_template_as/";
+    var PostUrls_ = Object.freeze({
+        CREATE_POST_URL: "/wiki/create_post/",
+        SAVE_TEMPLATE_AS_URL: "/wiki/save_template_as/",
+        TEMPLATE_TITLE_EXISTS_URL: "/wiki/template_title_exists/",
+    });
     var EntryTypeName_ = Object.freeze({
         CHOICE: "Choice",
         DBL: "Real Number",
@@ -151,7 +154,7 @@ Posts = function() {
             .form(
                 {
                     title: {
-                        identifier: "title",
+                        identifier: "template_title_value",
                         rules: [
                             {
                                 type: "empty",
@@ -233,6 +236,7 @@ Posts = function() {
          * properties
          */
         getEntryTypeName: function() { return EntryTypeName_; },
+        getUrl: function(name) { return PostUrls_[name]; },
         postFormValidationRules: postFormValidationRules_,
         postFormValidationSettings: postFormValidationSettings_,
         entryEditorValidationRules: entryEditorValidationRules_,

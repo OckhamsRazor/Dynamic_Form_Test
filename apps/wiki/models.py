@@ -9,7 +9,7 @@ from Web import settings
 
 class Template(models.Model):
     """docstring for Template"""
-    name = models.CharField(max_length="30")
+    title = models.CharField(max_length="30")
     entries = MyListField(MyEmbeddedModelField("Entry"))
     description = models.TextField(max_length="300")
 
@@ -72,6 +72,7 @@ class Entry(PostElement):
         default=STR,
         choices=ENTRY_TYPE_CHOICES,
     )
+    description = models.TextField(max_length="300")
 
 
 class Post(PostElement):
