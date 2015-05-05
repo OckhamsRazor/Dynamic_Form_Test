@@ -20,7 +20,8 @@ Posts = function() {
      */
     var PostUrls_ = Object.freeze({
         CREATE_POST_URL: "/wiki/create_post/",
-        SAVE_TEMPLATE_AS_URL: "/wiki/save_template_as/",
+        CREATE_TEMPLATE_URL: "/wiki/create_template/",
+        UPDATE_TEMPLATE_URL: "/wiki/update_template/",
         TEMPLATE_TITLE_EXISTS_URL: "/wiki/template_title_exists/",
     });
     var EntryTypeName_ = Object.freeze({
@@ -32,6 +33,16 @@ Posts = function() {
         GPS: "Position",
         DATETIME: "Date/Time",
         COLOR: "Color",
+    });
+    var EntryTypeNameToEnum_ = Object.freeze({
+        "Choice": 0,
+        "Real Number": 10,
+        "Text": 20,
+        "Email Address": 21,
+        "Link": 22,
+        "Position": 30,
+        "Date/Time": 40,
+        "Color": 1
     });
 
     /**
@@ -64,24 +75,118 @@ Posts = function() {
     };
 
     /* CREATE */
-    var saveTemplateAs_ = function() {
-
+    var saveTemplateAs_ = function(title, data) {
+        $.ajax({
+            data: {
+                "csrfmiddlewaretoken": Util.getCookie("csrftoken"),
+                "new_title": title
+            },
+            datatype: "text",
+            success: function(ajaxData, textStatus, httpRequest) {
+                if (ajaxData.title_exists) {
+                    Util.sendConfirm(
+                        "Title exists",
+                        "Template with the title \""+title+"\" exists. "
+                            +"Overwrite it?",
+                        function() {
+                            data["csrfmiddlewaretoken"]
+                                = Util.getCookie("csrftoken");
+                            $.ajax({
+                                data: data,
+                                datatype: "text",
+                                success: function(d, status, req) {
+                                    if (d.result
+                                        == Util.ResponseStatus.SUCCESSFUL) {
+                                        Util.sendNotification(
+                                            "Success",
+                                            "Template saved.",
+                                            false,
+                                            function() {
+                                                window.location.reload();
+                                            }
+                                        )
+                                    } else {
+                                        Util.sendNotification(
+                                            "Failed",
+                                            "Something went wrong; your "+
+                                            "template has not been saved.",
+                                            false,
+                                            function() {
+                                                window.location.reload();
+                                            }
+                                        )
+                                    }
+                                },
+                                error: function(req, status, err) {
+                                    console.log(req.responseText);
+                                },
+                                type: "POST",
+                                url: Posts.getUrl("UPDATE_TEMPLATE_URL")
+                            });
+                                }
+                            );
+                } else {
+                    data["csrfmiddlewaretoken"] = Util.getCookie("csrftoken");
+                    $.ajax({
+                        data: data,
+                        datatype: "text",
+                        success: function(d, status, req) {
+                            if (d.result
+                                == Util.ResponseStatus.SUCCESSFUL) {
+                                Util.sendNotification(
+                                    "Success",
+                                    "Template saved.",
+                                    false,
+                                    function() {
+                                        window.location.reload();
+                                    }
+                                )
+                            } else {
+                                Util.sendNotification(
+                                    "Failed",
+                                    "Something went wrong; your template "
+                                        +"has not been saved.",
+                                    false,
+                                    function() {
+                                        window.location.reload();
+                                    }
+                                )
+                            }
+                        },
+                        error: function(req, status, err) {
+                            console.log(req.responseText);
+                        },
+                        type: "POST",
+                        url: PostUrls_["CREATE_TEMPLATE_URL"]
+                    });
+                }
+            },
+            error: function(httpRequest, textStatus, errorThrown) {
+                console.log(httpRequest.responseText);
+            },
+            type: "POST",
+            url: PostUrls_["TEMPLATE_TITLE_EXISTS_URL"]
+        });
     };
 
     var offerSaveTemplateAs_ = function() {
-        /*
-            3/18 TODO
-                Finish Template CRUD
-        */
-
         $(".save_template_as_modal.first")
             .modal("show")
         ;
     };
 
+    var offerChangeTemplate_ = function() {
+        // $("#confirm_modal")
+        //     .modal("show")
+        // ;
+    };
+
     var buttonSettings_ = function() {
         $("#template_setting_button")
             .click(Util.buttonDefault(offerTemplateSetting_))
+        ;
+        $("#change_template_button")
+            .click(Util.buttonDefault(offerChangeTemplate_))
         ;
     };
 
@@ -139,15 +244,15 @@ Posts = function() {
                 onChange: onEntryEditorTypeChange_
             })
         ;
-
         $(".save_template_as_modal.main")
             .modal({
+                // allowMultiple: true,
                 closable: false,
                 selector: {
                     approve: ".actions .primary"
                 }
             })
-            .modal("setting", "transition", "horizontal flip")
+            // .modal("setting", "transition", "scale")
         ;
 
         $("#template_title_form")
@@ -171,7 +276,14 @@ Posts = function() {
     };
 
     var onEntryEditorTypeChange_ = function(newType) {
-        saveTemplateAsModalEditRemoveError_();
+        // saveTemplateAsModalEditRemoveError_();
+        $("#entry_editor .selection .prompt").each(function() {
+            $(this).remove();
+        });
+        $("#entry_editor .selection .error").each(function() {
+            $(this).removeClass("error");
+        });
+
         switch(newType) {
             case EntryTypeName_.DBL:
                 entryEditorValidationRules_["entry_editor_value"] = {
@@ -236,6 +348,7 @@ Posts = function() {
          * properties
          */
         getEntryTypeName: function() { return EntryTypeName_; },
+        getEntryTypeNameToEnum: function() { return EntryTypeNameToEnum_; },
         getUrl: function(name) { return PostUrls_[name]; },
         postFormValidationRules: postFormValidationRules_,
         postFormValidationSettings: postFormValidationSettings_,
@@ -254,6 +367,7 @@ Posts = function() {
         saveTemplateAsModalEditRemoveError:
             saveTemplateAsModalEditRemoveError_,
         saveTemplateAsModalTitleRemoveError:
-            saveTemplateAsModalTitleRemoveError_
+            saveTemplateAsModalTitleRemoveError_,
+        saveTemplateAs: saveTemplateAs_
     };
 } ();

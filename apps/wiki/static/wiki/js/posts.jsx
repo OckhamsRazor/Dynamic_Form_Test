@@ -557,23 +557,25 @@ var NewPostForm = React.createClass({
                                             this.submitTemplate(
                                                 saveTemplateAsModalMain
                                             );
+                                            return false;
                                         }.bind(this),
                                         onDeny: function() {
                                             Posts.saveTemplateAsModalTitleRemoveError();
                                             $(".save_template_as_modal.main")
-                                                .modal("show")
+                                               .modal("show")
                                             ;
                                         }
                                     })
-                                    .modal(
-                                        "setting", "transition",
-                                        "horizontal flip"
-                                    )
+                                    // .modal(
+                                    //     "setting", "transition",
+                                    //     "scale"
+                                    // )
                                     .modal("show")
                                 ;
-                            }.bind(this)
+                                return false;
+                            }.bind(this),
                         })
-                        .modal("setting", "transition", "horizontal flip")
+                        // .modal("setting", "transition", "scale")
                         .modal("show")
                     ;
                 } else {
@@ -591,7 +593,11 @@ var NewPostForm = React.createClass({
         var description = $("#template_description").val();
         var data = {
             title: title,
-            description: description
+            description: description,
+            names: [],
+            types: [],
+            values: [],
+            entry_descriptions: []
         };
         for (var entryIdx in saveTemplateAsModalMain.state.entries) {
             var entry = saveTemplateAsModalMain.state.entries[entryIdx];
@@ -599,26 +605,15 @@ var NewPostForm = React.createClass({
                 if (typeof entry.value == "undefined") {
                     entry.value = "";
                 }
-                data[entryIdx] = entry;
+                nameToEnum = Posts.getEntryTypeNameToEnum();
+                data["names"].push(entry.name);
+                data["types"].push(nameToEnum[entry.type]);
+                data["values"].push(entry.value);
+                data["entry_descriptions"].push(entry.description);
             }
         }
 
-        /* check if template with same title exists  */
-        $.ajax({
-            data: {
-                "csrfmiddlewaretoken": Util.getCookie("csrftoken"),
-                "new_title": title
-            },
-            datatype: "text",
-            success: function(data, textStatus, XMLHttpRequest) {
-                // console.log(data.title_exists);
-            },
-            error: function(XMLHttpRequest, textStatus, errorThrown) {
-                console.log(XMLHttpRequest.responseText);
-            },
-            type: "POST",
-            url: Posts.getUrl("TEMPLATE_TITLE_EXISTS_URL")
-        });
+        Posts.saveTemplateAs(title, data);
     },
     render: function() {
         var NewEntries = this.state.entries.map(function(entry, idx) {

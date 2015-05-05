@@ -7,6 +7,7 @@ from . import views
 urlpatterns = patterns('',
     url(r'^$', RedirectView.as_view(url='main/')),
     url(r'^main/$', views.main, name='wiki_main'),
+    url(r'^template/$', views.view_templates, name='templates'),
     url(r'^new_post/$', views.new_post, name='new_post'),
     url(r'^create_post/$', views.create_post, name='create_post'),
 
