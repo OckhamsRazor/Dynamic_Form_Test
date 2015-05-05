@@ -1,0 +1,43 @@
+{% extends "login.html" %}
+{% load static %}
+
+{% block head_css_section %}
+    <!-- <link href="{% static 'wiki/css/wiki.css' %}" rel="stylesheet"> -->
+{% endblock head_css_section %}
+
+{% block title %} Template {% endblock title %}
+
+{% block body_main_1 %}
+  <div id="option_bar" class="content_block">
+    {% if user.is_authenticated %}
+      <button id="new_post_button">New Template</button>
+    {% else %}
+      尚未登入!
+    {% endif %}
+  </div>
+
+  <!-- #list_all_page for testing -->
+  <div id="list_all_templates" class="content_block">
+    {% if templates %}
+      <ul>
+        {% for template in templates %}
+          <li><a href="#">{{ template.title }}</a></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      There are currently no templates -- create one today!
+    {% endif %}
+  </div>
+
+{% endblock body_main_1 %}
+
+{% block footer_javascript_section %}
+    <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
+    <!-- <script src="{% static 'wiki/js/posts.js' %}"></script> -->
+    <!-- <script type="text/jsx" src="{% static 'wiki/js/posts.jsx' %}"></script> -->
+
+    <script>
+        $(document).ready(function() {
+        });
+    </script>
+{% endblock footer_javascript_section %}

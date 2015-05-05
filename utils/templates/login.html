@@ -56,7 +56,8 @@
         {% else %}
             <button id="log_in_button">Log In</button>
         {% endif %}
-        <div id="notification_modal" class="ui modal">
+
+        <div id="notification_modal" class="small ui modal">
             <i class="close icon"></i>
             <div class="header">
             </div>
@@ -69,6 +70,25 @@
                 </div>
             </div>
         </div>
+        <div id="confirm_modal" class="small ui modal">
+            <!-- <i class="close icon"></i> -->
+            <div class="header">
+                Confirm
+            </div>
+            <div class="content">
+                The quick brown...
+            </div>
+            <div class="actions">
+                <div class="ui negative button">
+                    <i class="remove icon"></i>
+                    No
+                </div>
+                <div class="ui positive button">
+                    <i class="checkmark icon"></i>
+                    Yes
+                </div>
+            </div>
+        </div>
     {% endblock body_main_login %}
     {% block body_main_1 %}{% endblock body_main_1 %}
 {% endblock body_main %}
@@ -77,6 +97,9 @@
     <script src="{% static 'util/js/jquery-ui-1.10.4.custom.js' %}"></script>
     <script src="{% static 'util/js/util.js' %}"></script>
     <script src="{% static 'users/js/auth.js' %}"></script>
+    <script src="{% static 'semantic/semantic.min.js' %}"></script>
+    <script src="{% static 'react/react.js' %}"></script>
+    <script src="{% static 'react/JSXTransformer.js' %}"></script>
 
     <script>
         $(document).ready(function() {

@@ -7,13 +7,6 @@ from utils.models import MyListField, MyEmbeddedModelField, IP_log
 from Web import settings
 
 
-class Template(models.Model):
-    """docstring for Template"""
-    name = models.CharField(max_length="30")
-    entries = MyListField(MyEmbeddedModelField("Entry"))
-    description = models.TextField(max_length="300")
-
-
 class Page(models.Model):
     """
     Wiki page with certain topic (e.g. Cell Phone)
@@ -26,39 +19,49 @@ class PostElement(models.Model):
     """docstring for PostElement"""
     author = models.ForeignKey(settings.AUTH_USER_MODEL)
     credit = models.FloatField(default=0.0)
-    date_published_and_source_ip = MyEmbeddedModelField('IP_log')
+    date_published_and_source_ip = \
+        MyEmbeddedModelField('IP_log', null=True) # TODO: ip is non-null!!
     comments = MyListField(MyEmbeddedModelField('Comment'))
 
     class Meta:
         abstract = True
 
 
+class Template(PostElement):
+    """docstring for Template"""
+    title = models.CharField(max_length="30")
+    entries = MyListField(MyEmbeddedModelField("Entry"))
+    description = models.TextField(max_length="300")
+
+
 class Entry(PostElement):
     """docstring for Entry"""
-    INT = 0
-    DOUBLE = 1
-    STR = 10
-    EMAIL = 11
-    URL = 12
-    GPS = 20
-    TIME = 30
-    USER = 40
-    POST = 50
-    COMMENT = 51
-    THREAD = 52
-    TEMPLATE = 59
+    CHOICE = 0
+    COLOR = 1
+    DBL = 10
+    STR = 20
+    EMAIL = 21
+    URL = 22
+    GPS = 30
+    TIME = 40
+    USER = 50
+    POST = 60
+    COMMENT = 61
+    THREAD = 62
+    TEMPLATE = 69
     ENTRY_TYPES = [
-        INT, DOUBLE, STR, EMAIL, URL, GPS, TIME,
+        CHOICE, COLOR, DBL, STR, EMAIL, URL, GPS, TIME,
         USER, POST, COMMENT, THREAD, TEMPLATE,
     ]
     ENTRY_TYPE_CHOICES = (
-        (INT, "Integer"),
-        (DOUBLE, "Double"),
-        (STR, "String"),
-        (EMAIL, "Email"),
-        (URL, "URL"),
-        (GPS, "GPS_Coordinate"),
-        (TIME, "DateTime"),
+        (CHOICE, "Choice"),
+        (COLOR, "Color"),
+        (DBL, "Real Number"),
+        (STR, "Text"),
+        (EMAIL, "Email Address"),
+        (URL, "Link"),
+        (GPS, "Position"),
+        (TIME, "Date/Time"),
         (USER, "User"),
         (POST, "Post"),
         (COMMENT, "Comment"),
@@ -72,6 +75,7 @@ class Entry(PostElement):
         default=STR,
         choices=ENTRY_TYPE_CHOICES,
     )
+    description = models.TextField(max_length="300", default="")
 
 
 class Post(PostElement):

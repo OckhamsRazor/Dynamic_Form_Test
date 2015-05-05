@@ -50,7 +50,7 @@ Util = function() {
         return cookieValue;
     }
 
-    var sendNotification_ = function(header, msg) {
+    var sendNotification_ = function(header, msg, allowMultiple, onHidden) {
         $("#notification_modal .header")
             .html(header)
         ;
@@ -58,6 +58,28 @@ Util = function() {
             .html(msg)
         ;
         $("#notification_modal")
+            .modal({
+                allowMultiple: allowMultiple,
+                onHidden: onHidden
+            })
+            .modal("show")
+        ;
+    };
+
+    var sendConfirm_ = function(header, msg, onApprove, onDeny) {
+        $("#confirm_modal .header")
+            .html(header)
+        ;
+        $("#confirm_modal .content")
+            .html(msg)
+        ;
+        $("#confirm_modal")
+            .modal({
+                allowMultiple: true,
+                closable: false,
+                onApprove: onApprove,
+                onDeny: onDeny
+            })
             .modal("show")
         ;
     };
@@ -162,6 +184,7 @@ Util = function() {
          */
         getCookie: getCookie_,
         sendNotification: sendNotification_,
+        sendConfirm: sendConfirm_,
         isNonEmptyStr: isNonEmptyStr_,
         lengthCheck: lengthCheck_,
         formShowError: formShowError_,

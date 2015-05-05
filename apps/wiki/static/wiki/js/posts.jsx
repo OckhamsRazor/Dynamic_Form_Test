@@ -536,7 +536,6 @@ var NewPostForm = React.createClass({
                             "save_template_as_modal_1_content"
                         )
                     );
-                    // console.log(ret);
                     $(".save_template_as_modal.main")
                         .modal({
                             closable: false,
@@ -544,10 +543,39 @@ var NewPostForm = React.createClass({
                                 approve: ".actions .primary"
                             },
                             onApprove: function() {
-                                // console.log(ret.state.entries);
-                            }
+                                $(".save_template_as_modal.template_title")
+                                    .modal({
+                                        closable: false,
+                                        selector: {
+                                            approve: ".actions .primary"
+                                        },
+                                        onApprove: function() {
+                                            if (!$("#template_title_form")
+                                                    .form("validate form"))
+                                                return false;
+
+                                            this.submitTemplate(
+                                                saveTemplateAsModalMain
+                                            );
+                                            return false;
+                                        }.bind(this),
+                                        onDeny: function() {
+                                            Posts.saveTemplateAsModalTitleRemoveError();
+                                            $(".save_template_as_modal.main")
+                                               .modal("show")
+                                            ;
+                                        }
+                                    })
+                                    // .modal(
+                                    //     "setting", "transition",
+                                    //     "scale"
+                                    // )
+                                    .modal("show")
+                                ;
+                                return false;
+                            }.bind(this),
                         })
-                        .modal("setting", "transition", "horizontal flip")
+                        // .modal("setting", "transition", "scale")
                         .modal("show")
                     ;
                 } else {
@@ -557,6 +585,35 @@ var NewPostForm = React.createClass({
                 }
             }.bind(this)))
         ;
+    },
+    submitTemplate: function(saveTemplateAsModalMain) {
+        Posts.saveTemplateAsModalTitleRemoveError();
+
+        var title = $("#template_title_value").val();
+        var description = $("#template_description").val();
+        var data = {
+            title: title,
+            description: description,
+            names: [],
+            types: [],
+            values: [],
+            entry_descriptions: []
+        };
+        for (var entryIdx in saveTemplateAsModalMain.state.entries) {
+            var entry = saveTemplateAsModalMain.state.entries[entryIdx];
+            if (entry.isActive) {
+                if (typeof entry.value == "undefined") {
+                    entry.value = "";
+                }
+                nameToEnum = Posts.getEntryTypeNameToEnum();
+                data["names"].push(entry.name);
+                data["types"].push(nameToEnum[entry.type]);
+                data["values"].push(entry.value);
+                data["entry_descriptions"].push(entry.description);
+            }
+        }
+
+        Posts.saveTemplateAs(title, data);
     },
     render: function() {
         var NewEntries = this.state.entries.map(function(entry, idx) {
