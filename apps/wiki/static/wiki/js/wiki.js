@@ -8,15 +8,14 @@ Wiki = function() {
     /**
      * consts
     */
-    var WIKI_MAIN_URL_ = "/wiki/main/";
-    var NEW_POST_URL_ = "/wiki/new_post/";
+    var WikiUrls_ = Object.freeze({
+        WIKI_MAIN_URL: "/wiki/main/",
+        NEW_POST_URL: "/wiki/new_post/"
+    });
 
     /**
      * private methods
     */
-    var offerNewPost_ = function() {
-        window.location.href = NEW_POST_URL_;
-    };
 
     var buttonSettings_ = function() {
         $("#new_post_button").click(Util.buttonDefault(offerNewPost_));
@@ -30,6 +29,7 @@ Wiki = function() {
         /**
          * properties
         */
+        getUrl: function(name) { return WikiUrls_[name] },
 
         /**
          * public methods

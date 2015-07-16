@@ -32,12 +32,18 @@ Auth = function() {
             datatype: 'text',
             success: function(data, textStatus, XMLHttpRequest) {
                 if (data.result != Util.ResponseStatus.SUCCESSFUL) {
-                    Util.sendNotification('出了點錯！');
+                    Util.sendNotification(
+                        'ERROR',
+                        '出了點錯！'
+                    );
                 }
                 window.location.reload();
             },
             error: function() {
-                Util.sendNotification('出了點錯！');
+                Util.sendNotification(
+                    'ERROR',
+                    '出了點錯！'
+                );
             },
             type: 'POST',
             url: LOGOUT_URL_,
@@ -58,22 +64,26 @@ Auth = function() {
                     break;
                 case Util.ResponseStatus.AUTH_FAILED:
                     Util.sendNotification(
+                        'ERROR',
                         '使用者帳號或密碼錯誤。'
                     );
                     break;
                 case Util.ResponseStatus.INACTIVE:
                     Util.sendNotification(
+                        'ERROR',
                         '這個帳號已被停權，請與客服人員聯絡。'
                     );
                     break;
                 case Util.ResponseStatus.EXPIRED:
                     Util.sendNotification(
+                        'ERROR',
                         '您未在有效期限內活化您的帳號。\n'
                         +'請註冊新帳號，只要其他人還未使用，您可以用相同的帳號註冊。'
                     );
                     break;
                 case Util.ResponseStatus.UNACTIVATED:
                     Util.sendNotification(
+                        'ERROR',
                         '此帳號尚未被活化。\n'
                         +'請到您註冊時用的信箱收認證信，依照信中指示活化您的帳號。\n'
                         +'帳號活化後客服人員會審核您的身份，請耐心等候，\n'
@@ -82,12 +92,14 @@ Auth = function() {
                     break;
                 default:
                     Util.sendNotification(
+                        'ERROR',
                         '登入失敗，原因未知。\n'
                         +'請聯絡客服人員。'
                     );
             }
         } else {
             Util.sendNotification(
+                'ERROR',
                 '登入失敗，原因未知。\n'
                 +'請聯絡客服人員。'
             );
@@ -104,7 +116,9 @@ Auth = function() {
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 // console.log(XMLHttpRequest.responseText);
                 window.document.write(XMLHttpRequest.responseText);
-                Util.sendNotification('出了點錯！');
+                Util.sendNotification(
+                    'ERROR','出了點錯！'
+                );
                 // window.location.reload();
             },
             type: 'POST',
@@ -126,7 +140,10 @@ Auth = function() {
             buttons: {
                 '登入': login_,
                 '忘記密碼': function() {
-                    Util.sendNotification('請聯絡客服人員。');
+                    Util.sendNotification(
+                        'ERROR',
+                        '請聯絡客服人員。'
+                    );
                 },
                 '註冊': offerSignUp_,
             },
@@ -173,6 +190,7 @@ Auth = function() {
                     alert("註冊失敗：表單錯誤");
                 } else {
                     Util.sendNotification(
+                        'SUCCESS',
                         "Thanks for joining Counselsior! "+
                         "Please activate your account with your email "+
                         "within three days."
@@ -183,7 +201,7 @@ Auth = function() {
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 // console.log(XMLHttpRequest.responseText);
-                Util.sendNotification("出了點錯！");
+                Util.sendNotification('ERROR',"出了點錯！");
                 window.location.reload();
             },
             type: 'POST',

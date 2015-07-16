@@ -1,8 +1,13 @@
 # coding=utf-8
+import json
+
 from django.contrib.auth.decorators import login_required
+from django.core.serializers import serialize
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.db.utils import DatabaseError
+from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.shortcuts import render, get_object_or_404
+from django.utils import safestring
 
 from celery import shared_task
 
@@ -26,7 +31,7 @@ def main(request):
 def view_templates(request):
     templates = Template.objects.all() # pylint: disable=E1101
     context = {"templates": templates}
-    return render(request, "wiki/template.html", context)
+    return render(request, "wiki/templates.html", context)
 
 
 @login_required
@@ -45,6 +50,35 @@ def template_title_exists(request):
 @post_only_json
 def create_template(request):
     return {"result": save_template(request, True)}
+
+
+@login_required
+@post_only_json
+def read_template(request):
+    context = {
+        "result": consts.FAILED,
+        "template": None
+    }
+
+    try:
+        template_id = request.POST["tid"]
+        obj = get_object_or_404(Template, id=template_id)
+        context["result"] = consts.SUCCESSFUL
+        context["template"] = obj.to_json()
+    except Exception as e:
+        general_exception_handling(e)
+
+    return context
+
+
+@login_required
+def template(request, template_id):
+    try:
+        obj = get_object_or_404(Template, id=template_id)
+        return render(request, "wiki/template.html", obj.to_json())
+    except Exception as e:
+        general_exception_handling(e)
+        raise Http404
 
 
 @login_required

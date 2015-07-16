@@ -5,9 +5,12 @@ import traceback
 from django.contrib.auth.decorators import login_required
 
 from .utils import general_exception_handling
+from apps.users.models import MyUser
+
 
 def default_img_path(instance, filename):
     pass
+
 
 @login_required
 def handle_file_upload(request, file, destination):

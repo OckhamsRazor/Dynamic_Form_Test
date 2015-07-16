@@ -8,7 +8,6 @@ from django.utils import timezone
 
 from taggit.managers import TaggableManager
 
-from apps.wiki.models import Post
 from utils.consts import MAX_FILENAME_LEN
 from utils.models import MyListField, MyEmbeddedModelField, IP_log
 from Web import settings
@@ -84,7 +83,7 @@ class MyUser(AbstractUser):
 
     login_ip = MyListField(MyEmbeddedModelField('IP_log'))
     special_user_data = MyListField()
-    bookmarks = MyListField(models.ForeignKey(Post))
+    # bookmarks = MyListField(models.ForeignKey(Post))
 
     activation_code = models.CharField(max_length=HASH_KEY_LENGTH)
     activation_code_expired_time = models.DateTimeField(

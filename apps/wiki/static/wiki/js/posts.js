@@ -14,6 +14,7 @@ Posts = function() {
     var entryEditorValidationSettings_ = {};
 
     var newPostEntries_ = [];
+    var newPostForm_ = null; // <NewPostForm />
 
     /**
      * consts
@@ -21,6 +22,7 @@ Posts = function() {
     var PostUrls_ = Object.freeze({
         CREATE_POST_URL: "/wiki/create_post/",
         CREATE_TEMPLATE_URL: "/wiki/create_template/",
+        READ_TEMPLATE_URL: "/wiki/read_template/",
         UPDATE_TEMPLATE_URL: "/wiki/update_template/",
         TEMPLATE_TITLE_EXISTS_URL: "/wiki/template_title_exists/",
     });
@@ -72,6 +74,26 @@ Posts = function() {
     /* READ */
     var changeTemplate_ = function() {
 
+    };
+
+    var loadTemplate_ = function() {
+        if (sessionStorage.loadedTemplate) {
+            newPostForm_ = React.render(
+                React.createElement(
+                    NewPostForm, {
+                        entries: Util.getSessionStorage("loadedTemplate")
+                    }
+                ),
+                document.getElementById("new_post_form")
+            );
+
+            Util.delSessionStorage("loadedTemplate");
+        } else {
+            newPostForm_ = React.render(
+                React.createElement(NewPostForm, null),
+                document.getElementById("new_post_form")
+            );
+        }
     };
 
     /* CREATE */
@@ -140,7 +162,7 @@ Posts = function() {
                                     function() {
                                         window.location.reload();
                                     }
-                                )
+                                );
                             } else {
                                 Util.sendNotification(
                                     "Failed",
@@ -150,11 +172,20 @@ Posts = function() {
                                     function() {
                                         window.location.reload();
                                     }
-                                )
+                                );
                             }
                         },
                         error: function(req, status, err) {
                             console.log(req.responseText);
+                            Util.sendNotification(
+                                "Failed",
+                                "Something went wrong; your template "
+                                    +"has not been saved.",
+                                false,
+                                function() {
+                                    window.location.reload();
+                                }
+                            );
                         },
                         type: "POST",
                         url: PostUrls_["CREATE_TEMPLATE_URL"]
@@ -170,7 +201,7 @@ Posts = function() {
     };
 
     var offerSaveTemplateAs_ = function() {
-        $(".save_template_as_modal.first")
+        $(".template_modal.first")
             .modal("show")
         ;
     };
@@ -225,6 +256,7 @@ Posts = function() {
         };
         entryEditorValidationSettings_ = {
             // on: 'blur',
+            fields: entryEditorValidationRules_,
             inline: 'true',
             onSuccess: function() {
                 return true;
@@ -235,7 +267,7 @@ Posts = function() {
         };
         $("#entry_editor")
             .form(
-                entryEditorValidationRules_,
+                // entryEditorValidationRules_,
                 entryEditorValidationSettings_
             )
         ;
@@ -244,7 +276,7 @@ Posts = function() {
                 onChange: onEntryEditorTypeChange_
             })
         ;
-        $(".save_template_as_modal.main")
+        $(".template_modal.main")
             .modal({
                 // allowMultiple: true,
                 closable: false,
@@ -256,8 +288,8 @@ Posts = function() {
         ;
 
         $("#template_title_form")
-            .form(
-                {
+            .form({
+                fields: {
                     title: {
                         identifier: "template_title_value",
                         rules: [
@@ -268,10 +300,8 @@ Posts = function() {
                         ]
                     }
                 },
-                {
-                    inline: true
-                }
-            )
+                inline: true
+            })
         ;
     };
 
@@ -321,7 +351,7 @@ Posts = function() {
         ;
     };
 
-    var saveTemplateAsModalEditRemoveError_ = function() {
+    var templateModalEditRemoveError_ = function() {
         $("#entry_editor .prompt").each(function() {
             $(this).remove();
         });
@@ -330,7 +360,7 @@ Posts = function() {
         });
     };
 
-    var saveTemplateAsModalTitleRemoveError_ = function() {
+    var templateModalTitleRemoveError_ = function() {
         $("#template_title_form .prompt").each(function() {
             $(this).remove();
         });
@@ -356,18 +386,24 @@ Posts = function() {
         entryEditorValidationSettings: entryEditorValidationSettings_,
         newPostEntries: newPostEntries_,
 
+        getNewPostForm: function() { return newPostForm_; },
+        setNewPostForm: function(newForm) { newPostForm_ = newForm; },
+
         /**
          * public methods
          */
         init: function() {
+            newPostForm_ = null;
+
             buttonSettings_();
             semanticUiInit_();
         },
         onEntryEditorTypeChange: onEntryEditorTypeChange_,
-        saveTemplateAsModalEditRemoveError:
-            saveTemplateAsModalEditRemoveError_,
-        saveTemplateAsModalTitleRemoveError:
-            saveTemplateAsModalTitleRemoveError_,
-        saveTemplateAs: saveTemplateAs_
+        templateModalEditRemoveError:
+            templateModalEditRemoveError_,
+        templateModalTitleRemoveError:
+            templateModalTitleRemoveError_,
+        saveTemplateAs: saveTemplateAs_,
+        loadTemplate: loadTemplate_,
     };
 } ();

@@ -1,203 +1,14 @@
-var saveTemplateAsModalEdit = function(
-        initName, initType, initValue, initDescription, setEntry
-    ) {
-    $("#entry_editor_name").val(initName);
-    $("#entry_editor .dropdown")
-        .dropdown("set text", initType)
-        .dropdown("set value", initType)
-    ;
-    Posts.onEntryEditorTypeChange(initType);
-    $("#entry_editor_value").val(initValue);
-    $("#entry_editor_description")
-        .val(initDescription)
-    ;
-    $(".save_template_as_modal.edit")
-        .modal({
-            closable: false,
-            onApprove: function() {
-                if (!$("#entry_editor").form("validate form"))
-                    return false;
+"use strict"
 
-                Posts.saveTemplateAsModalEditRemoveError();
-                setEntry({
-                    isActive: true,
-                    name: $("#entry_editor_name").val(),
-                    type: $("#entry_editor_type").val(),
-                    value: $("#entry_editor_value").val(),
-                    description: $("#entry_editor_description")
-                        .val()
-                });
-                $(".save_template_as_modal.main")
-                    .modal("show")
-                ;
-            },
-            onDeny: function() {
-                Posts.saveTemplateAsModalEditRemoveError();
-                $(".save_template_as_modal.main")
-                    .modal("show")
-                ;
-            },
-            onHidden: function() {
-                Posts.saveTemplateAsModalEditRemoveError();
-                $(".save_template_as_modal.main")
-                    .modal("show")
-                ;
-            }
-        })
-        .modal("show")
-    ;
-};
-
-var SaveTemplateAsModalMainEntry = React.createClass({
-    getDefaultProps: function() {
-        return {
-            entry: {
-                name: "",
-                type: "",
-                value: "",
-                description: ""
-            },
-            setEntry: null,
-            deleteEntry: null
-        };
-    },
-    edit: function() {
-        saveTemplateAsModalEdit(
-            this.props.entry.name,
-            this.props.entry.type,
-            this.props.entry.value,
-            this.props.entry.description,
-            this.props.setEntry
-        );
-    },
-    del: function() {
-        this.props.deleteEntry();
-    },
-    rendered: function() {
-        $(this.getDOMNode())
-            .find(".edit.icon")
-            .click(Util.buttonDefault(this.edit))
-        ;
-        $(this.getDOMNode())
-            .find(".remove.icon")
-            .click(Util.buttonDefault(this.del))
-        ;
-    },
-    componentDidMount: function() {
-        this.rendered();
-    },
-    componentDidUpdate: function() {
-        this.rendered();
-    },
-    render: function() {
-        return(
-            <tr>
-                <td>{this.props.entry.name}</td>
-                <td className="collapsing">{this.props.entry.type}</td>
-                <td>{this.props.entry.value}</td>
-                <td>{this.props.entry.description}</td>
-                <td className="collapsing">
-                    <i className="edit icon"
-                        title="Edit Entry"></i>
-                    <i className="remove icon"
-                        title="Remove Entry"></i>
-                </td>
-            </tr>
-        );
-    }
-});
-
-var SaveTemplateAsModalMain = React.createClass({
-    getInitialState: function() {
-        var entries = this.props.entries;
-        for (idx in entries) {
-            entries[idx]["isActive"] = true;
-            entries[idx]["description"] = "";
-        }
-        return {
-            entries: entries
-        };
-    },
-    addEntry: function(newEntry) {
-        var newState = this.state;
-        newState.entries.push(newEntry);
-        this.setState(newState);
-    },
-    setEntry: function(idx, newEntry) {
-        var newState = this.state;
-        newState.entries[idx] = newEntry;
-        this.setState(newState);
-    },
-    deleteEntry: function(idx) {
-        var newState = this.state;
-        newState.entries[idx]["isActive"] = false;
-        this.setState(newState);
-    },
-    rendered: function() {
-        $(this.getDOMNode())
-            .find(".add.circle.icon")
-            .click(Util.buttonDefault(function() {
-                saveTemplateAsModalEdit(
-                    "", "", "", "", this.addEntry
-                );
-            }.bind(this)))
-        ;
-    },
-    componentDidMount: function() {
-        this.rendered();
-    },
-    render: function() {
-        var Entries = this.state.entries.map(function(entry, idx) {
-            if (entry.isActive) {
-                return(
-                    <SaveTemplateAsModalMainEntry entry={entry}
-                    key={idx} setEntry={this.setEntry.bind(this, idx)}
-                    deleteEntry={this.deleteEntry.bind(this, idx)} />
-                );
-            }
-        }.bind(this));
-        return(
-            <table className="ui compact celled definition table">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Type</th>
-                        <th>Default Value</th>
-                        <th>Description</th>
-                        <th>Options</th>
-                    </tr>
-                </thead>
-                <tbody>{Entries}</tbody>
-                <tfoot className="full-width">
-                    <tr>
-                        <th className="collapsing">
-                            <i className="add circle icon"
-                            title="Add Entry"></i>
-                        </th>
-                        <th colSpan="4"></th>
-                    </tr>
-                </tfoot>
-            </table>
-        );
-    }
-});
-
-var EntryTypeSelect = React.createClass({
-    getDefaultProps: function() {
-        return {
-            types: Posts.getEntryTypeName(),
-            id: "",
-            onEntryTypeChange: null
-        };
-    },
-    componentDidMount: function() {
-        $(this.getDOMNode())
+class EntryTypeSelect extends React.Component {
+    componentDidMount() {
+        $(React.findDOMNode(this))
             .dropdown({
                 onChange: this.props.onEntryTypeChange
             })
         ;
-    },
-    render: function() {
+    }
+    render() {
         var Types = Object.keys(this.props.types).map(function(type, idx) {
             return(
                 <div className='item' data-value={this.props.types[type]}
@@ -208,7 +19,8 @@ var EntryTypeSelect = React.createClass({
         }.bind(this));
         return(
             <div className='ui selection dropdown entry_type'>
-                <input type='hidden' id={this.props.id} />
+                <input type='hidden' id={this.props.id}
+                value={this.props.type}/>
                 <div className='default text'>Type</div>
                 <i className='dropdown icon'></i>
                 <div className='menu'>
@@ -217,15 +29,16 @@ var EntryTypeSelect = React.createClass({
             </div>
         );
     }
-});
+}
+EntryTypeSelect.defaultProps = {
+    types: Posts.getEntryTypeName(),
+    type: "",
+    id: "",
+    onEntryTypeChange: null
+};
 
-var NewEntryValue = React.createClass({
-    propTypes: {
-        type: React.PropTypes.string, // TBD (change it to ENUM?)
-        value: React.PropTypes.string,
-        idx: React.PropTypes.number
-    },
-    validation: function() {
+class NewEntryValue extends React.Component {
+    validation() {
         Posts.postFormValidationRules[this.props.idx+"_content"] = {
             identifier: this.props.idx+"_content",
             rules: [
@@ -260,20 +73,25 @@ var NewEntryValue = React.createClass({
             default:
                 break;
         }
+        Posts.postFormValidationSettings["fields"] = Posts.postFormValidationRules;
         $("#new_post_form")
             .form(
-                Posts.postFormValidationRules,
                 Posts.postFormValidationSettings
             )
         ;
-    },
-    componentDidMount: function() {
+    }
+    componentDidMount() {
         this.validation();
-    },
-    componentDidUpdate: function() {
+    }
+    componentDidUpdate() {
         var entryContent =
-            $(this.getDOMNode())
+            $(React.findDOMNode(this))
             .parent(".entry_content")
+        ;
+
+        entryContent
+            .find("input, textarea")
+            .val("")
         ;
         entryContent
             .children(".prompt")
@@ -281,8 +99,8 @@ var NewEntryValue = React.createClass({
         ;
         entryContent.removeClass("error");
         this.validation();
-    },
-    render: function() {
+    }
+    render() {
         var EntryTypeName = Posts.getEntryTypeName();
         switch(this.props.type) {
             case EntryTypeName.DBL:
@@ -304,30 +122,15 @@ var NewEntryValue = React.createClass({
                 );
         }
     }
-});
+}
+NewEntryValue.propTypes = {
+    type: React.PropTypes.string, // TBD (change it to ENUM?)
+    value: React.PropTypes.string,
+    idx: React.PropTypes.number
+};
 
-var NewEntry = React.createClass({
-    propTypes: {
-        name: React.PropTypes.string,
-        type: React.PropTypes.string, // TBD (change it to ENUM?)
-        value: React.PropTypes.string,
-        isActive: React.PropTypes.bool, // FALSE only if the entry has been deleted
-        idx: React.PropTypes.number,
-        onDelete: React.PropTypes.func,
-        onEntryTypeChange: React.PropTypes.func
-    },
-    getDefaultProps: function() {
-        return {
-            name: "",
-            type: "",
-            value: "",
-            isActive: true,
-            idx: -1,
-            onDelete: null,
-            onEntryTypeChange: null
-        };
-    },
-    onFieldBlurred: function() {
+class NewEntry extends React.Component {
+    onFieldBlurred() {
         var idx = this.props.idx;
         var name = $("#"+idx+"_name");
         name
@@ -338,9 +141,9 @@ var NewEntry = React.createClass({
                 Posts.newPostEntries[idx]["name"] = name.val();
             })
         ;
-    },
-    validation: function() {
-        var thisNode = $(this.getDOMNode());
+    }
+    validation() {
+        var thisNode = $(React.findDOMNode(this));
         thisNode
             .find(".delete_entry_button")
             .click(
@@ -366,22 +169,28 @@ var NewEntry = React.createClass({
                 }
             ]
         };
+        Posts.postFormValidationSettings["fields"] = Posts.postFormValidationRules;
         $("#new_post_form")
             .form(
-                Posts.postFormValidationRules,
                 Posts.postFormValidationSettings
             )
         ;
-    },
-    componentDidMount: function() {
+    }
+    rendered() {
         this.validation();
         this.onFieldBlurred();
-    },
-    componentDidUpdate: function() {
-        this.validation();
-        this.onFieldBlurred();
-    },
-    render: function() {
+
+        if (Util.isNonEmptyStr(this.props.name)) {
+            $("#"+this.props.idx+"_name").val(this.props.name);
+        }
+    }
+    componentDidMount() {
+        this.rendered();
+    }
+    componentDidUpdate() {
+        this.rendered();
+    }
+    render() {
         return(
             <div className="three fields">
                 <div className='ui dividing header'></div>
@@ -394,6 +203,7 @@ var NewEntry = React.createClass({
                     </div>
                     <div className='field'>
                         <EntryTypeSelect id={this.props.idx+"_type"}
+                            type={this.props.type}
                             onEntryTypeChange={
                                 this.props.onEntryTypeChange
                             } />
@@ -411,19 +221,34 @@ var NewEntry = React.createClass({
             </div>
         );
     }
-});
+}
+NewEntry.propTypes = {
+    name: React.PropTypes.string,
+    type: React.PropTypes.string, // TBD (change it to ENUM?)
+    value: React.PropTypes.string,
+    isActive: React.PropTypes.bool, // FALSE only if the entry has been deleted
+    idx: React.PropTypes.number,
+    onDelete: React.PropTypes.func,
+    onEntryTypeChange: React.PropTypes.func
+};
+NewEntry.defaultProps = {
+    name: "aaa",
+    type: "",
+    value: "",
+    isActive: true,
+    idx: -1,
+    onDelete: null,
+    onEntryTypeChange: null
+};
 
-var NewPostFormFooter = React.createClass({
-    propTypes: {
-        addEntry: React.PropTypes.func,
-    },
-    componentDidMount: function() {
-        $(this.getDOMNode())
+class NewPostFormFooter extends React.Component {
+    componentDidMount() {
+        $(React.findDOMNode(this))
             .find("#add_entry_button")
             .click(Util.buttonDefault(this.props.addEntry))
         ;
-    },
-    render: function() {
+    }
+    render() {
         return(
             <div id="new_post_form_footer">
                 <div id="add_entry_button" className="ui button">
@@ -436,15 +261,24 @@ var NewPostFormFooter = React.createClass({
             </div>
         );
     }
-});
+}
+NewPostFormFooter.propTypes = {
+    addEntry: React.PropTypes.func
+};
 
-var NewPostForm = React.createClass({
-    getInitialState: function() {
-        return {
-            entries: []
+class NewPostForm extends React.Component {
+    constructor(props) {
+        super(props);
+
+        var newEntries = (typeof props.entries == "undefined")
+            ? []
+            : props.entries
+        ;
+        this.state = {
+            entries: newEntries
         };
-    },
-    addEntry: function() {
+    }
+    addEntry() {
         var oldEntries = this.state.entries;
         var newEntries = oldEntries.concat([
             {
@@ -457,17 +291,16 @@ var NewPostForm = React.createClass({
         this.setState({
             entries: newEntries
         });
-
-    },
-    deleteEntry: function(idx) {
+    }
+    deleteEntry(idx) {
         var newEntries = this.state.entries;
         newEntries[idx]["isActive"] = false;
         Posts.newPostEntries[idx] = null;
         this.setState({
             entries: newEntries
         });
-    },
-    onEntryTypeChange: function (idx, newType) {
+    }
+    onEntryTypeChange(idx, newType) {
         var newEntries = this.state.entries;
         if (newEntries[idx]["type"] != newType) {
             newEntries[idx]["type"] = newType;
@@ -479,11 +312,11 @@ var NewPostForm = React.createClass({
                 entries: newEntries
             });
         }
-    },
-    submit: function() {
+    }
+    submit() {
         // $("#new_post_form").form("submit");
-    },
-    componentDidMount: function() {
+    }
+    componentDidMount() {
         Posts.postFormValidationRules = {
             title: {
                 identifier: "title",
@@ -507,9 +340,9 @@ var NewPostForm = React.createClass({
                 return false;
             }
         };
+        Posts.postFormValidationSettings["fields"] = Posts.postFormValidationRules;
         $("#new_post_form")
             .form(
-                Posts.postFormValidationRules,
                 Posts.postFormValidationSettings
             )
         ;
@@ -526,24 +359,24 @@ var NewPostForm = React.createClass({
                 if (newPostEntries.length != 0) {
                     React.unmountComponentAtNode(
                         document.getElementById(
-                            "save_template_as_modal_1_content"
+                            "template_modal_1_content"
                         )
                     );
-                    var saveTemplateAsModalMain =
-                        React.render(<SaveTemplateAsModalMain
+                    var templateModalMain =
+                        React.render(<TemplateModalMain
                             entries={newPostEntries} />,
                         document.getElementById(
-                            "save_template_as_modal_1_content"
+                            "template_modal_1_content"
                         )
                     );
-                    $(".save_template_as_modal.main")
+                    $(".template_modal.main")
                         .modal({
                             closable: false,
                             selector: {
                                 approve: ".actions .primary"
                             },
                             onApprove: function() {
-                                $(".save_template_as_modal.template_title")
+                                $(".template_modal.template_title")
                                     .modal({
                                         closable: false,
                                         selector: {
@@ -555,13 +388,13 @@ var NewPostForm = React.createClass({
                                                 return false;
 
                                             this.submitTemplate(
-                                                saveTemplateAsModalMain
+                                                templateModalMain
                                             );
                                             return false;
                                         }.bind(this),
                                         onDeny: function() {
-                                            Posts.saveTemplateAsModalTitleRemoveError();
-                                            $(".save_template_as_modal.main")
+                                            Posts.templateModalTitleRemoveError();
+                                            $(".template_modal.main")
                                                .modal("show")
                                             ;
                                         }
@@ -585,9 +418,9 @@ var NewPostForm = React.createClass({
                 }
             }.bind(this)))
         ;
-    },
-    submitTemplate: function(saveTemplateAsModalMain) {
-        Posts.saveTemplateAsModalTitleRemoveError();
+    }
+    submitTemplate(templateModalMain) {
+        Posts.templateModalTitleRemoveError();
 
         var title = $("#template_title_value").val();
         var description = $("#template_description").val();
@@ -599,13 +432,13 @@ var NewPostForm = React.createClass({
             values: [],
             entry_descriptions: []
         };
-        for (var entryIdx in saveTemplateAsModalMain.state.entries) {
-            var entry = saveTemplateAsModalMain.state.entries[entryIdx];
+        for (var entryIdx in templateModalMain.state.entries) {
+            var entry = templateModalMain.state.entries[entryIdx];
             if (entry.isActive) {
                 if (typeof entry.value == "undefined") {
                     entry.value = "";
                 }
-                nameToEnum = Posts.getEntryTypeNameToEnum();
+                var nameToEnum = Posts.getEntryTypeNameToEnum();
                 data["names"].push(entry.name);
                 data["types"].push(nameToEnum[entry.type]);
                 data["values"].push(entry.value);
@@ -614,8 +447,8 @@ var NewPostForm = React.createClass({
         }
 
         Posts.saveTemplateAs(title, data);
-    },
-    render: function() {
+    }
+    render() {
         var NewEntries = this.state.entries.map(function(entry, idx) {
             if (entry.isActive) {
                 return(
@@ -641,10 +474,10 @@ var NewPostForm = React.createClass({
                 {NewEntries}
                 <div className="ui dividing header"></div>
                 <NewPostFormFooter
-                    addEntry={this.addEntry} />
+                    addEntry={this.addEntry.bind(this)} />
             </div>
         );
     }
-});
+}
 
-React.render(<NewPostForm />, document.getElementById("new_post_form"));
+// React.render(<NewPostForm />, document.getElementById("new_post_form"));

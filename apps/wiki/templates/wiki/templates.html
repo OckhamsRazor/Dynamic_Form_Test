@@ -1,0 +1,64 @@
+{% extends "wiki/main.html" %}
+{% load static %}
+
+{% block title %} Template Main Page {% endblock title %}
+
+{% block body_main_1_content %}
+  <div id="option_bar" class="content_block">
+    {% if user.is_authenticated %}
+      <div id="new_template_button" class="ui button">New Template</div>
+    {% else %}
+      尚未登入!
+    {% endif %}
+  </div>
+
+  <!-- #list_all_templates for testing -->
+  <div id="list_all_templates" class="content_block">
+    {% if templates %}
+      <table class="ui celled definition table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Description</th>
+            <th>Options</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for template in templates %}
+            <tr>
+              <td>
+                <a href="{% url 'template' template_id=template.id %}">
+                  {{ template.title }}
+                </a>
+              </td>
+              <td>{{ template.description }}</td>
+              <td>
+                <i class="edit icon" title="Edit Template"></i>
+                <i class="remove icon" title="Delete Template"></i>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot class="full-width">
+          <tr>
+            <th class="collapsing">
+              <i class="add circle icon" title="New Template"></i>
+            </th>
+            <th colSpan="2"></th>
+          </tr>
+        </tfoot>
+      </table>
+    {% else %}
+      There are currently no templates -- create one today!
+    {% endif %}
+  </div>
+{% endblock body_main_1_content %}
+
+{% block footer_javascript_page %}
+    <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
+
+    <script>
+        $(document).ready(function() {
+        });
+    </script>
+{% endblock footer_javascript_page %}

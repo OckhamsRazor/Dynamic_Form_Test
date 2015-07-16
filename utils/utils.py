@@ -4,20 +4,34 @@ import random
 import string
 import traceback
 
+from django.db.utils import DatabaseError
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from apps.users.models import MyUser
+
 
 def random_string(N):
     return ''.join(
         random.choice(string.ascii_letters + string.digits) for _ in range(N)
     )
 
+
 def random_number(N):
     return ''.join(random.choice(string.digits) for _ in range(N))
 
+
 def general_exception_handling(e): # TODO
     print(traceback.format_exc())
+
+
+def get_user(uid):
+    try:
+        return get_object_or_404(MyUser, id=uid)
+    except (Http404, DatabaseError):
+        return None
+
 
 def generate_user(num):
     for _ in range(num):
@@ -44,6 +58,7 @@ def generate_user(num):
             type=MyUser.TESTING,
         )
         new_user.save()
+
 
 def existence_checking(to_check, content):
     if to_check == "username":
