@@ -4,6 +4,7 @@ from django.db import models
 from taggit.managers import TaggableManager
 
 from utils.models import MyListField, MyEmbeddedModelField, IP_log
+from utils.utils import get_user
 from Web import settings
 
 
@@ -16,12 +17,26 @@ class Page(models.Model):
 
 
 class PostElement(models.Model):
-    """docstring for PostElement"""
+    """
+    Basic properties for post-related elements
+    e.g. Post and Comment
+    """
     author = models.ForeignKey(settings.AUTH_USER_MODEL)
     credit = models.FloatField(default=0.0)
     date_published_and_source_ip = \
         MyEmbeddedModelField('IP_log', null=True) # TODO: ip is non-null!!
-    comments = MyListField(MyEmbeddedModelField('Comment'))
+    comments = MyListField()
+
+    def to_json(self):
+        json = {
+            "id": self.id,
+            "author": get_user(self.author.id).username,
+            "author_id": self.author.id,
+            "credit": self.credit,
+            # IP_log #
+            "comments": [] # TODO
+        }
+        return json
 
     class Meta:
         abstract = True
@@ -32,6 +47,16 @@ class Template(PostElement):
     title = models.CharField(max_length="30")
     entries = MyListField(MyEmbeddedModelField("Entry"))
     description = models.TextField(max_length="300")
+
+    def to_json(self):
+        json = super(Template, self).to_json()
+        json["title"] = self.title
+        json["description"] = self.description
+        json["entries"] = []
+        for entry in self.entries:
+            json["entries"].append(entry.to_json())
+
+        return json
 
 
 class Entry(PostElement):
@@ -53,6 +78,9 @@ class Entry(PostElement):
         CHOICE, COLOR, DBL, STR, EMAIL, URL, GPS, TIME,
         USER, POST, COMMENT, THREAD, TEMPLATE,
     ]
+    ENTRY_TYPE_IDX = {}
+    for idx, TYPE in enumerate(ENTRY_TYPES):
+        ENTRY_TYPE_IDX[TYPE] = idx
     ENTRY_TYPE_CHOICES = (
         (CHOICE, "Choice"),
         (COLOR, "Color"),
@@ -76,6 +104,17 @@ class Entry(PostElement):
         choices=ENTRY_TYPE_CHOICES,
     )
     description = models.TextField(max_length="300", default="")
+
+    def to_json(self):
+        json = super(Entry, self).to_json()
+        json["name"] = self.key
+        json["value"] = self.value[0]
+        json["type"] = Entry.ENTRY_TYPE_CHOICES[
+            Entry.ENTRY_TYPE_IDX[self.type]
+        ][1]
+        json["description"] = self.description
+
+        return json
 
 
 class Post(PostElement):

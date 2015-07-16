@@ -50,7 +50,26 @@ Util = function() {
         return cookieValue;
     }
 
+    var setSessionStorage_ = function(name, value) {
+        sessionStorage.setItem(name, JSON.stringify(value));
+    };
+
+    var getSessionStorage_ = function(name) {
+        return JSON.parse(sessionStorage.getItem(name));
+    };
+
+    var delSessionStorage_ = function(name) {
+        sessionStorage.removeItem(name);
+    };
+
     var sendNotification_ = function(header, msg, allowMultiple, onHidden) {
+        allowMultiple = (typeof allowMultiple == "undefined")
+            ? true : allowMultiple
+        ;
+        onHidden = (typeof onHidden == "undefined")
+            ? function() { return true; } : onHidden
+        ;
+
         $("#notification_modal .header")
             .html(header)
         ;
@@ -183,6 +202,9 @@ Util = function() {
          * public methods
          */
         getCookie: getCookie_,
+        getSessionStorage: getSessionStorage_,
+        setSessionStorage: setSessionStorage_,
+        delSessionStorage: delSessionStorage_,
         sendNotification: sendNotification_,
         sendConfirm: sendConfirm_,
         isNonEmptyStr: isNonEmptyStr_,

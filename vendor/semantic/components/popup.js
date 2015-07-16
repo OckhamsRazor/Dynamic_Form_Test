@@ -1,9 +1,9 @@
-/*
- * # Semantic - Popup
+/*!
+ * # Semantic UI x.x - Popup
  * http://github.com/semantic-org/semantic-ui/
  *
  *
- * Copyright 2014 Contributor
+ * Copyright 2015 Contributors
  * Released under the MIT license
  * http://opensource.org/licenses/MIT
  *
@@ -17,6 +17,8 @@ $.fn.popup = function(parameters) {
   var
     $allModules    = $(this),
     $document      = $(document),
+    $window        = $(window),
+    $body          = $('body'),
 
     moduleSelector = $allModules.selector || '',
 
@@ -52,16 +54,18 @@ $.fn.popup = function(parameters) {
           ? $(settings.target)
           : $module,
 
-        $window            = $(window),
-        $body              = $('body'),
         $popup,
         $offsetParent,
 
         searchDepth        = 0,
         triedPositions     = false,
+        openedWithTouch    = false,
 
         element            = this,
         instance           = $module.data(moduleNamespace),
+
+        elementNamespace,
+        id,
         module
       ;
 
@@ -69,36 +73,17 @@ $.fn.popup = function(parameters) {
 
         // binds events
         initialize: function() {
-          module.debug('Initializing module', $module);
-          module.refresh();
-          if(settings.on == 'click') {
-            $module
-              .on('click' + eventNamespace, module.toggle)
-            ;
-          }
-          else if( module.get.startEvent() ) {
-            $module
-              .on(module.get.startEvent() + eventNamespace, module.event.start)
-              .on(module.get.endEvent() + eventNamespace, module.event.end)
-            ;
-          }
-          if(settings.target) {
-            module.debug('Target set to element', $target);
-          }
-          $window
-            .on('resize' + eventNamespace, module.event.resize)
-          ;
-          if( !module.exists() ) {
+          module.debug('Initializing', $module);
+          module.createID();
+          module.bind.events();
+          if( !module.exists() && settings.preserve) {
             module.create();
-          }
-          else if(settings.hoverable) {
-            module.bind.popup();
           }
           module.instantiate();
         },
 
         instantiate: function() {
-          module.verbose('Storing instance of module', module);
+          module.verbose('Storing instance', module);
           instance = module;
           $module
             .data(moduleNamespace, instance)
@@ -107,33 +92,36 @@ $.fn.popup = function(parameters) {
 
         refresh: function() {
           if(settings.popup) {
-            $popup = $(settings.popup);
+            $popup = $(settings.popup).eq(0);
           }
           else {
             if(settings.inline) {
-              $popup = $target.next(settings.selector.popup);
+              $popup = $target.next(selector.popup).eq(0);
+              settings.popup = $popup;
             }
           }
           if(settings.popup) {
             $popup.addClass(className.loading);
-            $offsetParent = $module.offsetParent();
-            if($popup.offsetParent()[0] !== $offsetParent[0]) {
+            $offsetParent = module.get.offsetParent();
+            $popup.removeClass(className.loading);
+            if(settings.movePopup && module.has.popup() && module.get.offsetParent($popup)[0] !== $offsetParent[0]) {
               module.debug('Moving popup to the same offset parent as activating element');
               $popup
                 .detach()
                 .appendTo($offsetParent)
               ;
             }
-            $popup.removeClass(className.loading);
           }
           else {
             $offsetParent = (settings.inline)
-              ? $target.offsetParent()
-              : $body
+              ? module.get.offsetParent($target)
+              : module.has.popup()
+                ? module.get.offsetParent($popup)
+                : $body
             ;
           }
           if( $offsetParent.is('html') ) {
-            module.debug('Page is popups offset parent');
+            module.debug('Setting page as offset parent');
             $offsetParent = $body;
           }
         },
@@ -145,11 +133,15 @@ $.fn.popup = function(parameters) {
 
         destroy: function() {
           module.debug('Destroying previous module');
+          // remove element only if was created dynamically
           if($popup && !settings.preserve) {
             module.removePopup();
           }
+          // clear all timeouts
           clearTimeout(module.hideTimer);
           clearTimeout(module.showTimer);
+          // remove events
+          $window.off(elementNamespace);
           $module
             .off(eventNamespace)
             .removeData(moduleNamespace)
@@ -164,11 +156,7 @@ $.fn.popup = function(parameters) {
                 : settings.delay
             ;
             clearTimeout(module.hideTimer);
-            module.showTimer = setTimeout(function() {
-              if(module.is.hidden() && !( module.is.active() && module.is.dropdown()) ) {
-                module.show();
-              }
-            }, delay);
+            module.showTimer = setTimeout(module.show, delay);
           },
           end:  function() {
             var
@@ -177,15 +165,25 @@ $.fn.popup = function(parameters) {
                 : settings.delay
             ;
             clearTimeout(module.showTimer);
-            module.hideTimer = setTimeout(function() {
-              if(module.is.visible() ) {
-                module.hide();
-              }
-            }, delay);
+            module.hideTimer = setTimeout(module.hide, delay);
+          },
+          touchstart: function(event) {
+            openedWithTouch = true;
+            module.event.start();
           },
           resize: function() {
             if( module.is.visible() ) {
               module.set.position();
+            }
+          },
+          hideGracefully: function(event) {
+            // don't close on clicks inside popup
+            if(event && $(event.target).closest(selector.popup).length === 0) {
+              module.debug('Click occurred outside popup hiding popup');
+              module.hide();
+            }
+            else {
+              module.debug('Click was inside popup, keeping popup open');
             }
           }
         },
@@ -193,11 +191,12 @@ $.fn.popup = function(parameters) {
         // generates popup html from metadata
         create: function() {
           var
-            html      = $module.data(metadata.html)      || settings.html,
-            variation = $module.data(metadata.variation) || settings.variation,
-            title     = $module.data(metadata.title)     || settings.title,
-            content   = $module.data(metadata.content)   || $module.attr('title') || settings.content
+            html      = module.get.html(),
+            variation = module.get.variation(),
+            title     = module.get.title(),
+            content   = module.get.content()
           ;
+
           if(html || content || title) {
             module.debug('Creating pop-up html');
             if(!html) {
@@ -209,6 +208,7 @@ $.fn.popup = function(parameters) {
             $popup = $('<div/>')
               .addClass(className.popup)
               .addClass(variation)
+              .data(metadata.activator, $module)
               .html(html)
             ;
             if(variation) {
@@ -228,14 +228,24 @@ $.fn.popup = function(parameters) {
                 .appendTo( $context )
               ;
             }
+            module.refresh();
             if(settings.hoverable) {
               module.bind.popup();
             }
-            $.proxy(settings.onCreate, $popup)(element);
+            settings.onCreate.call($popup, element);
           }
-          else if($target.next(settings.selector.popup).size() !== 0) {
-            module.verbose('Pre-existing popup found, reverting to inline');
+          else if($target.next(selector.popup).length !== 0) {
+            module.verbose('Pre-existing popup found');
             settings.inline = true;
+            settings.popups  = $target.next(selector.popup).data(metadata.activator, $module);
+            module.refresh();
+            if(settings.hoverable) {
+              module.bind.popup();
+            }
+          }
+          else if(settings.popup) {
+            $(settings.popup).data(metadata.activator, $module);
+            module.verbose('Used popup specified in settings');
             module.refresh();
             if(settings.hoverable) {
               module.bind.popup();
@@ -246,13 +256,18 @@ $.fn.popup = function(parameters) {
           }
         },
 
+        createID: function() {
+          id = (Math.random().toString(16) + '000000000').substr(2,8);
+          elementNamespace = '.' + id;
+          module.verbose('Creating unique id for element', id);
+        },
+
         // determines popup state
         toggle: function() {
           module.debug('Toggling pop-up');
           if( module.is.hidden() ) {
             module.debug('Popup is hidden, showing pop-up');
             module.unbind.close();
-            module.hideAll();
             module.show();
           }
           else {
@@ -262,26 +277,40 @@ $.fn.popup = function(parameters) {
         },
 
         show: function(callback) {
-          callback = $.isFunction(callback) ? callback : function(){};
+          callback = callback || function(){};
           module.debug('Showing pop-up', settings.transition);
-          if(!settings.preserve && !settings.popup) {
-            module.refresh();
-          }
-          if( !module.exists() ) {
-            module.create();
-          }
-          if( $popup && module.set.position() ) {
-            module.save.conditions();
-            module.animate.show(callback);
+
+          if(module.is.hidden() && !( module.is.active() && module.is.dropdown()) ) {
+            if( !module.exists() ) {
+              module.create();
+            }
+            if(settings.onShow.call($popup, element) === false) {
+              module.debug('onShow callback returned false, cancelling popup animation');
+              return;
+            }
+            else if(!settings.preserve && !settings.popup) {
+              module.refresh();
+            }
+            if( $popup && module.set.position() ) {
+              module.save.conditions();
+              if(settings.exclusive) {
+                module.hideAll();
+              }
+              module.animate.show(callback);
+            }
           }
         },
 
 
         hide: function(callback) {
-          callback = $.isFunction(callback) ? callback : function(){};
-          module.remove.visible();
-          module.unbind.close();
-          if( module.is.visible() ) {
+          callback = callback || function(){};
+          if( module.is.visible() || module.is.animating() ) {
+            if(settings.onHide.call($popup, element) === false) {
+              module.debug('onHide callback returned false, cancelling popup animation');
+              return;
+            }
+            module.remove.visible();
+            module.unbind.close();
             module.restore.conditions();
             module.animate.hide(callback);
           }
@@ -289,22 +318,15 @@ $.fn.popup = function(parameters) {
 
         hideAll: function() {
           $(selector.popup)
-            .filter(':visible')
-              .popup('hide')
+            .filter('.' + className.visible)
+            .each(function() {
+              $(this)
+                .data(metadata.activator)
+                .popup('hide')
+              ;
+            })
           ;
         },
-
-        hideGracefully: function(event) {
-          // don't close on clicks inside popup
-          if(event && $(event.target).closest(selector.popup).size() === 0) {
-            module.debug('Click occurred outside popup hiding popup');
-            module.hide();
-          }
-          else {
-            module.debug('Click was inside popup, keeping popup open');
-          }
-        },
-
         exists: function() {
           if(!$popup) {
             return false;
@@ -313,7 +335,7 @@ $.fn.popup = function(parameters) {
             return ( module.has.popup() );
           }
           else {
-            return ( $popup.closest($context).size() > 1 )
+            return ( $popup.closest($context).length >= 1 )
               ? true
               : false
             ;
@@ -322,10 +344,11 @@ $.fn.popup = function(parameters) {
 
         removePopup: function() {
           module.debug('Removing popup', $popup);
-          if( module.has.popup() ) {
+          if( module.has.popup() && !settings.popup) {
             $popup.remove();
+            $popup = undefined;
           }
-          $.proxy(settings.onRemove, $popup)(element);
+          settings.onRemove.call($popup, element);
         },
 
         save: {
@@ -341,7 +364,6 @@ $.fn.popup = function(parameters) {
         },
         restore: {
           conditions: function() {
-            element.blur();
             if(module.cache && module.cache.title) {
               $module.attr('title', module.cache.title);
               module.verbose('Restoring original attributes', module.cache.title);
@@ -363,27 +385,23 @@ $.fn.popup = function(parameters) {
                   duration   : settings.duration,
                   onComplete : function() {
                     module.bind.close();
-                    $.proxy(callback, $popup)(element);
-                    $.proxy(settings.onVisible, $popup)(element);
+                    callback.call($popup, element);
+                    settings.onVisible.call($popup, element);
                   }
                 })
               ;
             }
             else {
-              module.set.visible();
-              $popup
-                .stop()
-                .fadeIn(settings.duration, settings.easing, function() {
-                  module.bind.close();
-                  $.proxy(callback, element)();
-                })
-              ;
+              module.error(error.noTransition);
             }
-            $.proxy(settings.onShow, $popup)(element);
           },
           hide: function(callback) {
             callback = $.isFunction(callback) ? callback : function(){};
             module.debug('Hiding pop-up');
+            if(settings.onShow.call($popup, element) === false) {
+              module.debug('onShow callback returned false, cancelling popup animation');
+              return;
+            }
             if(settings.transition && $.fn.transition !== undefined && $module.transition('is supported')) {
               $popup
                 .transition({
@@ -394,26 +412,99 @@ $.fn.popup = function(parameters) {
                   verbose    : settings.verbose,
                   onComplete : function() {
                     module.reset();
-                    $.proxy(callback, $popup)(element);
-                    $.proxy(settings.onHidden, $popup)(element);
+                    callback.call($popup, element);
+                    settings.onHidden.call($popup, element);
                   }
                 })
               ;
             }
             else {
-              $popup
-                .stop()
-                .fadeOut(settings.duration, settings.easing, function() {
-                  module.reset();
-                  callback();
-                })
-              ;
+              module.error(error.noTransition);
             }
-            $.proxy(settings.onHide, $popup)(element);
           }
         },
 
         get: {
+          html: function() {
+            $module.removeData(metadata.html);
+            return $module.data(metadata.html) || settings.html;
+          },
+          title: function() {
+            $module.removeData(metadata.title);
+            return $module.data(metadata.title) || settings.title;
+          },
+          content: function() {
+            $module.removeData(metadata.content);
+            return $module.data(metadata.content) || $module.attr('title') || settings.content;
+          },
+          variation: function() {
+            $module.removeData(metadata.variation);
+            return $module.data(metadata.variation) || settings.variation;
+          },
+          calculations: function() {
+            var
+              targetElement  = $target[0],
+              targetPosition = (settings.inline || settings.popup)
+                ? $target.position()
+                : $target.offset(),
+              calculations = {},
+              screen
+            ;
+            calculations = {
+              // element which is launching popup
+              target : {
+                element : $target[0],
+                width   : $target.outerWidth(),
+                height  : $target.outerHeight(),
+                top     : targetPosition.top,
+                left    : targetPosition.left,
+                margin  : {}
+              },
+              // popup itself
+              popup : {
+                width  : $popup.outerWidth(),
+                height : $popup.outerHeight()
+              },
+              // offset container (or 3d context)
+              parent : {
+                width  : $offsetParent.outerWidth(),
+                height : $offsetParent.outerHeight()
+              },
+              // screen boundaries
+              screen : {
+                scroll: {
+                  top  : $window.scrollTop(),
+                  left : $window.scrollLeft()
+                },
+                width  : $window.width(),
+                height : $window.height()
+              }
+            };
+
+            // add in margins if inline
+            calculations.target.margin.top = (settings.inline)
+              ? parseInt( window.getComputedStyle(targetElement).getPropertyValue('margin-top'), 10)
+              : 0
+            ;
+            calculations.target.margin.left = (settings.inline)
+              ? module.is.rtl()
+                ? parseInt( window.getComputedStyle(targetElement).getPropertyValue('margin-right'), 10)
+                : parseInt( window.getComputedStyle(targetElement).getPropertyValue('margin-left') , 10)
+              : 0
+            ;
+            // calculate screen boundaries
+            screen = calculations.screen;
+            calculations.boundary = {
+              top    : screen.scroll.top,
+              bottom : screen.scroll.top + screen.height,
+              left   : screen.scroll.left,
+              right  : screen.scroll.left + screen.width
+            };
+            return calculations;
+          },
+          id: function() {
+            return id;
+          },
           startEvent: function() {
             if(settings.on == 'hover') {
               return 'mouseenter';
@@ -422,6 +513,9 @@ $.fn.popup = function(parameters) {
               return 'focus';
             }
             return false;
+          },
+          scrollEvent: function() {
+            return 'scroll';
           },
           endEvent: function() {
             if(settings.on == 'hover') {
@@ -432,31 +526,55 @@ $.fn.popup = function(parameters) {
             }
             return false;
           },
-          offstagePosition: function(position) {
+          offsetParent: function($target) {
             var
-              position = position || false,
-              boundary  = {
-                top    : $(window).scrollTop(),
-                bottom : $(window).scrollTop() + $(window).height(),
-                left   : 0,
-                right  : $(window).width()
-              },
-              popup     = {
-                width  : $popup.width(),
-                height : $popup.height(),
-                offset : $popup.offset()
-              },
-              offstage  = {},
-              offstagePositions = []
+              element = ($target !== undefined)
+                ? $target[0]
+                : $module[0],
+              parentNode = element.parentNode,
+              $node    = $(parentNode)
             ;
-            if(popup.offset && position) {
-              module.verbose('Checking if outside viewable area', popup.offset);
+            if(parentNode) {
+              var
+                is2D     = ($node.css('transform') === 'none'),
+                isStatic = ($node.css('position') === 'static'),
+                isHTML   = $node.is('html')
+              ;
+              while(parentNode && !isHTML && isStatic && is2D) {
+                parentNode = parentNode.parentNode;
+                $node    = $(parentNode);
+                is2D     = ($node.css('transform') === 'none');
+                isStatic = ($node.css('position') === 'static');
+                isHTML   = $node.is('html');
+              }
+            }
+            return ($node && $node.length > 0)
+              ? $node
+              : $()
+            ;
+          },
+          offstagePosition: function(position, calculations) {
+            var
+              offset            = $popup.offset(),
+              offstage          = {},
+              offstagePositions = [],
+              popup,
+              boundary
+            ;
+            position     = position     || false;
+            calculations = calculations || module.get.calculations();
+            // shorthand
+            popup        = calculations.popup;
+            boundary     = calculations.boundary;
+
+            if(offset && position) {
               offstage = {
-                top    : (popup.offset.top < boundary.top),
-                bottom : (popup.offset.top + popup.height > boundary.bottom),
-                right  : (popup.offset.left + popup.width > boundary.right),
-                left   : (popup.offset.left < boundary.left)
+                top    : (offset.top < boundary.top),
+                bottom : (offset.top + popup.height > boundary.bottom),
+                right  : (offset.left + popup.width > boundary.right),
+                left   : (offset.left < boundary.left)
               };
+              module.verbose('Offstage positions determined', offset, offstage);
             }
             // return only boundaries that have been surpassed
             $.each(offstage, function(direction, isOffstage) {
@@ -541,123 +659,133 @@ $.fn.popup = function(parameters) {
         },
 
         set: {
-          position: function(position, arrowOffset) {
+          position: function(position, calculations) {
+
+            // exit conditions
+            if($target.length === 0 || $popup.length === 0) {
+              module.error(error.notFound);
+              return;
+            }
             var
-              windowWidth   = $(window).width(),
-              windowHeight  = $(window).height(),
-
-              targetWidth   = $target.outerWidth(),
-              targetHeight  = $target.outerHeight(),
-
-              popupWidth    = $popup.outerWidth(),
-              popupHeight   = $popup.outerHeight(),
-
-              parentWidth   = $offsetParent.outerWidth(),
-              parentHeight  = $offsetParent.outerHeight(),
-
-              distanceAway  = settings.distanceAway,
-
-              targetElement = $target[0],
-
-              marginTop     = (settings.inline)
-                ? parseInt( window.getComputedStyle(targetElement).getPropertyValue('margin-top'), 10)
-                : 0,
-              marginLeft    = (settings.inline)
-                ? parseInt( window.getComputedStyle(targetElement).getPropertyValue('margin-left'), 10)
-                : 0,
-
-              target        = (settings.inline || settings.popup)
-                ? $target.position()
-                : $target.offset(),
-
+              offset,
+              distanceAway,
+              target,
+              popup,
+              parent,
+              computedPosition,
               positioning,
               offstagePosition
             ;
-            position    = position    || $module.data(metadata.position)    || settings.position;
-            arrowOffset = arrowOffset || $module.data(metadata.offset)      || settings.offset;
+            calculations = calculations || module.get.calculations();
+            position     = position     || $module.data(metadata.position) || settings.position;
 
-            if(searchDepth == settings.maxSearchDepth && settings.lastResort) {
-              module.debug('Using last resort position to display', settings.lastResort);
-              position = settings.lastResort;
+            offset       = $module.data(metadata.offset) || settings.offset;
+            distanceAway = settings.distanceAway;
+
+            // shorthand
+            target = calculations.target;
+            popup  = calculations.popup;
+            parent = calculations.parent;
+
+            if(target.top === 0 && target.left === 0) {
+              module.debug('Popup target is hidden, no action taken');
+              return false;
             }
 
             if(settings.inline) {
-              module.debug('Adding targets margin to calculation');
+              module.debug('Adding margin to calculation', target.margin);
               if(position == 'left center' || position == 'right center') {
-                arrowOffset  += marginTop;
-                distanceAway += -marginLeft;
+                offset       +=  target.margin.top;
+                distanceAway += -target.margin.left;
               }
               else if (position == 'top left' || position == 'top center' || position == 'top right') {
-                arrowOffset  += marginLeft;
-                distanceAway -= marginTop;
+                offset       += target.margin.left;
+                distanceAway -= target.margin.top;
               }
               else {
-                arrowOffset  += marginLeft;
-                distanceAway += marginTop;
+                offset       += target.margin.left;
+                distanceAway += target.margin.top;
               }
             }
-            module.debug('Calculating popup positioning', position);
-            switch(position) {
+
+            module.debug('Determining popup position from calculations', position, calculations);
+
+            if (module.is.rtl()) {
+              position = position.replace(/left|right/g, function (match) {
+                return (match == 'left')
+                  ? 'right'
+                  : 'left'
+                ;
+              });
+              module.debug('RTL: Popup position updated', position);
+            }
+
+            if(searchDepth == settings.maxSearchDepth && settings.lastResort) {
+              module.debug('Using "last resort" position to display', settings.lastResort);
+              position = settings.lastResort;
+            }
+
+            switch (position) {
               case 'top left':
                 positioning = {
                   top    : 'auto',
-                  bottom : parentHeight - target.top + distanceAway,
-                  left   : target.left + arrowOffset,
+                  bottom : parent.height - target.top + distanceAway,
+                  left   : target.left + offset,
                   right  : 'auto'
                 };
               break;
               case 'top center':
                 positioning = {
-                  bottom : parentHeight - target.top + distanceAway,
-                  left   : target.left + (targetWidth / 2) - (popupWidth / 2) + arrowOffset,
+                  bottom : parent.height - target.top + distanceAway,
+                  left   : target.left + (target.width / 2) - (popup.width / 2) + offset,
                   top    : 'auto',
                   right  : 'auto'
                 };
               break;
               case 'top right':
                 positioning = {
-                  bottom :  parentHeight - target.top + distanceAway,
-                  right  :  parentWidth - target.left - targetWidth - arrowOffset,
+                  bottom :  parent.height - target.top + distanceAway,
+                  right  :  parent.width - target.left - target.width - offset,
                   top    : 'auto',
                   left   : 'auto'
                 };
               break;
               case 'left center':
                 positioning = {
-                  top    : target.top + (targetHeight / 2) - (popupHeight / 2) + arrowOffset,
-                  right  : parentWidth - target.left + distanceAway,
+                  top    : target.top + (target.height / 2) - (popup.height / 2) + offset,
+                  right  : parent.width - target.left + distanceAway,
                   left   : 'auto',
                   bottom : 'auto'
                 };
               break;
               case 'right center':
                 positioning = {
-                  top    : target.top + (targetHeight / 2) - (popupHeight / 2) + arrowOffset,
-                  left   : target.left + targetWidth + distanceAway,
+                  top    : target.top + (target.height / 2) - (popup.height / 2) + offset,
+                  left   : target.left + target.width + distanceAway,
                   bottom : 'auto',
                   right  : 'auto'
                 };
               break;
               case 'bottom left':
                 positioning = {
-                  top    : target.top + targetHeight + distanceAway,
-                  left   : target.left + arrowOffset,
+                  top    : target.top + target.height + distanceAway,
+                  left   : target.left + offset,
                   bottom : 'auto',
                   right  : 'auto'
                 };
               break;
               case 'bottom center':
                 positioning = {
-                  top    : target.top + targetHeight + distanceAway,
-                  left   : target.left + (targetWidth / 2) - (popupWidth / 2) + arrowOffset,
+                  top    : target.top + target.height + distanceAway,
+                  left   : target.left + (target.width / 2) - (popup.width / 2) + offset,
                   bottom : 'auto',
                   right  : 'auto'
                 };
               break;
               case 'bottom right':
                 positioning = {
-                  top    : target.top + targetHeight + distanceAway,
-                  right  : parentWidth - target.left  - targetWidth - arrowOffset,
+                  top    : target.top + target.height + distanceAway,
+                  right  : parent.width - target.left  - target.width - offset,
                   left   : 'auto',
                   bottom : 'auto'
                 };
@@ -677,23 +805,23 @@ $.fn.popup = function(parameters) {
               .addClass(className.loading)
             ;
             // check if is offstage
-            offstagePosition = module.get.offstagePosition(position);
+            offstagePosition = module.get.offstagePosition(position, calculations);
 
             // recursively find new positioning
             if(offstagePosition) {
-              module.debug('Popup cant fit into viewport', offstagePosition);
+              module.debug('Popup cant fit into viewport', position, offstagePosition);
               if(searchDepth < settings.maxSearchDepth) {
                 searchDepth++;
                 position = module.get.nextPosition(position);
                 module.debug('Trying new position', position);
                 return ($popup)
-                  ? module.set.position(position)
+                  ? module.set.position(position, calculations)
                   : false
                 ;
               }
               else if(!settings.lastResort) {
                 module.debug('Popup could not find a position in view', $popup);
-                module.error(error.cannotPlace);
+                // module.error(error.cannotPlace, element);
                 module.remove.attempts();
                 module.remove.loading();
                 module.reset();
@@ -703,14 +831,15 @@ $.fn.popup = function(parameters) {
 
             module.debug('Position is on stage', position);
             module.remove.attempts();
-            module.set.fluidWidth();
+            module.set.fluidWidth(calculations);
             module.remove.loading();
             return true;
           },
 
-          fluidWidth: function() {
+          fluidWidth: function(calculations) {
+            calculations = calculations || module.get.calculations();
             if( settings.setFluidWidth && $popup.hasClass(className.fluid) ) {
-              $popup.css('width', $offsetParent.width());
+              $popup.css('width', calculations.parent.width);
             }
           },
 
@@ -734,6 +863,29 @@ $.fn.popup = function(parameters) {
         },
 
         bind: {
+          events: function() {
+            module.debug('Binding popup events to module');
+            if(settings.on == 'click') {
+              $module
+                .on('click' + eventNamespace, module.toggle)
+              ;
+            }
+            if(settings.on == 'hover' && hasTouch) {
+              $module
+                .on('touchstart' + eventNamespace, module.event.touchstart)
+              ;
+            }
+            else if( module.get.startEvent() ) {
+              $module
+                .on(module.get.startEvent() + eventNamespace, module.event.start)
+                .on(module.get.endEvent() + eventNamespace, module.event.end)
+              ;
+            }
+            if(settings.target) {
+              module.debug('Target set to element', $target);
+            }
+            $window.on('resize' + elementNamespace, module.event.resize);
+          },
           popup: function() {
             module.verbose('Allowing hover events on popup to prevent closing');
             if( $popup && module.has.popup() ) {
@@ -743,23 +895,30 @@ $.fn.popup = function(parameters) {
               ;
             }
           },
-          close:function() {
-            if(settings.hideOnScroll === true || settings.hideOnScroll == 'auto' && settings.on != 'click') {
+          close: function() {
+            if(settings.hideOnScroll === true || (settings.hideOnScroll == 'auto' && settings.on != 'click'))   {
               $document
-                .one('touchmove' + eventNamespace, module.hideGracefully)
-                .one('scroll' + eventNamespace, module.hideGracefully)
+                .one(module.get.scrollEvent() + elementNamespace, module.event.hideGracefully)
               ;
               $context
-                .one('touchmove' + eventNamespace, module.hideGracefully)
-                .one('scroll' + eventNamespace, module.hideGracefully)
+                .one(module.get.scrollEvent() + elementNamespace, module.event.hideGracefully)
+              ;
+            }
+            if(settings.on == 'hover' && openedWithTouch) {
+              module.verbose('Binding popup close event to document');
+              $document
+                .on('touchstart' + elementNamespace, function(event) {
+                  module.verbose('Touched away from popup');
+                  module.event.hideGracefully.call(element, event);
+                })
               ;
             }
             if(settings.on == 'click' && settings.closable) {
               module.verbose('Binding popup close event to document');
               $document
-                .on('click' + eventNamespace, function(event) {
-                  module.verbose('Pop-up clickaway intent detected');
-                  $.proxy(module.hideGracefully, element)(event);
+                .on('click' + elementNamespace, function(event) {
+                  module.verbose('Clicked away from popup');
+                  module.event.hideGracefully.call(element, event);
                 })
               ;
             }
@@ -768,18 +927,24 @@ $.fn.popup = function(parameters) {
 
         unbind: {
           close: function() {
-            if(settings.hideOnScroll === true || settings.hideOnScroll == 'auto' && settings.on != 'click') {
+            if(settings.hideOnScroll === true || (settings.hideOnScroll == 'auto' && settings.on != 'click')) {
               $document
-                .off('scroll' + eventNamespace, module.hide)
+                .off('scroll' + elementNamespace, module.hide)
               ;
               $context
-                .off('scroll' + eventNamespace, module.hide)
+                .off('scroll' + elementNamespace, module.hide)
               ;
+            }
+            if(settings.on == 'hover' && openedWithTouch) {
+              $document
+                .off('touchstart' + elementNamespace)
+              ;
+              openedWithTouch = false;
             }
             if(settings.on == 'click' && settings.closable) {
               module.verbose('Removing close event from document');
               $document
-                .off('click' + eventNamespace)
+                .off('click' + elementNamespace)
               ;
             }
           }
@@ -787,7 +952,7 @@ $.fn.popup = function(parameters) {
 
         has: {
           popup: function() {
-            return ($popup.size() > 0);
+            return ($popup && $popup.length > 0);
           }
         },
 
@@ -796,22 +961,25 @@ $.fn.popup = function(parameters) {
             return $module.hasClass(className.active);
           },
           animating: function() {
-            return ( $popup && $popup.is(':animated') || $popup.hasClass(className.animating) );
+            return ( $popup && $popup.hasClass(className.animating) );
           },
           visible: function() {
-            return $popup && $popup.is(':visible');
+            return $popup && $popup.hasClass(className.visible);
           },
           dropdown: function() {
             return $module.hasClass(className.dropdown);
           },
           hidden: function() {
             return !module.is.visible();
+          },
+          rtl: function () {
+            return $module.css('direction') == 'rtl';
           }
         },
 
         reset: function() {
           module.remove.visible();
-          if(settings.preserve || settings.popup) {
+          if(settings.preserve) {
             if($.fn.transition !== undefined) {
               $popup
                 .transition('remove transition')
@@ -891,7 +1059,7 @@ $.fn.popup = function(parameters) {
               });
             }
             clearTimeout(module.performance.timer);
-            module.performance.timer = setTimeout(module.performance.display, 100);
+            module.performance.timer = setTimeout(module.performance.display, 500);
           },
           display: function() {
             var
@@ -985,7 +1153,7 @@ $.fn.popup = function(parameters) {
       }
       else {
         if(instance !== undefined) {
-          module.destroy();
+          instance.invoke('destroy');
         }
         module.initialize();
       }
@@ -1002,62 +1170,119 @@ $.fn.popup.settings = {
 
   name         : 'Popup',
 
+  // module settings
   debug        : false,
-  verbose      : true,
+  verbose      : false,
   performance  : true,
   namespace    : 'popup',
 
+  // callback only when element added to dom
   onCreate     : function(){},
+
+  // callback before element removed from dom
   onRemove     : function(){},
 
+  // callback before show animation
   onShow       : function(){},
+
+  // callback after show animation
   onVisible    : function(){},
+
+  // callback before hide animation
   onHide       : function(){},
+
+  // callback after hide animation
   onHidden     : function(){},
 
-  variation    : '',
-  content      : false,
-  html         : false,
-  title        : false,
-
+  // when to show popup
   on           : 'hover',
-  closable     : true,
-  hideOnScroll : 'auto',
 
-  context      : 'body',
+  // whether to add touchstart events when using hover
+  addTouchEvents : true,
 
+  // default position relative to element
   position     : 'top left',
-  prefer       : 'opposite',
-  lastResort   : false,
 
-  delay        : {
-    show : 30,
-    hide : 0
-  },
+  // name of variation to use
+  variation    : '',
 
-  setFluidWidth  : true,
+  // whether popup should be moved to context
+  movePopup      : true,
 
+  // element which popup should be relative to
   target         : false,
+
+  // jq selector or element that should be used as popup
   popup          : false,
+
+  // popup should remain inline next to activator
   inline         : false,
+
+  // popup should be removed from page on hide
   preserve       : true,
+
+  // popup should not close when being hovered on
   hoverable      : false,
 
+  // explicitly set content
+  content      : false,
+
+  // explicitly set html
+  html         : false,
+
+  // explicitly set title
+  title        : false,
+
+  // whether automatically close on clickaway when on click
+  closable     : true,
+
+  // automatically hide on scroll
+  hideOnScroll : 'auto',
+
+  // hide other popups on show
+  exclusive    : false,
+
+  // context to attach popups
+  context      : 'body',
+
+  // position to prefer when calculating new position
+  prefer       : 'opposite',
+
+  // specify position to appear even if it doesn't fit
+  lastResort   : false,
+
+  // delay used to prevent accidental refiring of animations due to user error
+  delay        : {
+    show : 50,
+    hide : 70
+  },
+
+  // whether fluid variation should assign width explicitly
+  setFluidWidth  : true,
+
+  // transition settings
   duration       : 200,
-  easing         : 'easeOutQuint',
   transition     : 'scale',
 
+  // distance away from activating element in px
   distanceAway   : 0,
+
+  // offset on aligning axis from calculated position
   offset         : 0,
+
+  // maximum times to look for a position before failing (9 positions total)
   maxSearchDepth : 20,
 
   error: {
     invalidPosition : 'The position you specified is not a valid position',
     cannotPlace     : 'No visible position could be found for the popup',
-    method          : 'The method you called is not defined.'
+    method          : 'The method you called is not defined.',
+    noTransition    : 'This module requires ui transitions <https://github.com/Semantic-Org/UI-Transition>',
+    notFound        : 'The target or popup you specified does not exist on the page'
   },
 
   metadata: {
+    activator : 'activator',
     content   : 'content',
     html      : 'html',
     offset    : 'offset',
@@ -1123,13 +1348,6 @@ $.fn.popup.settings = {
   }
 
 };
-
-// Adds easing
-$.extend( $.easing, {
-  easeOutQuad: function (x, t, b, c, d) {
-    return -c *(t/=d)*(t-2) + b;
-  }
-});
 
 
 })( jQuery, window , document );

@@ -4,56 +4,16 @@
     display: block;
 }
 
-/*#new_post_new_entry {
-    z-index: 1;
-    background-color: #BBBBBB;
-    height: 20px;
-    text-align: center;
-}
-
-#add_entry_button, #new_post_submit_button {
-    z-index: 2;
-    background-color: white;
-    width: 200px;
-    text-align: center;
-}*/
-
 #new_post_submit {
     z-index: 1;
     background-color: #AAAAAA;
-    /*height: 20px;*/
     text-align: center;
 }
 
 .entry_options button {
     margin: 10px;
-    /*display: block;*/
 }
 
-/*#new_post_form_body input {
-    display: block;
+#template_modal_1_content td:first-of-type {
+    white-space: nowrap;
 }
-
-#new_post_form_body div {
-    margin: 10px;
-}
-
-#new_post_form_body > div {
-    overflow: hidden;
-}
-
-#new_post_form_body > div > div {
-    float: left;
-}*/
-
-/*.delete_entry {
-    float: left;
-}
-
-.entry_name {
-    float: left;
-}
-
-.entry_value {
-    float: left;
-}*/
