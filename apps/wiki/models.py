@@ -42,6 +42,13 @@ class PostElement(models.Model):
         abstract = True
 
 
+class Choice(PostElement):
+    """docstring for Choice"""
+    title = models.CharField(max_length="30")
+    options = MyListField()
+    description = models.TextField(max_length="300")
+
+
 class Template(PostElement):
     """docstring for Template"""
     title = models.CharField(max_length="30")

@@ -20,7 +20,7 @@ var ____Class0=React.Component;for(var ____Class0____Key in ____Class0){if(____C
         return(
             React.createElement("div", {className: "ui selection dropdown entry_type"}, 
                 React.createElement("input", {type: "hidden", id: this.props.id, 
-                value: this.props.type}), 
+                    value: this.props.type}), 
                 React.createElement("div", {className: "default text"}, "Type"), 
                 React.createElement("i", {className: "dropdown icon"}), 
                 React.createElement("div", {className: "menu"}, 
@@ -192,30 +192,33 @@ var ____Class2=React.Component;for(var ____Class2____Key in ____Class2){if(____C
     }});
     Object.defineProperty(NewEntry.prototype,"render",{writable:true,configurable:true,value:function() {
         return(
-            React.createElement("div", {className: "three fields"}, 
-                React.createElement("div", {className: "ui dividing header"}), 
-                React.createElement("div", {className: "field entry_header"}, 
-                    React.createElement("div", {className: "field"}, 
-                        React.createElement("div", {className: "ui input"}, 
-                            React.createElement("input", {type: "text", placeholder: "Name", 
-                            id: this.props.idx+"_name"})
+            React.createElement("div", null, 
+                React.createElement("div", {className: "ui divider"}), 
+                React.createElement("div", {className: "three fields"}, 
+                    React.createElement("div", {className: "field entry_header"}, 
+                        React.createElement("div", {className: "field"}, 
+                            React.createElement("div", {className: "ui input"}, 
+                                React.createElement("input", {type: "text", placeholder: "Name", 
+                                id: this.props.idx+"_name"})
+                            )
+                        ), 
+                        React.createElement("br", null), 
+                        React.createElement("div", {className: "field"}, 
+                            React.createElement(EntryTypeSelect, {id: this.props.idx+"_type", 
+                                type: this.props.type, 
+                                onEntryTypeChange: 
+                                    this.props.onEntryTypeChange
+                                })
                         )
                     ), 
-                    React.createElement("div", {className: "field"}, 
-                        React.createElement(EntryTypeSelect, {id: this.props.idx+"_type", 
-                            type: this.props.type, 
-                            onEntryTypeChange: 
-                                this.props.onEntryTypeChange
-                            })
-                    )
-                ), 
-                React.createElement("div", {className: "field entry_content"}, 
-                    React.createElement(NewEntryValue, {type: this.props.type, 
-                        idx: this.props.idx})
-                ), 
-                React.createElement("div", {className: "field entry_options"}, 
-                    React.createElement("div", {className: "ui negative button delete_entry_button"}, 
-                        "Delete"
+                    React.createElement("div", {className: "field entry_content"}, 
+                        React.createElement(NewEntryValue, {type: this.props.type, 
+                            idx: this.props.idx})
+                    ), 
+                    React.createElement("div", {className: "field entry_options"}, 
+                        React.createElement("div", {className: "ui negative button delete_entry_button"}, 
+                            "Delete"
+                        )
                     )
                 )
             )
@@ -472,7 +475,7 @@ var ____Class4=React.Component;for(var ____Class4____Key in ____Class4){if(____C
                     )
                 ), 
                 NewEntries, 
-                React.createElement("div", {className: "ui dividing header"}), 
+                React.createElement("div", {className: "ui divider"}), 
                 React.createElement(NewPostFormFooter, {
                     addEntry: this.addEntry.bind(this)})
             )

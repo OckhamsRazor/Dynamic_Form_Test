@@ -18,7 +18,7 @@ Wiki = function() {
     */
 
     var buttonSettings_ = function() {
-        $("#new_post_button").click(Util.buttonDefault(offerNewPost_));
+        // $("#new_post_button").click(Util.buttonDefault(offerNewPost_));
     };
 
     /**
