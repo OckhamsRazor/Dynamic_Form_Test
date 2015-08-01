@@ -1,5 +1,81 @@
 "use strict"
 
+class DynamicList extends React.Component {
+    constructor(props) {
+        super(props);
+
+        var items = (typeof props.items == "undefined")
+            ? []
+            : props.items
+        ;
+        this.state = {
+            items: items
+        };
+    }
+    addItem() {
+        var oldItems = this.state.items;
+        var newItems = oldItems.concat([this.props.emptyItem]);
+        this.setState({
+            items: newItems
+        });
+    }
+    deleteItem(idx) {
+        var newItems = this.state.items;
+        newItems[idx]["isActive"] = false;
+        this.setState({
+            items: newItems
+        });
+    }
+}
+
+class Option_ extends React.Component {
+
+}
+Option_.defaultProps = {
+    value: "empty",
+    isActive: true,
+    isSelected: false,
+    idx: -1,
+    onDelete: null
+};
+
+class ChoiceModalNew extends DynamicList {
+    constructor(props) {
+        super(props);
+    }
+    rendered() {
+
+    }
+    componentDidMount() {
+        rendered();
+    }
+    componentDidUpdate() {
+        rendered();
+    }
+    render() {
+        var Options = this.state.items.map(function(item, idx) {
+            if (item.isActive) {
+                return(
+                    <Option_ value={entry.value}
+                        isActive={true} isSelected={false}
+                        key={idx} idx={idx}
+                        onDelete={
+                            this.deleteItem.bind(this, idx)
+                        } />
+                );
+            }
+        }.bind(this));
+        return(
+            <div>
+
+            </div>
+        );
+    }
+}
+ChoiceModalNew.defaultProps = {
+    emptyItem: Option_.defaultProps
+};
+
 class EntryTypeSelect extends React.Component {
     componentDidMount() {
         $(React.findDOMNode(this))

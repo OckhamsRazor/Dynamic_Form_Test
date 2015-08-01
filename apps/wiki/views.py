@@ -133,6 +133,25 @@ def delete_template(request):
 
 
 @login_required
+def create_choice(request):
+    pass
+
+
+def read_choice(request):
+    pass
+
+
+@login_required
+def update_choice(request):
+    pass
+
+
+@login_required
+def delete_choice(request):
+    pass
+
+
+@login_required
 def new_page(request):
     pass
 
