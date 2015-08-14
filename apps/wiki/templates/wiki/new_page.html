@@ -4,33 +4,33 @@
 {% block title %} Create your new page {% endblock title %}
 
 {% block body_main_1_content %}
-    {% if user.is_authenticated %}
-        <div id="option_bar" class="content_block">
-            <div id="change_template_button" class="ui button">
-                Change Template
-            </div>
-            <div id="save_template_as_button" class="ui button">
-                Save Template As ...
-            </div>
-        </div>
-        <div class="content_block">
-            {% csrf_token %}
-            <form id="new_post_form" class="ui form">
-            </form>
-        </div>
-    {% else %}
-        <div class="content_block">尚未登入!</div>
-    {% endif %}
+  {% if user.is_authenticated %}
+    <div id="option_bar" class="content_block">
+      <div id="change_template_button" class="ui button">
+        Change Template
+      </div>
+      <div id="save_template_as_button" class="ui button">
+        Save Template As ...
+      </div>
+    </div>
+    <div class="content_block">
+      {% csrf_token %}
+      <form id="new_post_form" class="ui form">
+      </form>
+    </div>
+  {% else %}
+    <div class="content_block">尚未登入!</div>
+  {% endif %}
 {% endblock body_main_1_content %}
 
 {% block footer_javascript_page %}
-    <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
+  <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
 
-    <script>
-        $(document).ready(function() {
-            if (!Posts.getNewPostForm()) {
-                Posts.loadTemplate();
-            }
-        });
-    </script>
+  <script>
+    $(document).ready(function() {
+      if (!Posts.getNewPostForm()) {
+        Posts.loadTemplate();
+      }
+    });
+  </script>
 {% endblock footer_javascript_page %}

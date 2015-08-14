@@ -231,10 +231,17 @@ Posts = function() {
     };
 
     var semanticUiInit_ = function() {
+
+        /**
+         * customized form validation rules
+         */
         $.fn.form.settings.rules["number"] = function(e) {
             return !isNaN(e);
         };
 
+        /**
+         * entry editor
+         */
         for (var typeEnum in EntryTypeName_) {
             var type = EntryTypeName_[typeEnum];
             $("#entry_editor_type_menu")
@@ -285,6 +292,10 @@ Posts = function() {
                 onChange: onEntryEditorTypeChange_
             })
         ;
+
+        /**
+         * template modal(s)
+         */
         $(".template_modal.main")
             .modal({
                 // allowMultiple: true,
@@ -312,6 +323,12 @@ Posts = function() {
                 inline: true
             })
         ;
+
+        /**
+         * choice editor
+         */
+        $(".choice_modal.edit")
+
     };
 
     var onEntryEditorTypeChange_ = function(newType) {

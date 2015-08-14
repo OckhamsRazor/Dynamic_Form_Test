@@ -8,137 +8,164 @@
 {% block title %} Main Page {% endblock title %}
 
 {% block body_main_1 %}
-    {% block body_main_1_content %}
-        <div id="create_post" class="content_block">
-        {% if user.is_authenticated %}
-            <button id="new_post_button">New Post</button>
-        {% else %}
-            尚未登入!
-        {% endif %}
-        </div>
+  {% block body_main_1_content %}
+    <div id="create_post" class="content_block">
+      {% if user.is_authenticated %}
+        <div class="ui button" id="new_post_button">New Post</div>
+        <div class="ui button" id="new_choice_button">New Choice</div>
+      {% else %}
+        尚未登入!
+      {% endif %}
+    </div>
 
-        <!-- #list_all_page for testing -->
-        <div id="list_all_posts" class="content_block">
-        {% if posts %}
-            <ul>
-            {% for post in posts %}
-                <li><a href="#">{{ post.title }}</a></li>
-            {% endfor %}
-            </ul>
-        {% else %}
-            There are currently no posts -- create one today!
-        {% endif %}
-        </div>
-    {% endblock body_main_1_content %}
+    <!-- #list_all_page for testing -->
+    <div id="list_all_posts" class="content_block">
+      {% if posts %}
+        <ul>
+        {% for post in posts %}
+          <li><a href="#">{{ post.title }}</a></li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        There are currently no posts -- create one today!
+      {% endif %}
+    </div>
+  {% endblock body_main_1_content %}
 
-    <div class="ui main modal template_modal">
-        <!-- <i class="close icon"></i> -->
-        <div class="header">
-            Template Content
-        </div>
-        <div class="content" id="template_modal_1_content">
-        </div>
-        <div class="actions">
-            <div class="ui negative button">
-                Discard
-            </div>
-            <div class="ui primary button">
-                Next
-                <i class="ui right chevron icon"></i>
-            </div>
-        </div>
+  <div class="ui main modal template_modal">
+    <!-- <i class="close icon"></i> -->
+    <div class="header">
+      Template Content
     </div>
-    <div class="ui edit small long modal template_modal">
-        <i class="close icon"></i>
-        <div class="header">
-            Entry Editor
-        </div>
-        <div class="content">
-            <form id="entry_editor" class="ui form">
-                <div>
-                    <div class="field">
-                        <label>Name</label>
-                        <input type="text" name="name"
-                            id="entry_editor_name"/>
-                    </div>
-                    <div class="field">
-                        <label>Type</label>
-                        <div class='ui selection dropdown'>
-                            <input type='hidden'
-                                name="type" id="entry_editor_type"/>
-                            <div class="default text"></div>
-                            <i class='dropdown icon'></i>
-                            <div class='menu'
-                                id="entry_editor_type_menu"></div>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label>Default Value</label>
-                        <textarea name="value" id="entry_editor_value">
-                        </textarea>
-                    </div>
-                    <div class="field">
-                        <label>Description</label>
-                        <textarea name="description"
-                            id="entry_editor_description">
-                        </textarea>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="actions">
-            <div class="ui negative button">
-                Discard
-            </div>
-            <div class="ui positive button">
-                Confirm
-                <i class="ui checkmark icon"></i>
-            </div>
-        </div>
+    <div class="content" id="template_modal_1_content">
     </div>
-    <div class="ui template_title united modal template_modal">
-        <!-- <i class="close icon"></i> -->
-        <div class="header">
-            Template Title
-        </div>
-        <div class="content">
-            <form id="template_title_form" class="ui form">
-                <div>
-                    <div class="field">
-                        <label>Title</label>
-                        <input type="text" id="template_title_value" />
-                    </div>
-                    <div class="field">
-                        <label>Description</label>
-                        <textarea id="template_description"></textarea>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="actions">
-            <div class="ui negative button">
-                Prev
-            </div>
-            <div class="ui primary button">
-                Submit
-                <i class="ui checkmark icon"></i>
-            </div>
-        </div>
+    <div class="actions">
+      <div class="ui negative button">
+        Discard
+      </div>
+      <div class="ui primary button">
+        Next
+        <i class="ui right chevron icon"></i>
+      </div>
     </div>
+  </div>
+  <div class="ui edit small long modal template_modal">
+    <i class="close icon"></i>
+    <div class="header">
+      Entry Editor
+    </div>
+    <div class="content">
+      <form id="entry_editor" class="ui form">
+        <div>
+          <div class="field">
+            <label>Name</label>
+            <input type="text" name="name" id="entry_editor_name"/>
+          </div>
+          <div class="field">
+            <label>Type</label>
+            <div class='ui selection dropdown'>
+              <input type='hidden' name="type" id="entry_editor_type"/>
+              <div class="default text"></div>
+              <i class='dropdown icon'></i>
+              <div class='menu' id="entry_editor_type_menu"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Default Value</label>
+            <textarea name="value" id="entry_editor_value"></textarea>
+          </div>
+          <div class="field">
+            <label>Description</label>
+            <textarea name="description" id="entry_editor_description">
+            </textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="actions">
+      <div class="ui negative button">
+        Discard
+      </div>
+      <div class="ui positive button">
+        Confirm
+        <i class="ui checkmark icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="ui template_title united modal template_modal">
+    <!-- <i class="close icon"></i> -->
+    <div class="header">
+      Template Title
+    </div>
+    <div class="content">
+      <form id="template_title_form" class="ui form">
+        <div>
+          <div class="field">
+            <label>Title</label>
+            <input type="text" id="template_title_value" />
+          </div>
+          <div class="field">
+            <label>Description</label>
+            <textarea id="template_description"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="actions">
+      <div class="ui negative button">
+        Prev
+      </div>
+      <div class="ui primary button">
+        Submit
+        <i class="ui checkmark icon"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="ui edit small long modal choice_modal">
+    <i class="close icon"></i>
+    <div class="header">
+      Choice Editor
+    </div>
+    <div class="content">
+<!--             <form id="choice_editor" class="ui form">
+            </form> -->
+      <div class="ui top attached tabular menu">
+        <a class="item active" data-tab="new">New</a>
+        <a class="item" data-tab="search">Search</a>
+      </div>
+      <div class="ui bottom attached tab segment active" data-tab="new">
+        NEW
+      </div>
+      <div class="ui bottom attached tab segment" data-tab="search">
+        SEARCH
+      </div>
+    </div>
+    <div class="actions">
+      <div class="ui negative button">
+        Discard
+      </div>
+      <div class="ui positive button">
+        Confirm
+        <i class="ui checkmark icon"></i>
+      </div>
+    </div>
+  </div>
 {% endblock body_main_1 %}
 
 {% block footer_javascript_section %}
-    <script src="{% static 'wiki/js/wiki.js' %}"></script>
-    <script src="{% static 'wiki/js/posts.js' %}"></script>
+  <script src="{% static 'wiki/js/wiki.js' %}"></script>
+  <script src="{% static 'wiki/js/posts.js' %}"></script>
 
-    <script type="text/jsx" src="{% static 'wiki/js/wiki.jsx' %}"></script>
-    <!-- <script type="text/jsx" src="{% static 'wiki/js/posts.jsx' %}"></script> -->
-    <script src="{% static 'wiki/js/posts.react.js' %}"></script>
+  <!-- <script type="text/jsx" src="{% static 'wiki/js/wiki.jsx' %}"></script> -->
+  <!-- <script type="text/jsx" src="{% static 'wiki/js/posts.jsx' %}"></script> -->
+  <script src="{% static 'wiki/js/wiki.react.js' %}"></script>
+  <script src="{% static 'wiki/js/posts.react.js' %}"></script>
 
-    <script>
-        $(document).ready(function() {
-            Wiki.init();
-            Posts.init();
-        });
-    </script>
+  <script>
+    $(document).ready(function() {
+      Wiki.init();
+      Posts.init();
+    });
+  </script>
 {% endblock footer_javascript_section %}

@@ -19,6 +19,20 @@ Wiki = function() {
 
     var buttonSettings_ = function() {
         // $("#new_post_button").click(Util.buttonDefault(offerNewPost_));
+        $("#new_choice_button").click(Util.buttonDefault(function() {
+            $(".choice_modal.edit")
+                .modal({
+                    onApprove: function() {
+                        alert("Hell World!");
+                    }
+                })
+                .modal("show")
+            ;
+
+            $(".choice_modal.edit .content .menu .item")
+                .tab()
+            ;
+        }));
     };
 
     /**
