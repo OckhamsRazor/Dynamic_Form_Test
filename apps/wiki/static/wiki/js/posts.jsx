@@ -20,7 +20,7 @@ class EntryTypeSelect extends React.Component {
         return(
             <div className='ui selection dropdown entry_type'>
                 <input type='hidden' id={this.props.id}
-                value={this.props.type}/>
+                    value={this.props.type}/>
                 <div className='default text'>Type</div>
                 <i className='dropdown icon'></i>
                 <div className='menu'>
@@ -192,30 +192,33 @@ class NewEntry extends React.Component {
     }
     render() {
         return(
-            <div className="three fields">
-                <div className='ui dividing header'></div>
-                <div className='field entry_header'>
-                    <div className='field'>
-                        <div className='ui input'>
-                            <input type='text' placeholder='Name'
-                            id={this.props.idx+"_name"}/>
+            <div>
+                <div className='ui divider'></div>
+                <div className="three fields">
+                    <div className='field entry_header'>
+                        <div className='field'>
+                            <div className='ui input'>
+                                <input type='text' placeholder='Name'
+                                id={this.props.idx+"_name"}/>
+                            </div>
+                        </div>
+                        <br />
+                        <div className='field'>
+                            <EntryTypeSelect id={this.props.idx+"_type"}
+                                type={this.props.type}
+                                onEntryTypeChange={
+                                    this.props.onEntryTypeChange
+                                } />
                         </div>
                     </div>
-                    <div className='field'>
-                        <EntryTypeSelect id={this.props.idx+"_type"}
-                            type={this.props.type}
-                            onEntryTypeChange={
-                                this.props.onEntryTypeChange
-                            } />
+                    <div className='field entry_content'>
+                        <NewEntryValue type={this.props.type}
+                            idx={this.props.idx} />
                     </div>
-                </div>
-                <div className='field entry_content'>
-                    <NewEntryValue type={this.props.type}
-                        idx={this.props.idx} />
-                </div>
-                <div className='field entry_options'>
-                    <div className='ui negative button delete_entry_button'>
-                        Delete
+                    <div className='field entry_options'>
+                        <div className='ui negative button delete_entry_button'>
+                            Delete
+                        </div>
                     </div>
                 </div>
             </div>
@@ -472,7 +475,7 @@ class NewPostForm extends React.Component {
                     </div>
                 </div>
                 {NewEntries}
-                <div className="ui dividing header"></div>
+                <div className="ui divider"></div>
                 <NewPostFormFooter
                     addEntry={this.addEntry.bind(this)} />
             </div>

@@ -116,7 +116,7 @@ class TemplateModalMain extends React.Component {
             // entries[idx]["description"] = "";
         }
         this.state = {
-            entries: entries
+            entries: entries,
         };
     }
     addEntry(newEntry) {
@@ -143,6 +143,20 @@ class TemplateModalMain extends React.Component {
                 );
             }.bind(this)))
         ;
+
+        if (this.props.onApprove) {
+            console.log(
+                $(React.findDOMNode(this))
+                    .find(".actions .primary")
+            );
+            $(React.findDOMNode(this))
+                .find(".actions .primary")
+                .click(Util.buttonDefault(function() {
+                    // this.props.onApprove.bind(this)
+                    alert("not working zzz");
+                }))
+            ;
+        }
     }
     componentDidMount() {
         this.rendered();

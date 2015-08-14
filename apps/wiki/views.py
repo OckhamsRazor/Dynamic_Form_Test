@@ -55,6 +55,9 @@ def create_template(request):
 @login_required
 @post_only_json
 def read_template(request):
+    """
+    returns template as JSON
+    """
     context = {
         "result": consts.FAILED,
         "template": None
@@ -73,6 +76,9 @@ def read_template(request):
 
 @login_required
 def template(request, template_id):
+    """
+    returns template as page
+    """
     try:
         obj = get_object_or_404(Template, id=template_id)
         return render(request, "wiki/template.html", obj.to_json())

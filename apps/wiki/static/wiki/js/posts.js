@@ -15,6 +15,7 @@ Posts = function() {
 
     var newPostEntries_ = [];
     var newPostForm_ = null; // <NewPostForm />
+    var templateModalMain_ = null; // <TemplateModalMain />
 
     /**
      * consts
@@ -25,6 +26,8 @@ Posts = function() {
         READ_TEMPLATE_URL: "/wiki/read_template/",
         UPDATE_TEMPLATE_URL: "/wiki/update_template/",
         TEMPLATE_TITLE_EXISTS_URL: "/wiki/template_title_exists/",
+
+        TEMPLATE_MAIN_URL: "/wiki/template/main/",
     });
     var EntryTypeName_ = Object.freeze({
         CHOICE: "Choice",
@@ -73,7 +76,13 @@ Posts = function() {
 
     /* READ */
     var changeTemplate_ = function() {
-
+        Util.sendConfirm(
+            "Warning",
+            "Your post will be lost if you leave this page. Proceed?",
+            function() {
+                window.location.href = PostUrls_["TEMPLATE_MAIN_URL"];
+            }
+        );
     };
 
     var loadTemplate_ = function() {
@@ -217,7 +226,7 @@ Posts = function() {
             .click(Util.buttonDefault(offerTemplateSetting_))
         ;
         $("#change_template_button")
-            .click(Util.buttonDefault(offerChangeTemplate_))
+            .click(Util.buttonDefault(changeTemplate_))
         ;
     };
 
@@ -388,6 +397,10 @@ Posts = function() {
 
         getNewPostForm: function() { return newPostForm_; },
         setNewPostForm: function(newForm) { newPostForm_ = newForm; },
+        getTemplateModalMain: function() { return templateModalMain_; },
+        setTemplateModalMain: function(tModalMain) {
+            templateModalMain_ = tModalMain;
+        },
 
         /**
          * public methods

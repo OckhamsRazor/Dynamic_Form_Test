@@ -16,6 +16,7 @@ $("#new_post_with_template_button").click(
                         "template_modal_1_content"
                     )
                 );
+                Posts.setTemplateModalMain(templateModalMain);
                 $(".template_modal.main .header")
                     .html("Template Editor")
                 ;
@@ -31,7 +32,8 @@ $("#new_post_with_template_button").click(
                         },
                         onApprove: function() {
                             Util.setSessionStorage(
-                                "loadedTemplate", data.template.entries
+                                "loadedTemplate",
+                                Posts.getTemplateModalMain().state.entries
                             );
                             document.location.href = Wiki.getUrl(
                                 "NEW_POST_URL"
