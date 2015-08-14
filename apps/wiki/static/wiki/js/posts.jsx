@@ -29,7 +29,28 @@ class DynamicList extends React.Component {
 }
 
 class Option_ extends React.Component {
-
+    render() {
+        return(
+            <div className="ui form">
+                <div className="inline fields">
+                    <div className="field option_isSelected">
+                        <div className="ui checkbox">
+                            <input type="checkbox" name={this.props.idx} />
+                        </div>
+                    </div>
+                    <div className="six wide field option_content">
+                        <input type='text' placeholder='Option'
+                        id={"option_"+this.props.idx+"_name"} />
+                    </div>
+                    <div className="field option_options">
+                        <div className='ui negative button delete_option_button'>
+                            Delete
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 }
 Option_.defaultProps = {
     value: "empty",
@@ -44,31 +65,32 @@ class ChoiceModalNew extends DynamicList {
         super(props);
     }
     rendered() {
-
+        $(React.findDOMNode(this))
+            .find(".checkbox")
+            .checkbox()
+        ;
     }
     componentDidMount() {
-        rendered();
+        this.rendered();
     }
     componentDidUpdate() {
-        rendered();
+        this.rendered();
     }
     render() {
-        var Options = this.state.items.map(function(item, idx) {
-            if (item.isActive) {
-                return(
-                    <Option_ value={entry.value}
-                        isActive={true} isSelected={false}
-                        key={idx} idx={idx}
-                        onDelete={
-                            this.deleteItem.bind(this, idx)
-                        } />
-                );
-            }
-        }.bind(this));
         return(
-            <div>
-
-            </div>
+            <div> {
+                this.state.items.map((item, idx) => {
+                    if (item.isActive) {
+                        return(<Option_ value={item.value}
+                            isSelected={false}
+                            key={idx} idx={idx}
+                            onDelete={
+                                this.deleteItem.bind(this, idx)
+                            } />
+                        )
+                    }
+                }
+            )} </div>
         );
     }
 }
@@ -151,6 +173,7 @@ class NewEntryValue extends React.Component {
         }
         Posts.postFormValidationSettings["fields"] = Posts.postFormValidationRules;
         $("#new_post_form")
+            .form("destroy")
             .form(
                 Posts.postFormValidationSettings
             )
@@ -210,6 +233,7 @@ class NewEntry extends React.Component {
         var idx = this.props.idx;
         var name = $("#"+idx+"_name");
         name
+            .unbind("blur")
             .blur(function() {
                 if (typeof Posts.newPostEntries[idx] == "undefined") {
                     Posts.newPostEntries[idx] = {};
@@ -222,6 +246,7 @@ class NewEntry extends React.Component {
         var thisNode = $(React.findDOMNode(this));
         thisNode
             .find(".delete_entry_button")
+            .unbind("click")
             .click(
                 Util.buttonDefault(this.props.onDelete)
             )
@@ -247,6 +272,7 @@ class NewEntry extends React.Component {
         };
         Posts.postFormValidationSettings["fields"] = Posts.postFormValidationRules;
         $("#new_post_form")
+            .form("destroy")
             .form(
                 Posts.postFormValidationSettings
             )
@@ -324,6 +350,7 @@ class NewPostFormFooter extends React.Component {
     componentDidMount() {
         $(React.findDOMNode(this))
             .find("#add_entry_button")
+            .unbind("click")
             .click(Util.buttonDefault(this.props.addEntry))
         ;
     }
@@ -421,6 +448,7 @@ class NewPostForm extends React.Component {
         };
         Posts.postFormValidationSettings["fields"] = Posts.postFormValidationRules;
         $("#new_post_form")
+            .form("destroy")
             .form(
                 Posts.postFormValidationSettings
             )

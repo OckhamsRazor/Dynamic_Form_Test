@@ -64,15 +64,16 @@
 {% endblock body_main_1_content %}
 
 {% block footer_javascript_page %}
-    <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
-    <!-- <script src="{% static 'wiki/js/posts.js' %}"></script> -->
-    <script type="text/jsx" src="{% static 'wiki/js/template.jsx' %}"></script>
+  <!-- <script src="{% static 'util/js/jquery.Jcrop.min.js' %}"></script> -->
+  <!-- <script src="{% static 'wiki/js/posts.js' %}"></script> -->
+  <!-- <script type="text/jsx" src="{% static 'wiki/js/template.jsx' %}"></script> -->
+  <script src="{% static 'wiki/js/template.react.js' %}"></script>
 
-    <script>
-        $(document).ready(function() {
-          $("#template_options")
-              .dropdown()
-          ;
-        });
-    </script>
+  <script>
+    $(document).ready(function() {
+      $("#template_options")
+        .dropdown()
+      ;
+    });
+  </script>
 {% endblock footer_javascript_page %}

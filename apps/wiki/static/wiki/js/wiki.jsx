@@ -66,10 +66,12 @@ class TemplateModalMainEntry extends React.Component {
     rendered() {
         $(React.findDOMNode(this))
             .find(".edit.icon")
+            .unbind("click")
             .click(Util.buttonDefault(this.edit.bind(this)))
         ;
         $(React.findDOMNode(this))
             .find(".remove.icon")
+            .unbind("click")
             .click(Util.buttonDefault(this.del.bind(this)))
         ;
     }
