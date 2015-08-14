@@ -16,6 +16,7 @@ Posts = function() {
     var newPostEntries_ = [];
     var newPostForm_ = null; // <NewPostForm />
     var templateModalMain_ = null; // <TemplateModalMain />
+    var choiceModalNew_ = null; // <ChoiceModalNew />
 
     /**
      * consts
@@ -90,7 +91,7 @@ Posts = function() {
             newPostForm_ = React.render(
                 React.createElement(
                     NewPostForm, {
-                        entries: Util.getSessionStorage("loadedTemplate")
+                        items: Util.getSessionStorage("loadedTemplate")
                     }
                 ),
                 document.getElementById("new_post_form")
@@ -283,7 +284,6 @@ Posts = function() {
         };
         $("#entry_editor")
             .form(
-                // entryEditorValidationRules_,
                 entryEditorValidationSettings_
             )
         ;
@@ -327,7 +327,7 @@ Posts = function() {
         /**
          * choice editor
          */
-        $(".choice_modal.edit")
+        // $(".choice_modal.edit")
 
     };
 
@@ -417,6 +417,10 @@ Posts = function() {
         getTemplateModalMain: function() { return templateModalMain_; },
         setTemplateModalMain: function(tModalMain) {
             templateModalMain_ = tModalMain;
+        },
+        getChoiceModalNew: function() { return choiceModalNew_; },
+        setChoiceModalNew: function(cModalNew) {
+            choiceModalNew_ = cModalNew;
         },
 
         /**

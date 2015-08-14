@@ -1,33 +1,5 @@
 "use strict"
 
-class DynamicList extends React.Component {
-    constructor(props) {
-        super(props);
-
-        var items = (typeof props.items == "undefined")
-            ? []
-            : props.items
-        ;
-        this.state = {
-            items: items
-        };
-    }
-    addItem() {
-        var oldItems = this.state.items;
-        var newItems = oldItems.concat([this.props.emptyItem]);
-        this.setState({
-            items: newItems
-        });
-    }
-    deleteItem(idx) {
-        var newItems = this.state.items;
-        newItems[idx]["isActive"] = false;
-        this.setState({
-            items: newItems
-        });
-    }
-}
-
 class Option_ extends React.Component {
     render() {
         return(
@@ -60,9 +32,31 @@ Option_.defaultProps = {
     onDelete: null
 };
 
-class ChoiceModalNew extends DynamicList {
+class ChoiceModalNew extends React.Component {
     constructor(props) {
         super(props);
+
+        var items = (typeof props.items == "undefined")
+            ? []
+            : props.items
+        ;
+        this.state = {
+            items: items
+        };
+    }
+    addItem() {
+        var oldItems = this.state.items;
+        var newItems = oldItems.concat([this.props.emptyItem]);
+        this.setState({
+            items: newItems
+        });
+    }
+    deleteItem(idx) {
+        var newItems = this.state.items;
+        newItems[idx]["isActive"] = false;
+        this.setState({
+            items: newItems
+        });
     }
     rendered() {
         $(React.findDOMNode(this))
@@ -107,14 +101,6 @@ class EntryTypeSelect extends React.Component {
         ;
     }
     render() {
-        var Types = Object.keys(this.props.types).map(function(type, idx) {
-            return(
-                <div className='item' data-value={this.props.types[type]}
-                key={idx} >
-                    {this.props.types[type]}
-                </div>
-            );
-        }.bind(this));
         return(
             <div className='ui selection dropdown entry_type'>
                 <input type='hidden' id={this.props.id}
@@ -122,7 +108,13 @@ class EntryTypeSelect extends React.Component {
                 <div className='default text'>Type</div>
                 <i className='dropdown icon'></i>
                 <div className='menu'>
-                    {Types}
+                    {Object.keys(this.props.types).map((type, idx) =>
+                        <div className='item'
+                        data-value={this.props.types[type]}
+                        key={idx} >
+                            {this.props.types[type]}
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -235,11 +227,12 @@ class NewEntry extends React.Component {
         name
             .unbind("blur")
             .blur(function() {
-                if (typeof Posts.newPostEntries[idx] == "undefined") {
-                    Posts.newPostEntries[idx] = {};
-                }
-                Posts.newPostEntries[idx]["name"] = name.val();
-            })
+                // if (typeof Posts.newPostEntries[idx] == "undefined") {
+                //     Posts.newPostEntries[idx] = {};
+                // }
+                // Posts.newPostEntries[idx]["name"] = name.val();
+                this.props.onEntryNameChange(name.val());
+            }.bind(this))
         ;
     }
     validation() {
@@ -334,6 +327,7 @@ NewEntry.propTypes = {
     isActive: React.PropTypes.bool, // FALSE only if the entry has been deleted
     idx: React.PropTypes.number,
     onDelete: React.PropTypes.func,
+    onEntryNameChange: React.PropTypes.func,
     onEntryTypeChange: React.PropTypes.func
 };
 NewEntry.defaultProps = {
@@ -343,6 +337,7 @@ NewEntry.defaultProps = {
     isActive: true,
     idx: -1,
     onDelete: null,
+    onEntryNameChange: null,
     onEntryTypeChange: null
 };
 
@@ -405,6 +400,15 @@ class NewPostForm extends React.Component {
         this.setState({
             entries: newEntries
         });
+    }
+    onEntryNameChange(idx, newName) {
+        var newEntries = this.state.entries;
+        if (newEntries[idx]["name"] != newName) {
+            newEntries[idx]["name"] = newName;
+            this.setState({
+                entries: newEntries
+            });
+        }
     }
     onEntryTypeChange(idx, newType) {
         var newEntries = this.state.entries;
@@ -556,19 +560,6 @@ class NewPostForm extends React.Component {
         Posts.saveTemplateAs(title, data);
     }
     render() {
-        var NewEntries = this.state.entries.map(function(entry, idx) {
-            if (entry.isActive) {
-                return(
-                    <NewEntry name={entry.name} type={entry.type}
-                        value={entry.value} isActive={true}
-                        key={idx} idx={idx}
-                        onDelete={this.deleteEntry.bind(this, idx)}
-                        onEntryTypeChange={
-                            this.onEntryTypeChange.bind(this, idx)
-                        } />
-                );
-            }
-        }.bind(this));
         return(
             <div>
                 <div className="field">
@@ -578,7 +569,22 @@ class NewPostForm extends React.Component {
                         placeholder="Title" />
                     </div>
                 </div>
-                {NewEntries}
+                {this.state.entries.map((entry, idx) => {
+                    if (entry.isActive) {
+                        return(
+                            <NewEntry name={entry.name} type={entry.type}
+                                value={entry.value} isActive={true}
+                                key={idx} idx={idx}
+                                onDelete={this.deleteEntry.bind(this, idx)}
+                                onEntryNameChange={
+                                    this.onEntryNameChange.bind(this, idx)
+                                }
+                                onEntryTypeChange={
+                                    this.onEntryTypeChange.bind(this, idx)
+                                } />
+                        );
+                    }
+                })}
                 <div className="ui divider"></div>
                 <NewPostFormFooter
                     addEntry={this.addEntry.bind(this)} />
@@ -586,5 +592,3 @@ class NewPostForm extends React.Component {
         );
     }
 }
-
-// React.render(<NewPostForm />, document.getElementById("new_post_form"));
