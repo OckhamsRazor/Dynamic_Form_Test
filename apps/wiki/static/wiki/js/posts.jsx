@@ -224,14 +224,12 @@ class NewEntry extends React.Component {
     onFieldBlurred() {
         var idx = this.props.idx;
         var name = $("#"+idx+"_name");
+        var value = $("#"+idx+"_value")
         name
             .unbind("blur")
             .blur(function() {
-                // if (typeof Posts.newPostEntries[idx] == "undefined") {
-                //     Posts.newPostEntries[idx] = {};
-                // }
-                // Posts.newPostEntries[idx]["name"] = name.val();
                 this.props.onEntryNameChange(name.val());
+                this.props.onEntryValueChange(value.val());
             }.bind(this))
         ;
     }
@@ -324,21 +322,25 @@ NewEntry.propTypes = {
     name: React.PropTypes.string,
     type: React.PropTypes.string, // TBD (change it to ENUM?)
     value: React.PropTypes.string,
+    description: React.PropTypes.string,
     isActive: React.PropTypes.bool, // FALSE only if the entry has been deleted
     idx: React.PropTypes.number,
     onDelete: React.PropTypes.func,
     onEntryNameChange: React.PropTypes.func,
-    onEntryTypeChange: React.PropTypes.func
+    onEntryTypeChange: React.PropTypes.func,
+    onEntryValueChange: React.PropTypes.func
 };
 NewEntry.defaultProps = {
     name: "aaa",
     type: "",
     value: "",
+    description: "",
     isActive: true,
     idx: -1,
     onDelete: null,
     onEntryNameChange: null,
-    onEntryTypeChange: null
+    onEntryTypeChange: null,
+    onEntryValueChange: null
 };
 
 class NewPostFormFooter extends React.Component {
@@ -396,7 +398,6 @@ class NewPostForm extends React.Component {
     deleteEntry(idx) {
         var newEntries = this.state.entries;
         newEntries[idx]["isActive"] = false;
-        Posts.newPostEntries[idx] = null;
         this.setState({
             entries: newEntries
         });
@@ -414,10 +415,15 @@ class NewPostForm extends React.Component {
         var newEntries = this.state.entries;
         if (newEntries[idx]["type"] != newType) {
             newEntries[idx]["type"] = newType;
-            if (typeof Posts.newPostEntries[idx] == "undefined") {
-                    Posts.newPostEntries[idx] = {};
-                }
-            Posts.newPostEntries[idx]["type"] = newType;
+            this.setState({
+                entries: newEntries
+            });
+        }
+    }
+    onEntryValueChange(idx, newValue) {
+        var newEntries = this.state.entries;
+        if (newEntries[idx]["value"] != newValue) {
+            newEntries[idx]["value"] = newValue;
             this.setState({
                 entries: newEntries
             });
@@ -460,8 +466,8 @@ class NewPostForm extends React.Component {
         $("#save_template_as_button")
             .click(Util.buttonDefault(function() {
                 var newPostEntries = [];
-                for (var entryId in Posts.newPostEntries) {
-                    var entry = Posts.newPostEntries[entryId];
+                for (var entryId in this.state.entries) {
+                    var entry = this.state.entries[entryId];
                     if (entry && entry["name"] && entry["type"]
                         && Util.isNonEmptyStr(entry["name"])
                         && Util.isNonEmptyStr(entry["type"]))

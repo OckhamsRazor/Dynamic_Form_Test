@@ -13,7 +13,6 @@ Posts = function() {
     var entryEditorValidationRules_ = {};
     var entryEditorValidationSettings_ = {};
 
-    var newPostEntries_ = [];
     var newPostForm_ = null; // <NewPostForm />
     var templateModalMain_ = null; // <TemplateModalMain />
     var choiceModalNew_ = null; // <ChoiceModalNew />
@@ -91,7 +90,7 @@ Posts = function() {
             newPostForm_ = React.render(
                 React.createElement(
                     NewPostForm, {
-                        items: Util.getSessionStorage("loadedTemplate")
+                        entries: Util.getSessionStorage("loadedTemplate")
                     }
                 ),
                 document.getElementById("new_post_form")
@@ -369,9 +368,10 @@ Posts = function() {
                 entryEditorValidationRules_["entry_editor_value"] = undefined;
                 break;
         }
+
+        entryEditorValidationSettings_["fields"] = entryEditorValidationRules_;
         $("#entry_editor")
             .form(
-                entryEditorValidationRules_,
                 entryEditorValidationSettings_
             )
         ;
@@ -410,7 +410,6 @@ Posts = function() {
         postFormValidationSettings: postFormValidationSettings_,
         entryEditorValidationRules: entryEditorValidationRules_,
         entryEditorValidationSettings: entryEditorValidationSettings_,
-        newPostEntries: newPostEntries_,
 
         getNewPostForm: function() { return newPostForm_; },
         setNewPostForm: function(newForm) { newPostForm_ = newForm; },
