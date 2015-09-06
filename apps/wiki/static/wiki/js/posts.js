@@ -13,9 +13,9 @@ Posts = function() {
     var entryEditorValidationRules_ = {};
     var entryEditorValidationSettings_ = {};
 
-    var newPostEntries_ = [];
     var newPostForm_ = null; // <NewPostForm />
     var templateModalMain_ = null; // <TemplateModalMain />
+    var choiceModalNew_ = null; // <ChoiceModalNew />
 
     /**
      * consts
@@ -283,7 +283,6 @@ Posts = function() {
         };
         $("#entry_editor")
             .form(
-                // entryEditorValidationRules_,
                 entryEditorValidationSettings_
             )
         ;
@@ -327,7 +326,7 @@ Posts = function() {
         /**
          * choice editor
          */
-        $(".choice_modal.edit")
+        // $(".choice_modal.edit")
 
     };
 
@@ -369,9 +368,10 @@ Posts = function() {
                 entryEditorValidationRules_["entry_editor_value"] = undefined;
                 break;
         }
+
+        entryEditorValidationSettings_["fields"] = entryEditorValidationRules_;
         $("#entry_editor")
             .form(
-                entryEditorValidationRules_,
                 entryEditorValidationSettings_
             )
         ;
@@ -410,13 +410,16 @@ Posts = function() {
         postFormValidationSettings: postFormValidationSettings_,
         entryEditorValidationRules: entryEditorValidationRules_,
         entryEditorValidationSettings: entryEditorValidationSettings_,
-        newPostEntries: newPostEntries_,
 
         getNewPostForm: function() { return newPostForm_; },
         setNewPostForm: function(newForm) { newPostForm_ = newForm; },
         getTemplateModalMain: function() { return templateModalMain_; },
         setTemplateModalMain: function(tModalMain) {
             templateModalMain_ = tModalMain;
+        },
+        getChoiceModalNew: function() { return choiceModalNew_; },
+        setChoiceModalNew: function(cModalNew) {
+            choiceModalNew_ = cModalNew;
         },
 
         /**

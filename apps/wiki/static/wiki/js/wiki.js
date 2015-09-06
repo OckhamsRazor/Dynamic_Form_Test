@@ -20,6 +20,20 @@ Wiki = function() {
     var buttonSettings_ = function() {
         // $("#new_post_button").click(Util.buttonDefault(offerNewPost_));
         $("#new_choice_button").click(Util.buttonDefault(function() {
+            var cModalNew = React.render(
+                React.createElement(ChoiceModalNew, {
+                    items: [{
+                        value: "empty",
+                        isActive: true,
+                        isSelected: false,
+                        idx: -1,
+                        onDelete: null
+                    }]
+                }),
+                document.getElementById("choice_modal_new")
+            );
+            Posts.setChoiceModalNew(cModalNew);
+
             $(".choice_modal.edit")
                 .modal({
                     onApprove: function() {

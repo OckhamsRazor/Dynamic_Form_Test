@@ -115,7 +115,7 @@ class TemplateModalMain extends React.Component {
         var entries = this.props.entries;
         for (var idx in entries) {
             entries[idx]["isActive"] = true;
-            // entries[idx]["description"] = "";
+            entries[idx]["description"] = "";
         }
         this.state = {
             entries: entries,
