@@ -1,15 +1,8 @@
 # coding=utf-8
-import json
-
 from django.contrib.auth.decorators import login_required
-from django.core.serializers import serialize
 from django.db.models import Q
-from django.db.utils import DatabaseError
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render, get_object_or_404
-from django.utils import safestring
-
-from celery import shared_task
 
 import utils.consts as consts
 from .models import Page, Post, Template, Entry

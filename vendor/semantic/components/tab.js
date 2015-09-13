@@ -1,5 +1,5 @@
 /*!
- * # Semantic UI x.x - Tab
+ * # Semantic UI 2.1.3 - Tab
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -374,7 +374,7 @@ $.fn.tab = function(parameters) {
             else if(tabPath.search('/') == -1 && tabPath !== '') {
               // look for in page anchor
               $anchor     = $('#' + tabPath + ', a[name="' + tabPath + '"]');
-              currentPath = $anchor.closest('[data-tab]').data('tab');
+              currentPath = $anchor.closest('[data-tab]').data(metadata.tab);
               $tab        = module.get.tabElement(currentPath);
               // if anchor exists use parent tab
               if($anchor && $anchor.length > 0 && currentPath) {
@@ -440,9 +440,13 @@ $.fn.tab = function(parameters) {
             var
               $tab        = module.get.tabElement(tabPath),
               apiSettings = {
-                dataType  : 'html',
-                on        : 'now',
-                cache     : 'local',
+                dataType         : 'html',
+                encodeParameters : false,
+                on               : 'now',
+                cache            : settings.alwaysRefresh,
+                headers          : {
+                  'X-Remote': true
+                },
                 onSuccess : function(response) {
                   module.cache.add(fullTabPath, response);
                   module.update.content(tabPath, response);
@@ -486,12 +490,9 @@ $.fn.tab = function(parameters) {
               module.debug('Content is already loading', fullTabPath);
             }
             else if($.api !== undefined) {
-              requestSettings = $.extend(true, {
-                headers: {
-                  'X-Remote': true
-                }
-              }, settings.apiSettings, apiSettings);
+              requestSettings = $.extend(true, {}, settings.apiSettings, apiSettings);
               module.debug('Retrieving remote content', fullTabPath, requestSettings);
+              module.set.loading(tabPath);
               $tab.api(requestSettings);
             }
             else {
@@ -608,8 +609,8 @@ $.fn.tab = function(parameters) {
             tabPath        = tabPath || activeTabPath;
             tabPathArray   = module.utilities.pathToArray(tabPath);
             lastTab        = module.utilities.last(tabPathArray);
-            $fullPathTab   = $tabs.filter('[data-' + metadata.tab + '="' + lastTab + '"]');
-            $simplePathTab = $tabs.filter('[data-' + metadata.tab + '="' + tabPath + '"]');
+            $fullPathTab   = $tabs.filter('[data-' + metadata.tab + '="' + tabPath + '"]');
+            $simplePathTab = $tabs.filter('[data-' + metadata.tab + '="' + lastTab + '"]');
             return ($fullPathTab.length > 0)
               ? $fullPathTab
               : $simplePathTab

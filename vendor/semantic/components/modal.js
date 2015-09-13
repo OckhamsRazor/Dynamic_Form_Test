@@ -1,5 +1,5 @@
 /*!
- * # Semantic UI x.x - Modal
+ * # Semantic UI 2.1.3 - Modal
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -341,7 +341,9 @@ $.fn.modal = function(parameters) {
                       module.add.keyboardShortcuts();
                       module.save.focus();
                       module.set.active();
-                      module.set.autofocus();
+                      if(settings.autofocus) {
+                        module.set.autofocus();
+                      }
                       callback();
                     }
                   })
@@ -408,10 +410,8 @@ $.fn.modal = function(parameters) {
         hideDimmer: function() {
           if( $dimmable.dimmer('is animating') || ($dimmable.dimmer('is active')) ) {
             $dimmable.dimmer('hide', function() {
-              if(settings.transition && $.fn.transition !== undefined && $module.transition('is supported')) {
-                module.remove.clickaway();
-                module.remove.screenHeight();
-              }
+              module.remove.clickaway();
+              module.remove.screenHeight();
             });
           }
           else {
@@ -497,13 +497,17 @@ $.fn.modal = function(parameters) {
               ;
             }
           },
-          screenHeight: function() {
-            if(module.cache.height > module.cache.pageHeight) {
-              module.debug('Removing page height');
-              $body
-                .css('height', '')
-              ;
+          bodyStyle: function() {
+            if($body.attr('style') === '') {
+              module.verbose('Removing style attribute');
+              $body.removeAttr('style');
             }
+          },
+          screenHeight: function() {
+            module.debug('Removing page height');
+            $body
+              .css('height', '')
+            ;
           },
           keyboardShortcuts: function() {
             module.verbose('Removing keyboard shortcuts');
@@ -560,17 +564,15 @@ $.fn.modal = function(parameters) {
 
         set: {
           autofocus: function() {
-            if(settings.autofocus) {
-              var
-                $inputs    = $module.filter(':input').filter(':visible'),
-                $autofocus = $inputs.filter('[autofocus]'),
-                $input     = ($autofocus.length > 0)
-                  ? $autofocus.first()
-                  : $inputs.first()
-              ;
-              if($input.length > 0) {
-                $input.focus();
-              }
+            var
+              $inputs    = $module.find(':input').filter(':visible'),
+              $autofocus = $inputs.filter('[autofocus]'),
+              $input     = ($autofocus.length > 0)
+                ? $autofocus.first()
+                : $inputs.first()
+            ;
+            if($input.length > 0) {
+              $input.focus();
             }
           },
           clickaway: function() {
@@ -864,7 +866,7 @@ $.fn.modal.settings = {
   onDeny     : function(){ return true; },
 
   selector    : {
-    close    : '.close',
+    close    : '> .close',
     approve  : '.actions .positive, .actions .approve, .actions .ok',
     deny     : '.actions .negative, .actions .deny, .actions .cancel',
     modal    : '.ui.modal'

@@ -1,5 +1,5 @@
 /*!
- * # Semantic UI x.x - Form Validation
+ * # Semantic UI 2.1.3 - Form Validation
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -201,7 +201,7 @@ $.fn.form = function(parameters) {
                 isErrored    = $fieldGroup.hasClass(className.error)
               ;
               if(defaultValue === undefined) {
-                defaultValue = '';
+                return;
               }
               if(isErrored) {
                 module.verbose('Resetting error on field', $fieldGroup);
@@ -341,7 +341,7 @@ $.fn.form = function(parameters) {
               var
                 keys             = Object.keys(parameters),
                 isLegacySettings = (keys.length > 0)
-                  ? (parameters[keys[0]].identifier !== undefined)
+                  ? (parameters[keys[0]].identifier !== undefined && parameters[keys[0]].rules !== undefined)
                   : false
               ;
               if(isLegacySettings) {
@@ -455,11 +455,10 @@ $.fn.form = function(parameters) {
                   }
                   if(isCheckbox) {
                     if(isChecked) {
-                      values[name].push(value);
+                      values[name].push(true);
                     }
                     else {
-                      module.debug('Omitted unchecked checkbox', $field);
-                      return true;
+                      values[name].push(false);
                     }
                   }
                   else {
@@ -477,8 +476,7 @@ $.fn.form = function(parameters) {
                       values[name] = true;
                     }
                     else {
-                      module.debug('Omitted unchecked checkbox', $field);
-                      return true;
+                      values[name] = false;
                     }
                   }
                   else {
@@ -495,6 +493,9 @@ $.fn.form = function(parameters) {
 
           field: function(identifier) {
             module.verbose('Checking for existence of a field with identifier', identifier);
+            if(typeof identifier !== 'string') {
+              module.error(error.identifier, identifier);
+            }
             if( $field.filter('#' + identifier).length > 0 ) {
               return true;
             }
@@ -682,6 +683,7 @@ $.fn.form = function(parameters) {
 
           form: function(event) {
             var
+              values = module.get.values(),
               apiRequest
             ;
 
@@ -695,7 +697,7 @@ $.fn.form = function(parameters) {
             if( module.is.valid() ) {
               module.debug('Form has no validation errors, submitting');
               module.set.success();
-              return settings.onSuccess.call(element, event);
+              return settings.onSuccess.call(element, event, values);
             }
             else {
               module.debug('Form has errors');
@@ -707,7 +709,7 @@ $.fn.form = function(parameters) {
               if($module.data('moduleApi') !== undefined) {
                 event.stopImmediatePropagation();
               }
-              return settings.onFailure.call(element, formErrors);
+              return settings.onFailure.call(element, formErrors, values);
             }
           },
 
@@ -760,9 +762,11 @@ $.fn.form = function(parameters) {
               ancillary,
               functionType
             ;
-            // cast to string
-            value = $.trim($field.val() + '');
-
+            // cast to string avoiding encoding special values
+            value = (value === undefined || value === '' || value === null)
+              ? ''
+              : $.trim(value + '')
+            ;
             // if bracket notation is used, pass in extra parameters
             if(bracket) {
               ancillary    = '' + bracket[1];
@@ -985,11 +989,13 @@ $.fn.form.settings = {
 
   regExp: {
     bracket : /\[(.*)\]/i,
-    escape  : /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g,
+    decimal : /^\-?\d*(\.\d+)?$/,
     email   : "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
-    integer : /^\-?\d+$/,
+    escape  : /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g,
     flags   : /^\/(.*)\/(.*)?/,
-    url     : /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/i
+    integer : /^\-?\d+$/,
+    number  : /^\-?\d*(\.\d+)?$/,
+    url     : /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/i
   },
 
   selector : {
@@ -1015,9 +1021,10 @@ $.fn.form.settings = {
   },
 
   error: {
-    oldSyntax : 'Starting in 2.0 forms now only take a single settings object. Validation settings converted to new syntax automatically.',
-    noRule    : 'There is no rule matching the one you specified',
-    method    : 'The method you called is not defined.'
+    identifier : 'You must specify a string identifier for each field',
+    method     : 'The method you called is not defined.',
+    noRule     : 'There is no rule matching the one you specified',
+    oldSyntax  : 'Starting in 2.0 forms now only take a single settings object. Validation settings converted to new syntax automatically.'
   },
 
   templates: {
@@ -1037,7 +1044,7 @@ $.fn.form.settings = {
     // template that produces label
     prompt: function(errors) {
       return $('<div/>')
-        .addClass('ui red pointing prompt label')
+        .addClass('ui basic red pointing prompt label')
         .html(errors[0])
       ;
     }
@@ -1045,23 +1052,14 @@ $.fn.form.settings = {
 
   rules: {
 
+    // is not empty or blank string
+    empty: function(value) {
+      return !(value === undefined || '' === value || $.isArray(value) && value.length === 0);
+    },
+
     // checkbox checked
     checked: function() {
       return ($(this).filter(':checked').length > 0);
-    },
-
-    // value contains text (insensitive)
-    contains: function(value, text) {
-      // escape regex characters
-      text = text.replace($.fn.form.settings.regExp.escape, "\\$&");
-      return (value.search( new RegExp(text, 'i') ) !== -1);
-    },
-
-    // value contains text (case sensitive)
-    containsExactly: function(value, text) {
-      // escape regex characters
-      text = text.replace($.fn.form.settings.regExp.escape, "\\$&");
-      return (value.search( new RegExp(text) ) !== -1);
     },
 
     // is most likely an email
@@ -1072,12 +1070,32 @@ $.fn.form.settings = {
       return emailRegExp.test(value);
     },
 
-    // is not empty or blank string
-    empty: function(value) {
-      return !(value === undefined || '' === value || $.isArray(value) && value.length === 0);
+    // value is most likely url
+    url: function(value) {
+      return $.fn.form.settings.regExp.url.test(value);
     },
 
-    // is valid integer
+    // matches specified regExp
+    regExp: function(value, regExp) {
+      var
+        regExpParts = regExp.match($.fn.form.settings.regExp.flags),
+        flags
+      ;
+      // regular expression specified as /baz/gi (flags)
+      if(regExpParts) {
+        regExp = (regExpParts.length >= 2)
+          ? regExpParts[1]
+          : regExp
+        ;
+        flags = (regExpParts.length >= 3)
+          ? regExpParts[2]
+          : ''
+        ;
+      }
+      return value.match( new RegExp(regExp, flags) );
+    },
+
+    // is valid integer or matches range
     integer: function(value, range) {
       var
         intRegExp = $.fn.form.settings.regExp.integer,
@@ -1109,6 +1127,16 @@ $.fn.form.settings = {
       );
     },
 
+    // is valid number (with decimal)
+    decimal: function(value) {
+      return $.fn.form.settings.regExp.decimal.test(value);
+    },
+
+    // is valid number
+    number: function(value) {
+      return $.fn.form.settings.regExp.number.test(value);
+    },
+
     // is value (case insensitive)
     is: function(value, text) {
       text = (typeof text == 'string')
@@ -1127,7 +1155,61 @@ $.fn.form.settings = {
       return (value == text);
     },
 
+    // value is not another value (case insensitive)
+    not: function(value, notValue) {
+      value = (typeof value == 'string')
+        ? value.toLowerCase()
+        : value
+      ;
+      notValue = (typeof notValue == 'string')
+        ? notValue.toLowerCase()
+        : notValue
+      ;
+      return (value != notValue);
+    },
+
+    // value is not another value (case sensitive)
+    notExactly: function(value, notValue) {
+      return (value != notValue);
+    },
+
+    // value contains text (insensitive)
+    contains: function(value, text) {
+      // escape regex characters
+      text = text.replace($.fn.form.settings.regExp.escape, "\\$&");
+      return (value.search( new RegExp(text, 'i') ) !== -1);
+    },
+
+    // value contains text (case sensitive)
+    containsExactly: function(value, text) {
+      // escape regex characters
+      text = text.replace($.fn.form.settings.regExp.escape, "\\$&");
+      return (value.search( new RegExp(text) ) !== -1);
+    },
+
+    // value contains text (insensitive)
+    doesntContain: function(value, text) {
+      // escape regex characters
+      text = text.replace($.fn.form.settings.regExp.escape, "\\$&");
+      return (value.search( new RegExp(text, 'i') ) === -1);
+    },
+
+    // value contains text (case sensitive)
+    doesntContainExactly: function(value, text) {
+      // escape regex characters
+      text = text.replace($.fn.form.settings.regExp.escape, "\\$&");
+      return (value.search( new RegExp(text) ) === -1);
+    },
+
     // is at least string length
+    minLength: function(value, requiredLength) {
+      return (value !== undefined)
+        ? (value.length >= requiredLength)
+        : false
+      ;
+    },
+
+    // see rls notes for 2.0.6 (this is a duplicate of minLength)
     length: function(value, requiredLength) {
       return (value !== undefined)
         ? (value.length >= requiredLength)
@@ -1135,7 +1217,150 @@ $.fn.form.settings = {
       ;
     },
 
+    // is exactly length
+    exactLength: function(value, requiredLength) {
+      return (value !== undefined)
+        ? (value.length == requiredLength)
+        : false
+      ;
+    },
+
+    // is less than length
+    maxLength: function(value, maxLength) {
+      return (value !== undefined)
+        ? (value.length <= maxLength)
+        : false
+      ;
+    },
+
     // matches another field
+    match: function(value, identifier) {
+      var
+        $form = $(this),
+        matchingValue
+      ;
+      if( $('[data-validate="'+ identifier +'"]').length > 0 ) {
+        matchingValue = $('[data-validate="'+ identifier +'"]').val();
+      }
+      else if($('#' + identifier).length > 0) {
+        matchingValue = $('#' + identifier).val();
+      }
+      else if($('[name="' + identifier +'"]').length > 0) {
+        matchingValue = $('[name="' + identifier + '"]').val();
+      }
+      else if( $('[name="' + identifier +'[]"]').length > 0 ) {
+        matchingValue = $('[name="' + identifier +'[]"]');
+      }
+      return (matchingValue !== undefined)
+        ? ( value.toString() == matchingValue.toString() )
+        : false
+      ;
+    },
+    creditCard: function(cardNumber, cardTypes) {
+      var
+        cards = {
+          visa: {
+            pattern : /^4/,
+            length  : [16]
+          },
+          amex: {
+            pattern : /^3[47]/,
+            length  : [15]
+          },
+          mastercard: {
+            pattern : /^5[1-5]/,
+            length  : [16]
+          },
+          discover: {
+            pattern : /^(6011|622(12[6-9]|1[3-9][0-9]|[2-8][0-9]{2}|9[0-1][0-9]|92[0-5]|64[4-9])|65)/,
+            length  : [16]
+          },
+          unionPay: {
+            pattern : /^(62|88)/,
+            length  : [16, 17, 18, 19]
+          },
+          jcb: {
+            pattern : /^35(2[89]|[3-8][0-9])/,
+            length  : [16]
+          },
+          maestro: {
+            pattern : /^(5018|5020|5038|6304|6759|676[1-3])/,
+            length  : [12, 13, 14, 15, 16, 17, 18, 19]
+          },
+          dinersClub: {
+            pattern : /^(30[0-5]|^36)/,
+            length  : [14]
+          },
+          laser: {
+            pattern : /^(6304|670[69]|6771)/,
+            length  : [16, 17, 18, 19]
+          },
+          visaElectron: {
+            pattern : /^(4026|417500|4508|4844|491(3|7))/,
+            length  : [16]
+          }
+        },
+        valid         = {},
+        validCard     = false,
+        requiredTypes = (typeof cardTypes == 'string')
+          ? cardTypes.split(',')
+          : false,
+        unionPay,
+        validation
+      ;
+
+      if(typeof cardNumber !== 'string' || cardNumber.length === 0) {
+        return;
+      }
+
+      // verify card types
+      if(requiredTypes) {
+        $.each(requiredTypes, function(index, type){
+          // verify each card type
+          validation = cards[type];
+          if(validation) {
+            valid = {
+              length  : ($.inArray(cardNumber.length, validation.length) !== -1),
+              pattern : (cardNumber.search(validation.pattern) !== -1)
+            };
+            if(valid.length && valid.pattern) {
+              validCard = true;
+            }
+          }
+        });
+
+        if(!validCard) {
+          return false;
+        }
+      }
+
+      // skip luhn for UnionPay
+      unionPay = {
+        number  : ($.inArray(cardNumber.length, cards.unionPay.length) !== -1),
+        pattern : (cardNumber.search(cards.unionPay.pattern) !== -1)
+      };
+      if(unionPay.number && unionPay.pattern) {
+        return true;
+      }
+
+      // verify luhn, adapted from  <https://gist.github.com/2134376>
+      var
+        length        = cardNumber.length,
+        multiple      = 0,
+        producedValue = [
+          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+          [0, 2, 4, 6, 8, 1, 3, 5, 7, 9]
+        ],
+        sum           = 0
+      ;
+      while (length--) {
+        sum += producedValue[multiple][parseInt(cardNumber.charAt(length), 10)];
+        multiple ^= 1;
+      }
+      return (sum % 10 === 0 && sum > 0);
+    },
+
+    // different than another field
     different: function(value, identifier) {
       // use either id or name of field
       var
@@ -1160,94 +1385,34 @@ $.fn.form.settings = {
       ;
     },
 
-    // matches another field
-    match: function(value, identifier) {
-      // use either id or name of field
-      var
-        $form = $(this),
-        matchingValue
-      ;
-      if( $('[data-validate="'+ identifier +'"]').length > 0 ) {
-        matchingValue = $('[data-validate="'+ identifier +'"]').val();
+    exactCount: function(value, exactCount) {
+      if(exactCount == 0) {
+        return (value === '');
       }
-      else if($('#' + identifier).length > 0) {
-        matchingValue = $('#' + identifier).val();
+      if(exactCount == 1) {
+        return (value !== '' && value.search(',') === -1);
       }
-      else if($('[name="' + identifier +'"]').length > 0) {
-        matchingValue = $('[name="' + identifier + '"]').val();
+      return (value.split(',').length == exactCount);
+    },
+
+    minCount: function(value, minCount) {
+      if(minCount == 0) {
+        return true;
       }
-      else if( $('[name="' + identifier +'[]"]').length > 0 ) {
-        matchingValue = $('[name="' + identifier +'[]"]');
+      if(minCount == 1) {
+        return (value !== '');
       }
-      return (matchingValue !== undefined)
-        ? ( value.toString() == matchingValue.toString() )
-        : false
-      ;
+      return (value.split(',').length >= minCount);
     },
 
-    maxCount: function(value, count) {
-      value = value.split(',');
-      return ($.isArray(value) && value.length <= count);
-    },
-
-    exactCount: function(value, count) {
-      value = value.split(',');
-      return ($.isArray(value) && value.length == count);
-    },
-
-    minCount: function(value, count) {
-      value = value.split(',');
-      return ($.isArray(value) && value.length >= count);
-    },
-
-    regExp: function(value, regExp) {
-      var
-        regExpParts = regExp.match($.fn.form.settings.regExp.flags),
-        flags
-      ;
-      // regular expression specified as /baz/gi (flags)
-      if(regExpParts) {
-        regExp = (regExpParts.length >= 2)
-          ? regExpParts[1]
-          : regExp
-        ;
-        flags = (regExpParts.length >= 3)
-          ? regExpParts[2]
-          : ''
-        ;
+    maxCount: function(value, maxCount) {
+      if(maxCount == 0) {
+        return false;
       }
-      return value.match( new RegExp(regExp, flags) );
-    },
-
-    // string length is less than max length
-    maxLength: function(value, maxLength) {
-      return (value !== undefined)
-        ? (value.length <= maxLength)
-        : false
-      ;
-    },
-
-    // value is not value (case insensitive)
-    not: function(value, notValue) {
-      value = (typeof value == 'string')
-        ? value.toLowerCase()
-        : value
-      ;
-      notValue = (typeof notValue == 'string')
-        ? notValue.toLowerCase()
-        : notValue
-      ;
-      return (value != notValue);
-    },
-
-    // value is not value (case sensitive)
-    notExactly: function(value, notValue) {
-      return (value != notValue);
-    },
-
-    // value is most likely url
-    url: function(value) {
-      return $.fn.form.settings.regExp.url.match(value);
+      if(maxCount == 1) {
+        return (value.search(',') === -1);
+      }
+      return (value.split(',').length <= maxCount);
     }
   }
 

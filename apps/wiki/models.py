@@ -117,6 +117,8 @@ class Entry(PostElement):
 
     key = models.CharField(max_length="30")
     value = MyListField()
+    value2 = MyListField()
+    value3 = MyListField()
     type = models.IntegerField(
         default=STR,
         choices=ENTRY_TYPE_CHOICES,
