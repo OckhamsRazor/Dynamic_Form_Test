@@ -1,21 +1,37 @@
 "use strict"
 
 class Option_ extends React.Component {
+    rendered() {
+        $(React.findDOMNode(this))
+            .find(".delete_option_button")
+            .unbind("click")
+            .click(Util.buttonDefault(
+                this.props.onDelete
+            ))
+        ;
+    }
+    componentDidMount() {
+        this.rendered();
+    }
+    componentDidUpdate() {
+        this.rendered();
+    }
     render() {
         return(
             <div className="ui form">
                 <div className="inline fields">
-                    <div className="field option_isSelected">
+                    <div className="one wide field option_isSelected">
                         <div className="ui checkbox">
                             <input type="checkbox" name={this.props.idx} />
                         </div>
                     </div>
-                    <div className="six wide field option_content">
+                    <div className="twelve wide wide field option_value">
                         <input type='text' placeholder='Option'
                         id={"option_"+this.props.idx+"_name"} />
                     </div>
-                    <div className="field option_options">
-                        <div className='ui negative button delete_option_button'>
+                    <div className="three wide field option_options">
+                        <div className='ui negative fluid
+                            button delete_option_button'>
                             Delete
                         </div>
                     </div>
@@ -46,7 +62,13 @@ class ChoiceModalNew extends React.Component {
     }
     addItem() {
         var oldItems = this.state.items;
-        var newItems = oldItems.concat([this.props.emptyItem]);
+        var newItems = oldItems.concat([{
+            value: "",
+            isActive: true,
+            isSelected: false,
+            idx: -1,
+            onDelete: null
+        }]);
         this.setState({
             items: newItems
         });
@@ -63,6 +85,10 @@ class ChoiceModalNew extends React.Component {
             .find(".checkbox")
             .checkbox()
         ;
+        $("#add_option_button")
+            .unbind("click")
+            .click(Util.buttonDefault(this.addItem.bind(this)).bind(this))
+        ;
     }
     componentDidMount() {
         this.rendered();
@@ -76,6 +102,7 @@ class ChoiceModalNew extends React.Component {
                 this.state.items.map((item, idx) => {
                     if (item.isActive) {
                         return(<Option_ value={item.value}
+                            isActive={true}
                             isSelected={false}
                             key={idx} idx={idx}
                             onDelete={
@@ -83,8 +110,9 @@ class ChoiceModalNew extends React.Component {
                             } />
                         )
                     }
-                }
-            )} </div>
+                })}
+                <div id='add_option_button' className='ui fluid button'>+</div>
+            </div>
         );
     }
 }
@@ -128,9 +156,19 @@ EntryTypeSelect.defaultProps = {
 };
 
 class NewEntryValue extends React.Component {
+    onFieldBlurred() {
+        var idx = this.props.idx;
+        var value = $("#"+idx+"_value")
+        value
+            .unbind("blur")
+            .blur(function() {
+                this.props.onEntryValueChange(1, value.val());
+            }.bind(this))
+        ;
+    }
     validation() {
-        Posts.postFormValidationRules[this.props.idx+"_content"] = {
-            identifier: this.props.idx+"_content",
+        Posts.postFormValidationRules[this.props.idx+"_value"] = {
+            identifier: this.props.idx+"_value",
             rules: [
                 {
                     type: 'empty',
@@ -143,7 +181,7 @@ class NewEntryValue extends React.Component {
         switch(this.props.type) {
             case EntryTypeName.DBL:
                 Posts.postFormValidationRules
-                    [this.props.idx+"_content"]["rules"]
+                    [this.props.idx+"_value"]["rules"]
                     .push({
                         type: 'number',
                         prompt: "Invalid Number!"
@@ -152,7 +190,7 @@ class NewEntryValue extends React.Component {
                 break;
             case EntryTypeName.MAIL:
                 Posts.postFormValidationRules
-                    [this.props.idx+"_content"]["rules"]
+                    [this.props.idx+"_value"]["rules"]
                     .push({
                         type: 'email',
                         prompt: "Invalid Email Address!"
@@ -171,41 +209,109 @@ class NewEntryValue extends React.Component {
             )
         ;
     }
-    componentDidMount() {
-        this.validation();
-    }
-    componentDidUpdate() {
-        var entryContent =
-            $(React.findDOMNode(this))
-            .parent(".entry_content")
+    rendered() {
+        var thisNode = $(React.findDOMNode(this));
+
+        var entryValue =
+            thisNode
+            .parent(".entry_value")
         ;
 
-        entryContent
-            .find("input, textarea")
-            .val("")
-        ;
-        entryContent
+        entryValue
             .children(".prompt")
             .remove()
         ;
-        entryContent.removeClass("error");
+        entryValue.removeClass("error");
+
         this.validation();
+        this.onFieldBlurred();
+
+        if (Util.isNonEmptyStr(this.props.value)) {
+            $("#"+this.props.idx+"_value").val(this.props.value);
+        }
+
+        var EntryTypeName = Posts.getEntryTypeName();
+        switch(this.props.type) {
+            case EntryTypeName.DBL:
+                thisNode
+                    .find(".checkbox")
+                    .checkbox({
+                        onChecked: () => {
+                            thisNode
+                                .find(".entry_value_unit")
+                                .removeAttr("disabled")
+                            ;
+                        },
+                        onUnchecked: function() {
+                            thisNode.find(".entry_value_unit")
+                                .attr("disabled", "")
+                                .val("")
+                            ;
+                            this.props.onEntryValueChange(2, "");
+                        }.bind(this)
+                    })
+                ;
+
+                var value2 = $("#"+this.props.idx+"_value2");
+                value2
+                    .unbind("blur")
+                    .blur(function() {
+                        this.props.onEntryValueChange(2, value2.val());
+                    }.bind(this))
+                ;
+                if (Util.isNonEmptyStr(this.props.value2)) {
+                    $("#"+this.props.idx+"_value2").val(this.props.value2);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    componentDidMount() {
+        this.rendered();
+    }
+    componentDidUpdate() {
+        this.rendered();
     }
     render() {
         var EntryTypeName = Posts.getEntryTypeName();
         switch(this.props.type) {
-            case EntryTypeName.DBL:
             case EntryTypeName.MAIL:
             case EntryTypeName.URL:
                 return(
                     <div className='ui input'>
                         <input type='text'
-                            id={this.props.idx+"_content"} />
+                            id={this.props.idx+"_value"}/>
+                    </div>
+                );
+            case EntryTypeName.DBL:
+                return(
+                    <div>
+                        <div className='inline fields'>
+                            <div className='eight wide field'>
+                                <div className='ui input'>
+                                    <input type='text' placeholder='value'
+                                        id={this.props.idx+"_value"}/>
+                                </div>
+                            </div>
+                            <div className='two wide field'>
+                                <div className="ui toggle checkbox"
+                                    title='with/without unit'>
+                                    <input type="checkbox" id='test'/>
+                                </div>
+                            </div>
+                            <div className='six wide field'>
+                                <input type='text' placeholder='unit'
+                                    id={this.props.idx+"_value2"}
+                                    className="entry_value_unit"
+                                    disabled="true"/>
+                            </div>
+                        </div>
                     </div>
                 );
             case EntryTypeName.STR:
                 return(
-                    <textarea id={this.props.idx+"_content"} />
+                    <textarea id={this.props.idx+"_value"}/>
                 );
             default: // returns a dummy node
                 return(
@@ -217,19 +323,20 @@ class NewEntryValue extends React.Component {
 NewEntryValue.propTypes = {
     type: React.PropTypes.string, // TBD (change it to ENUM?)
     value: React.PropTypes.string,
-    idx: React.PropTypes.number
+    value2: React.PropTypes.string,
+    value3: React.PropTypes.string,
+    idx: React.PropTypes.number,
+    onEntryValueChange: React.PropTypes.func
 };
 
 class NewEntry extends React.Component {
     onFieldBlurred() {
         var idx = this.props.idx;
         var name = $("#"+idx+"_name");
-        var value = $("#"+idx+"_value")
         name
             .unbind("blur")
             .blur(function() {
                 this.props.onEntryNameChange(name.val());
-                this.props.onEntryValueChange(value.val());
             }.bind(this))
         ;
     }
@@ -288,7 +395,7 @@ class NewEntry extends React.Component {
             <div>
                 <div className='ui divider'></div>
                 <div className="three fields">
-                    <div className='field entry_header'>
+                    <div className='five wide field entry_header'>
                         <div className='field'>
                             <div className='ui input'>
                                 <input type='text' placeholder='Name'
@@ -304,12 +411,15 @@ class NewEntry extends React.Component {
                                 } />
                         </div>
                     </div>
-                    <div className='field entry_content'>
+                    <div className='nine wide field entry_value'>
                         <NewEntryValue type={this.props.type}
-                            idx={this.props.idx} />
+                            idx={this.props.idx}
+                            onEntryValueChange={
+                                this.props.onEntryValueChange
+                            } />
                     </div>
-                    <div className='field entry_options'>
-                        <div className='ui negative button delete_entry_button'>
+                    <div className='two wide field entry_options'>
+                        <div className='centered ui negative button delete_entry_button'>
                             Delete
                         </div>
                     </div>
@@ -322,6 +432,8 @@ NewEntry.propTypes = {
     name: React.PropTypes.string,
     type: React.PropTypes.string, // TBD (change it to ENUM?)
     value: React.PropTypes.string,
+    value2: React.PropTypes.string,
+    value3: React.PropTypes.string,
     description: React.PropTypes.string,
     isActive: React.PropTypes.bool, // FALSE only if the entry has been deleted
     idx: React.PropTypes.number,
@@ -331,9 +443,11 @@ NewEntry.propTypes = {
     onEntryValueChange: React.PropTypes.func
 };
 NewEntry.defaultProps = {
-    name: "aaa",
+    name: "",
     type: "",
     value: "",
+    value2: "",
+    value3: "",
     description: "",
     isActive: true,
     idx: -1,
@@ -354,12 +468,16 @@ class NewPostFormFooter extends React.Component {
     render() {
         return(
             <div id="new_post_form_footer">
-                <div id="add_entry_button" className="ui button">
-                    +
+                <div className='row'>
+                    <div id="add_entry_button" className="ui fluid button">
+                        +
+                    </div>
                 </div>
-                <div id="new_post_submit_button"
-                    className="ui primary submit button">
-                    Submit
+                <div className='row'>
+                    <div id="new_post_submit_button"
+                        className="ui fluid primary submit button">
+                        Submit
+                    </div>
                 </div>
             </div>
         );
@@ -388,6 +506,8 @@ class NewPostForm extends React.Component {
                 name: "",
                 type: "",
                 value: "",
+                value2: "",
+                value3: "",
                 isActive: true,
             }
         ]);
@@ -415,15 +535,20 @@ class NewPostForm extends React.Component {
         var newEntries = this.state.entries;
         if (newEntries[idx]["type"] != newType) {
             newEntries[idx]["type"] = newType;
+            newEntries[idx]["value"] = "";  // reset value of entry to empty
+            newEntries[idx]["value2"] = ""; // when changing its type
+            newEntries[idx]["value3"] = "";
+
             this.setState({
                 entries: newEntries
             });
         }
     }
-    onEntryValueChange(idx, newValue) {
+    onEntryValueChange(idx, vid, newValue) {
         var newEntries = this.state.entries;
-        if (newEntries[idx]["value"] != newValue) {
-            newEntries[idx]["value"] = newValue;
+        var v = ["", "value", "value2", "value3"];
+        if (newEntries[idx][v[vid]] != newValue) {
+            newEntries[idx][v[vid]] = newValue;
             this.setState({
                 entries: newEntries
             });
@@ -579,7 +704,8 @@ class NewPostForm extends React.Component {
                     if (entry.isActive) {
                         return(
                             <NewEntry name={entry.name} type={entry.type}
-                                value={entry.value} isActive={true}
+                                value={entry.value} value2={entry.value2}
+                                value3={entry.value3} isActive={true}
                                 key={idx} idx={idx}
                                 onDelete={this.deleteEntry.bind(this, idx)}
                                 onEntryNameChange={
@@ -587,6 +713,9 @@ class NewPostForm extends React.Component {
                                 }
                                 onEntryTypeChange={
                                     this.onEntryTypeChange.bind(this, idx)
+                                }
+                                onEntryValueChange={
+                                    this.onEntryValueChange.bind(this, idx)
                                 } />
                         );
                     }
