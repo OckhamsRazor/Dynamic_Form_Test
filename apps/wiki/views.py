@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render, get_object_or_404
 
 import utils.consts as consts
-from .models import Page, Post, Template, Entry
+from .models import Page, Post, Template, Entry, Comment, Choice
 from utils.decorators import post_only_view, post_only_json
 from utils.views import handle_file_upload
 from utils.utils import general_exception_handling
@@ -14,29 +14,77 @@ from utils.utils import general_exception_handling
 def main(request):
     user = request.user
     if user.is_authenticated():
-        posts = Post.objects.filter(author_id=user.id) # pylint: disable=E1101
+        posts = Post.objects.filter(author_id=user.id)
     else:
-        posts = Post.objects.all() # pylint: disable=E1101
+        posts = Post.objects.all()
     context = {"posts": posts}
     return render(request, "wiki/main.html", context)
 
 
+def general_title_exists(request, obj_type):
+    """
+    For objs with unique title
+    """
+    user = request.user
+    new_title = request.POST["new_title"].capitalize()
+    existing = obj_type.objects.filter(
+        Q(title=new_title) & Q(author_id=user.id)
+    )
+    title_exists = (len(existing) != 0)
+    return {"title_exists": title_exists}
+
+
+def general_view_objs(request, obj_type, obj_name, temp):
+    """
+    return all objs (and render them to template temp)
+    """
+    objs = obj_type.objects.all()
+    context = {obj_name: objs}
+    return render(request, temp, context)
+
+
+def general_view_objs_json(obj_type, obj_name):
+    """
+    return all objs as JSON
+    """
+    objs = obj_type.objects.all()
+    return {obj_name: objs}
+
+
+def general_read_obj(request, obj_type, obj_name):
+    """
+    return obj (with oid) as JSON
+    """
+    context = {
+        "result": consts.FAILED,
+        obj_name: None
+    }
+
+    try:
+        obj = get_object_or_404(obj_type, id=request.POST["idx"])
+        context["result"] = consts.SUCCESSFUL
+        context[obj_name] = obj.to_json()
+    except Exception as e:
+        general_exception_handling(e)
+
+    return context
+
+
+# #
+# Template
+#
+
+
 def view_templates(request):
-    templates = Template.objects.all() # pylint: disable=E1101
-    context = {"templates": templates}
-    return render(request, "wiki/templates.html", context)
+    return general_view_objs(
+        request, Template, "templates", "wiki/templates.html"
+    )
 
 
 @login_required
 @post_only_json
 def template_title_exists(request):
-    user = request.user
-    new_title = request.POST["new_title"]
-    existing = Template.objects.filter( # pylint: disable=E1101
-        Q(title=new_title) & Q(author_id=user.id)
-    )
-    title_exists = (len(existing) != 0)
-    return {"title_exists": title_exists}
+    return general_title_exists(request, Template)
 
 
 @login_required
@@ -48,23 +96,7 @@ def create_template(request):
 @login_required
 @post_only_json
 def read_template(request):
-    """
-    returns template as JSON
-    """
-    context = {
-        "result": consts.FAILED,
-        "template": None
-    }
-
-    try:
-        template_id = request.POST["tid"]
-        obj = get_object_or_404(Template, id=template_id)
-        context["result"] = consts.SUCCESSFUL
-        context["template"] = obj.to_json()
-    except Exception as e:
-        general_exception_handling(e)
-
-    return context
+    return general_read_obj(request, Template, "template")
 
 
 @login_required
@@ -90,7 +122,7 @@ def save_template(request, isNew):
     result = consts.FAILED
 
     user = request.user
-    title = request.POST["title"]
+    title = request.POST["title"].capitalize()
     description = request.POST["description"]
     names = request.POST.getlist("names[]")
     types = request.POST.getlist("types[]")
@@ -111,7 +143,9 @@ def save_template(request, isNew):
                 entries=entries, description=description
             ).save()
         else:
-            Template.objects.select_for_update().filter(title=title).update(
+            Template.objects.select_for_update().filter(
+                Q(title=title) & Q(author_id=user.id)
+            ).update(
                 entries=entries, description=description
             )
         result = consts.SUCCESSFUL
@@ -120,28 +154,82 @@ def save_template(request, isNew):
 
     return result
 
+
 @login_required
 def delete_template(request):
     pass
 
 
+# #
+# Choice
+#
+
+
 @login_required
+@post_only_json
+def view_choices_json(request):
+    return general_view_objs_json(Choice, "choices")
+
+
+@login_required
+@post_only_json
+def choice_title_exists(request):
+    return general_title_exists(request, Choice)
+
+
+@login_required
+@post_only_json
 def create_choice(request):
-    pass
-
-
-def read_choice(request):
-    pass
+    return {"result": save_choice(request, True)}
 
 
 @login_required
+@post_only_json
+def read_choice(request):
+    return general_read_obj(request, Choice, "choice")
+
+
+@login_required
+@post_only_json
 def update_choice(request):
-    pass
+    return {"result": save_choice(request, False)}
+
+
+def save_choice(request, isNew):
+    result = consts.FAILED
+    print request.POST
+
+    user = request.user
+    title = request.POST["title"].capitalize()
+    options = request.POST.getlist("values[]")
+    description = request.POST["description"]
+    try:
+        if isNew:
+            Choice(
+                author=user, title=title,
+                options=options, description=description
+            ).save()
+        else:
+            Choice.objects.select_for_update().filter(
+                Q(title=title) & Q(author_id=user.id)
+            ).update(
+                options=options, description=description
+            )
+        result = consts.SUCCESSFUL
+    except Exception, e:
+        general_exception_handling(e)
+
+    return result
 
 
 @login_required
 def delete_choice(request):
     pass
+
+
+# #
+# Page/Post
+#
 
 
 @login_required

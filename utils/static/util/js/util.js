@@ -8,6 +8,7 @@ Util = function() {
     /**
      * consts
      */
+
     var OK_ICON_URL_ = '/static/util/img/OK.gif';
     var ERROR_ICON_URL_ = '/static/util/img/error.gif';
     var LOADING_ICON_URL_ = '/static/util/img/loading.gif';
@@ -16,6 +17,7 @@ Util = function() {
         /**
          * general request response status code
          */
+
         SUCCESSFUL: 0,
         FAILED: 1000, // reason unknown; catch-all case
         FORM_INVALID: 1001,
@@ -24,6 +26,7 @@ Util = function() {
         /**
          * user status code
          */
+
         ACTIVE: 2000,
         INACTIVE: 2001,
         EXPIRED: 2002,
@@ -34,6 +37,7 @@ Util = function() {
     /**
      * private methods
      */
+
     var getCookie_ = function(name) {
         var cookieValue = null;
         if (document.cookie && document.cookie != '') {
@@ -109,6 +113,11 @@ Util = function() {
         ;
     };
 
+    var capitalizeTheFirst_ = function(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    };
+
+    // DEPRECATED
     var lengthCheck_ = function(
         toCheck, content, min, max, opt_errorHandler) {
 
@@ -126,23 +135,28 @@ Util = function() {
         return result;
     };
 
+    // DEPRECATED
     var checkFailedDefault_ = function(toCheck, errorMessage) {
         statusError_($("#"+toCheck+"_error"), errorMessage);
     };
 
+    // DEPRECATED
     var formShowError_ = function(obj) {
         obj.effect("highlight", {color: "red"}, 3000);
     }
 
+    // DEPRECATED
     var statusOk_ = function(okSpan, msg) {
         okSpan.html("<img src='"+OK_ICON_URL_+"'>");
         okSpan.append(msg);
     };
 
+    // DEPRECATED
     var statusLoading_ = function(loadingSpan) {
         loadingSpan.html("<img src='"+LOADING_ICON_URL_+"'>");
     };
 
+    // DEPRECATED
     var statusError_ = function(errorSpan, msg) {
         errorSpan.html("<img src='"+ERROR_ICON_URL_+"' />");
         errorSpan.append(msg);
@@ -188,11 +202,13 @@ Util = function() {
     /**
      * interface
      */
+
     return {
 
         /**
          * properties
          */
+
         OK_ICON_URL: OK_ICON_URL_,
         ERROR_ICON_URL: ERROR_ICON_URL_,
         LOADING_ICON_URL: LOADING_ICON_URL_,
@@ -201,6 +217,7 @@ Util = function() {
         /**
          * public methods
          */
+
         getCookie: getCookie_,
         getSessionStorage: getSessionStorage_,
         setSessionStorage: setSessionStorage_,
@@ -208,6 +225,7 @@ Util = function() {
         sendNotification: sendNotification_,
         sendConfirm: sendConfirm_,
         isNonEmptyStr: isNonEmptyStr_,
+        capitalizeTheFirst: capitalizeTheFirst_,
         lengthCheck: lengthCheck_,
         formShowError: formShowError_,
         statusOk: statusOk_,

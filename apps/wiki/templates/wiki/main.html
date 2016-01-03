@@ -152,14 +152,20 @@
       </div>
     </div>
   </div>
+
+  <div class="ui search small long modal choice_modal">
+    <i class="close icon"></i>
+    <div class="header">
+      Choices Searching
+    </div>
+    <div class="content" id="choice_modal_search">
+    </div>
+  </div>
 {% endblock body_main_1 %}
 
 {% block footer_javascript_section %}
   <script src="{% static 'wiki/js/wiki.js' %}"></script>
   <script src="{% static 'wiki/js/posts.js' %}"></script>
-
-  <!-- <script type="text/jsx" src="{% static 'wiki/js/wiki.jsx' %}"></script> -->
-  <!-- <script type="text/jsx" src="{% static 'wiki/js/posts.jsx' %}"></script> -->
   <script src="{% static 'wiki/js/wiki.react.js' %}"></script>
   <script src="{% static 'wiki/js/posts.react.js' %}"></script>
 

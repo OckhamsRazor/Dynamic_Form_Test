@@ -1,6 +1,6 @@
 "use strict"
 
-class Option_ extends React.Component {
+class OptionField extends React.Component {
     rendered() {
         $(React.findDOMNode(this))
             .find(".delete_option_button")
@@ -18,32 +18,24 @@ class Option_ extends React.Component {
     }
     render() {
         return(
-            <div className="ui form">
-                <div className="inline fields">
-                    <div className="one wide field option_isSelected">
-                        <div className="ui checkbox">
-                            <input type="checkbox" name={this.props.idx} />
-                        </div>
-                    </div>
-                    <div className="twelve wide wide field option_value">
-                        <input type='text' placeholder='Option'
-                        id={"option_"+this.props.idx+"_name"} />
-                    </div>
-                    <div className="three wide field option_options">
-                        <div className='ui negative fluid
-                            button delete_option_button'>
-                            Delete
-                        </div>
+            <div className="inline fields">
+                <div className="thirteen wide wide field option_value">
+                    <input type='text' name='values[]'
+                    id={"option_"+this.props.idx+"_name"} />
+                </div>
+                <div className="three wide field option_options">
+                    <div className='ui negative fluid
+                        button delete_option_button'>
+                        Delete
                     </div>
                 </div>
             </div>
         );
     }
 }
-Option_.defaultProps = {
+OptionField.defaultProps = {
     value: "empty",
     isActive: true,
-    isSelected: false,
     idx: -1,
     onDelete: null
 };
@@ -65,7 +57,6 @@ class ChoiceModalNew extends React.Component {
         var newItems = oldItems.concat([{
             value: "",
             isActive: true,
-            isSelected: false,
             idx: -1,
             onDelete: null
         }]);
@@ -89,6 +80,26 @@ class ChoiceModalNew extends React.Component {
             .unbind("click")
             .click(Util.buttonDefault(this.addItem.bind(this)).bind(this))
         ;
+
+        var validationRules = {
+            title: {
+                identifier: 'new_choice_title',
+                rules: [
+                    {
+                        type: "empty",
+                        prompt: "Please enter the title."
+                    }
+                ]
+            }
+        };
+        Wiki.setNewChoiceFormValidationSettings(
+            'fields', validationRules
+        );
+        $('#new_choice_form')
+            .form(
+                Wiki.getNewChoiceFormValidationSettings()
+            )
+        ;
     }
     componentDidMount() {
         this.rendered();
@@ -98,27 +109,116 @@ class ChoiceModalNew extends React.Component {
     }
     render() {
         return(
-            <div> {
-                this.state.items.map((item, idx) => {
-                    if (item.isActive) {
-                        return(<Option_ value={item.value}
-                            isActive={true}
-                            isSelected={false}
-                            key={idx} idx={idx}
-                            onDelete={
-                                this.deleteItem.bind(this, idx)
-                            } />
-                        )
+            <div className='ui form' id='new_choice_form'>
+                <div className='field'>
+                    <label>Title</label>
+                    <input type="text" name='title'
+                        id='new_choice_title'/>
+                </div>
+                <div className='ui divider'></div>
+                <div className='field'>
+                    <label>Options</label>
+                    {
+                        this.state.items.map((item, idx) => {
+                            if (item.isActive) {
+                                return(<OptionField value={item.value}
+                                    isActive={true}
+                                    key={idx} idx={idx}
+                                    onDelete={
+                                        this.deleteItem.bind(this, idx)
+                                    } />
+                                )
+                            }
+                        })
                     }
-                })}
-                <div id='add_option_button' className='ui fluid button'>+</div>
+                    <div id='add_option_button'
+                        className='ui fluid button'>
+                        +
+                    </div>
+                </div>
+                <div className='ui divider'></div>
+                <div className='field'>
+                    <label>Description</label>
+                    <textarea name='description'></textarea>
+                </div>
             </div>
         );
     }
 }
-ChoiceModalNew.defaultProps = {
-    emptyItem: Option_.defaultProps
+
+class Choice extends React.Component {
+    rendered() {
+    }
+
+    componentDidMount() {
+        this.rendered();
+    }
+
+    componentDidUpdate() {
+        this.rendered();
+    }
+
+    render() {
+        return(
+            <div className=''>
+            </div>
+        );
+    }
+}
+Choice.defaultProps = {
+    title: "",
+    choice: [],
+    description: "",
+    cid: -1
 };
+
+class ChoiceModalSearch extends React.Component {
+    constructor(props) {
+        super(props);
+
+        var items = (typeof props.items == "undefined")
+            ? []
+            : props.items
+        ;
+        this.state = {
+            items: items
+        };
+    }
+
+    rendered() {
+    }
+
+    componentDidMount() {
+        this.rendered();
+    }
+
+    componentDidUpdate() {
+        this.rendered();
+    }
+
+    render() {
+        var Choices = (this.state.items.length == 0)
+            ? <h2>Sorry, No Results.</h2>
+            : this.state.items.map((item, idx) => {
+                <Choice title={item.title}
+                    choice={item.choice}
+                    description={item.description}
+                    key={idx} cid={item.cid}/>
+            })
+        ;
+        return(
+            <div>
+                <div className='ui icon input'>
+                    <input type="text" placeholder='Search...'
+                        id='choice_search_field'/>
+                    <i className='search icon'></i>
+                </div>
+                <div className='ui divider'></div>
+                {Choices}
+            </div>
+        );
+    }
+}
 
 class EntryTypeSelect extends React.Component {
     componentDidMount() {
@@ -260,8 +360,31 @@ class NewEntryValue extends React.Component {
                     }.bind(this))
                 ;
                 if (Util.isNonEmptyStr(this.props.value2)) {
-                    $("#"+this.props.idx+"_value2").val(this.props.value2);
+                    value2.val(this.props.value2);
                 }
+                break;
+            case EntryTypeName.CHOICE:
+                $("#"+this.props.idx+"_value")
+                    .unbind("click")
+                    .click(function() {
+                        var content = document
+                            .getElementById("choice_modal_search")
+                        ;
+                        React.unmountComponentAtNode(content);
+                        var cModalSearch = React.render(
+                            <ChoiceModalSearch />,
+                            content
+                        );
+                        Wiki.setChoiceModalSearch(cModalSearch);
+
+                        $(".choice_modal.search")
+                            // .modal({
+
+                            // })
+                            .modal("show")
+                        ;
+                    })
+                ;
                 break;
             default:
                 break;
@@ -276,6 +399,7 @@ class NewEntryValue extends React.Component {
     render() {
         var EntryTypeName = Posts.getEntryTypeName();
         switch(this.props.type) {
+            case EntryTypeName.CHOICE:
             case EntryTypeName.MAIL:
             case EntryTypeName.URL:
                 return(

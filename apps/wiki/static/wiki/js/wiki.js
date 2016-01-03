@@ -6,19 +6,158 @@
 Wiki = function() {
 
     /**
+     * variables
+     */
+
+    var cModalSearch_ = null; // <ChoiceModalSearch />
+    var newChoiceFormValidationSettings_ = {};
+
+    /**
      * consts
     */
+
     var WikiUrls_ = Object.freeze({
         WIKI_MAIN_URL: "/wiki/main/",
-        NEW_POST_URL: "/wiki/new_post/"
+        NEW_POST_URL: "/wiki/new_post/",
+        CREATE_CHOICE_URL: "/wiki/create_choice/",
+        READ_CHOICE_URL: "/wiki/read_choice/",
+        UPDATE_CHOICE_URL: "/wiki/update_choice/",
+        CHOICE_TITLE_EXISTS_URL: "/wiki/choice_title_exists/",
     });
 
     /**
      * private methods
     */
 
+    var generalSubmit_ = function(formdata, name, url) {
+        formdata.csrfmiddlewaretoken = Util.getCookie("csrftoken");
+        $.ajax({
+            data: formdata,
+            datatype: "text",
+            success: function(ajaxData, textStatus, httpRequest) {
+                if (ajaxData.result
+                    == Util.ResponseStatus.SUCCESSFUL) {
+                    Util.sendNotification(
+                        "Success",
+                        Util.capitalizeTheFirst(name)+" saved.",
+                        false,
+                        function() {
+                            window.location.reload();
+                        }
+                    );
+                } else {
+                    Util.sendNotification(
+                        "Failed",
+                        "Something went wrong; your "+name
+                            +" has not been saved.",
+                        false,
+                        function() {
+                            window.location.reload();
+                        }
+                    );
+                }
+            },
+            error: function(httpRequest, textStatus, errorThrown) {
+                Util.sendNotification(
+                    "Failed",
+                    "Something went wrong; your "
+                    + name + " "
+                    +"has not been saved.",
+                    false,
+                    function() {
+                        window.location.reload();
+                    }
+                );
+            },
+            type: "POST",
+            url: url
+        });
+    };
+
+    var generalSubmitWithUniqueTitle_ = function(
+        title, formdata, name, checkingUrl, createUrl, updateUrl) {
+        $.ajax({
+            data: {
+                "csrfmiddlewaretoken": Util.getCookie("csrftoken"),
+                "new_title": title
+            },
+            datatype: "text",
+            success: function(ajaxData, textStatus, httpRequest) {
+                if (ajaxData.title_exists) {
+                    Util.sendConfirm(
+                        "Title exists",
+                        Util.capitalizeTheFirst(name)
+                            +" with the title \""
+                            +Util.capitalizeTheFirst(title)
+                            +"\" exists. Overwrite it?",
+                        function() {
+                            generalSubmit_(formdata, name, updateUrl);
+                        }
+                    );
+                } else {
+                    generalSubmit_(formdata, name, createUrl);
+                }
+            },
+            error: function(httpRequest, textStatus, errorThrown) {
+                Util.sendNotification(
+                    "Failed",
+                    "Something went wrong; your "
+                    + name + " "
+                    +"has not been saved.",
+                    false,
+                    function() {
+                        window.location.reload();
+                    }
+                );
+            },
+            type: "POST",
+            url: checkingUrl
+        });
+    };
+
+    var offerNewPost_ = function() {
+        window.location = WikiUrls_["NEW_POST_URL"];
+    };
+
+    /* CREATE */
+    var submitNewChoice_ = function(formdata) {
+        generalSubmitWithUniqueTitle_(
+            formdata.title, formdata, "choice",
+            WikiUrls_["CHOICE_TITLE_EXISTS_URL"],
+            WikiUrls_["CREATE_CHOICE_URL"],
+            WikiUrls_["UPDATE_CHOICE_URL"]
+        );
+    };
+
+    /* READ */
+    var getChoicesbyKW_ = function(kws) {
+        var choices = [];
+        $.ajax({
+            data: {
+                csrfmiddlewaretoken: Util.getCookie("csrftoken"),
+                kws: kws
+            },
+            datatype: "text",
+            error: function(httpRequest, textStatus, errorThrown) {
+                // window.document.write(httpRequest.responseText);
+            },
+            success: function(data, textStatus, httpRequest) {
+                if (data.result == Util.ResponseStatus.SUCCESSFUL) {
+                    choices = data.choices;
+                }
+            },
+            type: "POST",
+            url: WikiUrls_["READ_CHOICE_URL"]
+        });
+        return choices;
+    };
+
+    /* UPDATE */
+
+    /* DELETE */
+
     var buttonSettings_ = function() {
-        // $("#new_post_button").click(Util.buttonDefault(offerNewPost_));
+        $("#new_post_button").click(Util.buttonDefault(offerNewPost_));
         $("#new_choice_button").click(Util.buttonDefault(function() {
             React.unmountComponentAtNode(
                 document.getElementById("choice_modal_new")
@@ -28,7 +167,6 @@ Wiki = function() {
                     items: [{
                         value: "empty",
                         isActive: true,
-                        isSelected: false,
                         idx: -1,
                         onDelete: null
                     }]
@@ -40,7 +178,29 @@ Wiki = function() {
             $(".choice_modal.edit")
                 .modal({
                     onApprove: function() {
-                        alert("Hell World!");
+                        var newCForm = $("#new_choice_form");
+                        if (!newCForm.form("validate form"))
+                           return false;
+
+                        var formdata =
+                            newCForm.form('get values')
+                        ;
+                        var options = [];
+                        for (oid in formdata.values) {
+                            var option = formdata.values[oid];
+                            if (Util.isNonEmptyStr(option)) {
+                                options.push(option);
+                            }
+                        }
+                        if (options.length == 0) {
+                            Util.sendNotification(
+                                "ERROR", "Valid Option not found."
+                            );
+                            return false;
+                        } else {
+                            formdata.values = options;
+                            submitNewChoice_(formdata);
+                        }
                     }
                 })
                 .modal("show")
@@ -52,21 +212,52 @@ Wiki = function() {
         }));
     };
 
+    var semanticUiInit_ = function() {
+        newChoiceFormValidationSettings_ = {
+            // on: 'blur',
+            inline: 'true',
+            onSuccess: function() {
+                return true;
+            },
+            onFailure: function() {
+                return false;
+            }
+        };
+    };
+
     /**
      * interface
     */
+
     return {
 
         /**
          * properties
         */
+
         getUrl: function(name) { return WikiUrls_[name] },
+        getChoiceModalSearch: function() { return cModalSearch_; },
+        setChoiceModalSearch: function(cModalSearch) {
+            cModalSearch_ = cModalSearch;
+        },
+        getNewChoiceFormValidationSettings: function() {
+            return newChoiceFormValidationSettings_;
+        },
+        setNewChoiceFormValidationSettings: function(name, value) {
+            newChoiceFormValidationSettings_[name] = value;
+        },
 
         /**
          * public methods
         */
+
+        generalSubmit: generalSubmit_,
+        generalSubmitWithUniqueTitle: generalSubmitWithUniqueTitle_,
+        getChoicesbyKW: getChoicesbyKW_,
+
         init: function() {
             buttonSettings_();
+            semanticUiInit_();
         },
     };
 } ();

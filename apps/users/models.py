@@ -19,7 +19,7 @@ SPECIAL_USER_VALID_SPAN = 180
 DEFAULT_PROFILE_PIC = settings.MEDIA_URL + 'img/default.jpg'
 
 
-class MyFile(models.Model):
+class AbstractFile(models.Model):
     """
     TODO: category, type, uploaded_time, owner...
     """
@@ -29,6 +29,14 @@ class MyFile(models.Model):
     def __unicode__(self):
         return self.file
 
+    def encode(self):
+        return self.file
+
+    class Meta:
+        abstract = True
+
+
+class ProfilePic(AbstractFile):
     def url(self):
         if self.file == "":
             return DEFAULT_PROFILE_PIC
@@ -38,9 +46,7 @@ class MyFile(models.Model):
 
 class Directory(models.Model):
     file_no = models.IntegerField(default=0)
-    files = MyListField(
-        MyEmbeddedModelField(MyFile)
-    )
+    files = MyListField()
 
     def __unicode__(self):
         return str(self.file_no)
@@ -53,7 +59,7 @@ def user_directory_init():
 
 
 def user_profile_pic_init():
-    p = MyFile()
+    p = ProfilePic()
     p.save()
     return p
 
@@ -76,10 +82,12 @@ class MyUser(AbstractUser):
 
     # the one being selected
     profile_pic = MyEmbeddedModelField(
-        MyFile, default=user_profile_pic_init)
+        ProfilePic, default=user_profile_pic_init
+    )
     # the other ones
     profile_pics = MyEmbeddedModelField(
-        Directory, default=user_directory_init)
+        Directory, default=user_directory_init
+    )
 
     login_ip = MyListField(MyEmbeddedModelField('IP_log'))
     special_user_data = MyListField()
@@ -88,7 +96,7 @@ class MyUser(AbstractUser):
     activation_code = models.CharField(max_length=HASH_KEY_LENGTH)
     activation_code_expired_time = models.DateTimeField(
         default=timezone.now()
-               +datetime.timedelta(days=ACTIVATION_EXPIRED_TIME)
+        +datetime.timedelta(days=ACTIVATION_EXPIRED_TIME)
     )
 
     def __init__(self, *args, **kwargs):
@@ -104,8 +112,9 @@ class MyUser(AbstractUser):
         if self.is_activated():
             return False
         else:
-            return timezone.now() > pytz.UTC.localize( # pylint: disable=E1120
-                self.activation_code_expired_time)
+            return timezone.now() > pytz.UTC.localize(
+                self.activation_code_expired_time
+            )
 
     def is_activated(self):
         return len(self.activation_code) == 0

@@ -73,8 +73,8 @@ DATABASES = {
         'NAME': 'Metis',
         'USER': '',
         'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
+        'HOST': 'localhost',
+        'PORT': '27017',
     }
 }
 

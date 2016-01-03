@@ -1,6 +1,7 @@
 # coding=utf-8
 from django.db import models
 
+from jsonfield import JSONField
 from taggit.managers import TaggableManager
 
 from utils.models import MyListField, MyEmbeddedModelField, IP_log
@@ -46,18 +47,7 @@ class Choice(PostElement):
     """docstring for Choice"""
     title = models.CharField(max_length="30")
     options = MyListField()
-    option = models.IntegerField(default=-1) # option ID; -1: none is selected
     description = models.TextField(max_length="300")
-
-    def clean(self, *args, **kwargs):
-        if self.option >= len(self.options):
-            self.option = -1
-
-        super(Choice, self).clean(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super(Choice, self).save(*args, **kwargs)
 
 
 class Template(PostElement):
@@ -119,6 +109,7 @@ class Entry(PostElement):
     value = MyListField()
     value2 = MyListField()
     value3 = MyListField()
+    constraints = JSONField()
     type = models.IntegerField(
         default=STR,
         choices=ENTRY_TYPE_CHOICES,
