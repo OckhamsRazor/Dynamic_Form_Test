@@ -13,7 +13,7 @@ from celery import shared_task
 import utils.consts as consts
 import Web
 from .forms import SignUpForm
-from .models import HASH_KEY_LENGTH, MyFile, MyUser
+from .models import HASH_KEY_LENGTH, ProfilePic, MyUser
 from utils.decorators import post_only_json
 from utils.utils import confirmation_mail_content, existence_checking, \
     general_exception_handling, generate_user, random_string
@@ -196,9 +196,9 @@ def upload_profile_pic(request):
         )
 
         if user.profile_pic.file != "":
-            user.profile_pics.files.append(user.profile_pic)
+            user.profile_pics.files.append(user.profile_pic.encode())
         user.profile_pics.file_no += 1
-        user.profile_pic = MyFile(file=new_profile_pic_url_short)
+        user.profile_pic = ProfilePic(file=new_profile_pic_url_short)
         user.save()
         result = consts.SUCCESSFUL
     except Exception as e:
@@ -240,7 +240,9 @@ def crop_profile_pic(request):
 def show_profile_pics(request):
     user = request.user
     profile_pic = user.profile_pic
-    profile_pics = user.profile_pics.files
+    profile_pics = []
+    for pic in user.profile_pics.files:
+        profile_pics.append(ProfilePic(file=pic))
 
     context = {
         "profile_pic": profile_pic,

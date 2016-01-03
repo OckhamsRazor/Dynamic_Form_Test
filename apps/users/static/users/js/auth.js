@@ -34,15 +34,20 @@ Auth = function() {
                 if (data.result != Util.ResponseStatus.SUCCESSFUL) {
                     Util.sendNotification(
                         'ERROR',
-                        '出了點錯！'
+                        '出了點錯！',
+                        true,
+                        function() { window.location.reload(); }
                     );
+                } else {
+                    window.location.reload();
                 }
-                window.location.reload();
             },
             error: function() {
                 Util.sendNotification(
                     'ERROR',
-                    '出了點錯！'
+                    '出了點錯！',
+                    true,
+                    function() { window.location.reload(); }
                 );
             },
             type: 'POST',
@@ -61,24 +66,31 @@ Auth = function() {
         if (data) {
             switch (data.result) {
                 case Util.ResponseStatus.SUCCESSFUL:
+                    window.location.reload();
                     break;
                 case Util.ResponseStatus.AUTH_FAILED:
                     Util.sendNotification(
                         'ERROR',
-                        '使用者帳號或密碼錯誤。'
+                        '使用者帳號或密碼錯誤。',
+                        true,
+                        function() { window.location.reload(); }
                     );
                     break;
                 case Util.ResponseStatus.INACTIVE:
                     Util.sendNotification(
                         'ERROR',
-                        '這個帳號已被停權，請與客服人員聯絡。'
+                        '這個帳號已被停權，請與客服人員聯絡。',
+                        true,
+                        function() { window.location.reload(); }
                     );
                     break;
                 case Util.ResponseStatus.EXPIRED:
                     Util.sendNotification(
                         'ERROR',
                         '您未在有效期限內活化您的帳號。\n'
-                        +'請註冊新帳號，只要其他人還未使用，您可以用相同的帳號註冊。'
+                        +'請註冊新帳號，只要其他人還未使用，您可以用相同的帳號註冊。',
+                        true,
+                        function() { window.location.reload(); }
                     );
                     break;
                 case Util.ResponseStatus.UNACTIVATED:
@@ -87,24 +99,29 @@ Auth = function() {
                         '此帳號尚未被活化。\n'
                         +'請到您註冊時用的信箱收認證信，依照信中指示活化您的帳號。\n'
                         +'帳號活化後客服人員會審核您的身份，請耐心等候，\n'
-                        +'對於您的不便，Metis深感抱歉！'
+                        +'對於您的不便，Metis深感抱歉！',
+                        true,
+                        function() { window.location.reload(); }
                     );
                     break;
                 default:
                     Util.sendNotification(
                         'ERROR',
                         '登入失敗，原因未知。\n'
-                        +'請聯絡客服人員。'
+                        +'請聯絡客服人員。',
+                        true,
+                        function() { window.location.reload(); }
                     );
             }
         } else {
             Util.sendNotification(
                 'ERROR',
                 '登入失敗，原因未知。\n'
-                +'請聯絡客服人員。'
+                +'請聯絡客服人員。',
+                true,
+                function() { window.location.reload(); }
             );
         }
-        window.location.reload();
     };
 
     var login_ = function() {

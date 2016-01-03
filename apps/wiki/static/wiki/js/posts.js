@@ -106,113 +106,13 @@ Posts = function() {
     };
 
     /* CREATE */
-    var saveTemplateAs_ = function(title, data) {
-        $.ajax({
-            data: {
-                "csrfmiddlewaretoken": Util.getCookie("csrftoken"),
-                "new_title": title
-            },
-            datatype: "text",
-            success: function(ajaxData, textStatus, httpRequest) {
-                if (ajaxData.title_exists) {
-                    Util.sendConfirm(
-                        "Title exists",
-                        "Template with the title \""+title+"\" exists. "
-                            +"Overwrite it?",
-                        function() {
-                            data["csrfmiddlewaretoken"]
-                                = Util.getCookie("csrftoken");
-                            $.ajax({
-                                data: data,
-                                datatype: "text",
-                                success: function(d, status, req) {
-                                    if (d.result
-                                        == Util.ResponseStatus.SUCCESSFUL) {
-                                        Util.sendNotification(
-                                            "Success",
-                                            "Template saved.",
-                                            false,
-                                            function() {
-                                                window.location.reload();
-                                            }
-                                        )
-                                    } else {
-                                        Util.sendNotification(
-                                            "Failed",
-                                            "Something went wrong; your "+
-                                            "template has not been saved.",
-                                            false,
-                                            function() {
-                                                window.location.reload();
-                                            }
-                                        )
-                                    }
-                                },
-                                error: function(req, status, err) {
-                                    console.log(req.responseText);
-                                },
-                                type: "POST",
-                                url: Posts.getUrl("UPDATE_TEMPLATE_URL")
-                            });
-                                }
-                            );
-                } else {
-                    data["csrfmiddlewaretoken"] = Util.getCookie("csrftoken");
-                    $.ajax({
-                        data: data,
-                        datatype: "text",
-                        success: function(d, status, req) {
-                            if (d.result
-                                == Util.ResponseStatus.SUCCESSFUL) {
-                                Util.sendNotification(
-                                    "Success",
-                                    "Template saved.",
-                                    false,
-                                    function() {
-                                        window.location.reload();
-                                    }
-                                );
-                            } else {
-                                Util.sendNotification(
-                                    "Failed",
-                                    "Something went wrong; your template "
-                                        +"has not been saved.",
-                                    false,
-                                    function() {
-                                        window.location.reload();
-                                    }
-                                );
-                            }
-                        },
-                        error: function(req, status, err) {
-                            console.log(req.responseText);
-                            Util.sendNotification(
-                                "Failed",
-                                "Something went wrong; your template "
-                                    +"has not been saved.",
-                                false,
-                                function() {
-                                    window.location.reload();
-                                }
-                            );
-                        },
-                        type: "POST",
-                        url: PostUrls_["CREATE_TEMPLATE_URL"]
-                    });
-                }
-            },
-            error: function(httpRequest, textStatus, errorThrown) {
-                console.log(httpRequest.responseText);
-            },
-            type: "POST",
-            url: PostUrls_["TEMPLATE_TITLE_EXISTS_URL"]
-        });
-    };
-
-    var offerSaveTemplateAs_ = function() {
-        $(".template_modal.first")
-            .modal("show")
-        ;
+    var saveTemplateAs_ = function(title, formdata) {
+        Wiki.generalSubmitWithUniqueTitle(
+            title, formdata, "template",
+            PostUrls_["TEMPLATE_TITLE_EXISTS_URL"],
+            PostUrls_["CREATE_TEMPLATE_URL"],
+            PostUrls_["UPDATE_TEMPLATE_URL"]
+        );
     };
 
     var offerChangeTemplate_ = function() {

@@ -5,10 +5,13 @@ $("#new_post_with_template_button").click(
         $.ajax({
             data: {
                 'csrfmiddlewaretoken': Util.getCookie("csrftoken"),
-                'tid': $("#tid").val()
+                'idx': $("#tid").val()
             },
             datatype: "text",
             success: function(data, textStatus, httpRequest) {
+                React.unmountComponentAtNode(
+                    document.getElementById("template_modal_1_content")
+                );
                 var templateModalMain =
                     React.render(<TemplateModalMain
                         entries={data.template.entries} />,
