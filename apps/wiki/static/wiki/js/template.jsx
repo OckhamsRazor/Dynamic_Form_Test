@@ -14,7 +14,7 @@ $("#new_post_with_template_button").click(
                 );
                 var templateModalMain =
                     React.render(<TemplateModalMain
-                        entries={data.template.entries} />,
+                        entries={data.objs.entries} />,
                     document.getElementById(
                         "template_modal_1_content"
                     )

@@ -130,8 +130,13 @@ Wiki = function() {
     };
 
     /* READ */
-    var getChoicesbyKW_ = function(kws) {
-        var choices = [];
+
+    /**
+     * Retrieve Choices from backend by keywords.
+     * @param {Array} kws - An array of keywords. if empty, function will
+     *     try fetch all Choices.
+     */
+    var getChoices_ = function(kws) {
         $.ajax({
             data: {
                 csrfmiddlewaretoken: Util.getCookie("csrftoken"),
@@ -139,17 +144,17 @@ Wiki = function() {
             },
             datatype: "text",
             error: function(httpRequest, textStatus, errorThrown) {
+                    console.log("ERROR");
                 // window.document.write(httpRequest.responseText);
             },
             success: function(data, textStatus, httpRequest) {
                 if (data.result == Util.ResponseStatus.SUCCESSFUL) {
-                    choices = data.choices;
+                    console.log(data.objs);
                 }
             },
             type: "POST",
             url: WikiUrls_["READ_CHOICE_URL"]
         });
-        return choices;
     };
 
     /* UPDATE */
@@ -253,7 +258,7 @@ Wiki = function() {
 
         generalSubmit: generalSubmit_,
         generalSubmitWithUniqueTitle: generalSubmitWithUniqueTitle_,
-        getChoicesbyKW: getChoicesbyKW_,
+        getChoices: getChoices_,
 
         init: function() {
             buttonSettings_();

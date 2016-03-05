@@ -5,10 +5,11 @@ from PIL import Image
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from celery import shared_task
+# from celery import shared_task
 
 import utils.consts as consts
 import Web
@@ -102,7 +103,7 @@ def new_account(request):
         result = consts.SUCCESSFUL
 
         mail = EmailMessage(
-            subject="Activate your Counselsior account",
+            subject="Activate your Tusen account",
             body=confirmation_mail_content(
                 data['username'], activation_code),
             to=[data['email']]
@@ -165,7 +166,7 @@ def email_activation(request, code):
     return render(request, "auth/activation_result.html", context)
 
 
-@shared_task
+@transaction.atomic
 @login_required
 @post_only_json
 def upload_profile_pic(request):

@@ -35,5 +35,5 @@ urlpatterns = patterns('',
     url(r'^create_choice/$', views.create_choice, name='create_choice'),
     url(r'^read_choice/$', views.read_choice, name='read_choice'),
     url(r'^update_choice/$', views.update_choice, name='update_choice'),
-    url(r'^delete_choice/$', views.delete_choice, name='delete_choice')
+    url(r'^delete_choice/$', views.delete_choice, name='delete_choice'),
 )

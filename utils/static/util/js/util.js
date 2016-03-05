@@ -179,6 +179,10 @@ Util = function() {
         return wrapper;
     }
 
+    var semanticInit_ = function() {
+        $.fn.api.settings.api = {};
+    }
+
     /**
      * @serializeObject_ Transform form data to hash
      * @author http://stackoverflow.com/a/1186309 (Tobias Cohen)
@@ -235,6 +239,7 @@ Util = function() {
         serializeObject: serializeObject_,
         init: function() {
             $(".dialog").css("display", "inline");
+            semanticInit_();
         },
     };
 } ();

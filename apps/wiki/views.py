@@ -1,4 +1,6 @@
 # coding=utf-8
+import operator
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -43,30 +45,45 @@ def general_view_objs(request, obj_type, obj_name, temp):
     return render(request, temp, context)
 
 
-def general_view_objs_json(obj_type, obj_name):
+def general_view_objs_json(obj_type):
     """
     return all objs as JSON
     """
     objs = obj_type.objects.all()
-    return {obj_name: objs}
+    objs_json = []
+    for obj in objs:
+        objs_json.append(obj.to_json())
+
+    return {"objs": objs}
 
 
-def general_read_obj(request, obj_type, obj_name):
+def general_read_obj(request, obj_type):
     """
-    return obj (with oid) as JSON
+    return obj (with keywords of certain fields) as JSON
     """
     context = {
         "result": consts.FAILED,
-        obj_name: None
+        "objs": None
     }
 
     try:
-        obj = get_object_or_404(obj_type, id=request.POST["idx"])
+        kws = request.POST.getlist("kws[]")
+        # print kws
+        objs = obj_type.objects.filter(
+            reduce(operator.and_, (Q(title__icontains=kw) for kw in kws)) |
+            reduce(operator.and_, (Q(options__icontains=kw) for kw in kws)) |
+            reduce(operator.and_, (Q(description__icontains=kw) for kw in kws))
+        ) if len(kws) != 0 else obj_type.objects.all()
+
         context["result"] = consts.SUCCESSFUL
-        context[obj_name] = obj.to_json()
+        context["objs"] = []
+        for obj in objs:
+            context["objs"].append(obj.to_json())
+
     except Exception as e:
         general_exception_handling(e)
 
+    # print context
     return context
 
 
@@ -96,7 +113,7 @@ def create_template(request):
 @login_required
 @post_only_json
 def read_template(request):
-    return general_read_obj(request, Template, "template")
+    return general_read_obj(request, Template)
 
 
 @login_required
@@ -168,7 +185,7 @@ def delete_template(request):
 @login_required
 @post_only_json
 def view_choices_json(request):
-    return general_view_objs_json(Choice, "choices")
+    return general_view_objs_json(Choice)
 
 
 @login_required
@@ -186,8 +203,37 @@ def create_choice(request):
 @login_required
 @post_only_json
 def read_choice(request):
-    return general_read_obj(request, Choice, "choice")
+    # return general_read_obj(request, Choice)
+    ret = {
+        "results": {
+            "category1": {
+                "name": "Top keywords",
+                "results": [],
+            },
+            "category2": {
+                "name": "Top results",
+                "results": []
+            },
+        },
+        # "action":
+    }
 
+    # TODO: related keywords
+    kws = request.POST.getlist("kws[]")
+    for kw in kws:
+        if kw != "":
+            ret["results"]["category1"]["results"].append({
+                "title": kw,
+                "description": "more results with "+kw,
+            })
+    # END_TODO
+
+    context = general_read_obj(request, Choice)
+    if context["result"] == consts.SUCCESSFUL:
+        ret["results"]["category2"]["results"] = context["objs"]
+
+    # print ret
+    return ret
 
 @login_required
 @post_only_json

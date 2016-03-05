@@ -100,6 +100,10 @@ class ChoiceModalNew extends React.Component {
                 Wiki.getNewChoiceFormValidationSettings()
             )
         ;
+
+        $(".choice_modal.edit")
+            .modal("refresh")
+        ;
     }
     componentDidMount() {
         this.rendered();
@@ -147,29 +151,50 @@ class ChoiceModalNew extends React.Component {
 }
 
 class Choice extends React.Component {
+    onChoiceChange() {
+        // close the modal; set the entry's value as selected item
+        var self = $(React.findDOMNode(this));
+        alert(self.find("input").val());
+    }
+
     rendered() {
+        $(React.findDOMNode(this))
+            .dropdown({
+                onChange: onChoiceChange
+            })
+        ;
     }
 
     componentDidMount() {
         this.rendered();
     }
 
-    componentDidUpdate() {
-        this.rendered();
-    }
+    // componentDidUpdate() {
+        // this.rendered();
+    // }
 
     render() {
         return(
-            <div className=''>
+            <div className='ui selection dropdown choice'>
+                <input type='hidden'/>
+                <div className='default text'>{this.props.title}</div>
+                <i className='dropdown icon'></i>
+                <div className='menu'>
+                    {this.props.options.map((opt, cid) =>
+                        <div className='item' data-value={cid} key={cid}>
+                            {opt}
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }
 }
 Choice.defaultProps = {
     title: "",
-    choice: [],
+    options: [],
     description: "",
-    cid: -1
+    // cid: -1
 };
 
 class ChoiceModalSearch extends React.Component {
@@ -186,6 +211,59 @@ class ChoiceModalSearch extends React.Component {
     }
 
     rendered() {
+        $(React.findDOMNode(this))
+            .find(".ui.search")
+            .search({
+                type: "category",
+                apiSettings: {
+                    action: "search",
+                    url: Wiki.getUrl("READ_CHOICE_URL"),
+                    method: 'post',
+                    data: {
+                        csrfmiddlewaretoken: Util.getCookie("csrftoken"),
+                        // kws: $(this).find("input").val().split(" ")
+                    },
+                    beforeSend: function(settings) {
+                        // console.log(settings);
+                        // console.log($(this));
+                        // console.log($(this).find("input").val());
+                        settings.data.kws = $(this)
+                            .find("input")
+                            .val()
+                            .split(" ")
+                        ;
+                        return settings;
+                    },
+                    // onResponse: function(response) {
+                    //     // response.action = {
+                    //     //     url: "#",
+                    //     //     text: "View possible results",
+                    //     // };
+                    //     ret = response;
+                    //     if (response.results.length > 1) {
+                    //         var query = this.urlData.query;
+                    //         ret =
+                    //     }
+                    //     return response;
+                    // },
+                    onError: function(errorMessage, element, xhr) {
+                        // alert(errorMessage);
+                        console.log(xhr.responseText);
+                    },
+                },
+                searchFields: ['title', 'options', 'description'],
+                minCharacters : 2,
+                onSelect: function(result, response) {
+                    // if (typeof result.author == "undefined") {
+                    //     response.shift();
+                    // console.log(response);
+                    // } else {
+                    //     // console.log(result);
+                    // }
+                    return true; // true: close search results preview
+                }
+            })
+        ;
     }
 
     componentDidMount() {
@@ -201,17 +279,20 @@ class ChoiceModalSearch extends React.Component {
             ? <h2>Sorry, No Results.</h2>
             : this.state.items.map((item, idx) => {
                 <Choice title={item.title}
-                    choice={item.choice}
+                    options={item.options}
                     description={item.description}
-                    key={idx} cid={item.cid}/>
+                    key={idx}/>
             })
         ;
         return(
             <div>
-                <div className='ui icon input'>
-                    <input type="text" placeholder='Search...'
-                        id='choice_search_field'/>
-                    <i className='search icon'></i>
+                <div className="ui category search">
+                    <div className='ui icon input'>
+                        <input className="prompt" type="text"
+                            placeholder="Search..." />
+                        <i className='search icon'></i>
+                    </div>
+                    <div className="results"></div>
                 </div>
                 <div className='ui divider'></div>
                 {Choices}
@@ -219,6 +300,12 @@ class ChoiceModalSearch extends React.Component {
         );
     }
 }
+
+                // <div className='ui icon input'>
+                //     <input type="text" placeholder='Search...'
+                //         id='choice_search_field'/>
+                //     <i className='search icon'></i>
+                // </div>
 
 class EntryTypeSelect extends React.Component {
     componentDidMount() {
