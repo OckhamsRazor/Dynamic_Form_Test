@@ -21,6 +21,7 @@ Wiki = function() {
         NEW_POST_URL: "/wiki/new_post/",
         CREATE_CHOICE_URL: "/wiki/create_choice/",
         READ_CHOICE_URL: "/wiki/read_choice/",
+        READ_CHOICE_ALL_URL: "/wiki/read_choice_all/",
         UPDATE_CHOICE_URL: "/wiki/update_choice/",
         CHOICE_TITLE_EXISTS_URL: "/wiki/choice_title_exists/",
     });
@@ -136,7 +137,7 @@ Wiki = function() {
      * @param {Array} kws - An array of keywords. if empty, function will
      *     try fetch all Choices.
      */
-    var getChoices_ = function(kws) {
+    var getChoices_ = function(kws, onSuccess) {
         $.ajax({
             data: {
                 csrfmiddlewaretoken: Util.getCookie("csrftoken"),
@@ -147,13 +148,9 @@ Wiki = function() {
                     console.log("ERROR");
                 // window.document.write(httpRequest.responseText);
             },
-            success: function(data, textStatus, httpRequest) {
-                if (data.result == Util.ResponseStatus.SUCCESSFUL) {
-                    console.log(data.objs);
-                }
-            },
+            success: onSuccess,
             type: "POST",
-            url: WikiUrls_["READ_CHOICE_URL"]
+            url: WikiUrls_["READ_CHOICE_ALL_URL"]
         });
     };
 

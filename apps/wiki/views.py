@@ -68,7 +68,6 @@ def general_read_obj(request, obj_type):
 
     try:
         kws = request.POST.getlist("kws[]")
-        # print kws
         objs = obj_type.objects.filter(
             reduce(operator.and_, (Q(title__icontains=kw) for kw in kws)) |
             reduce(operator.and_, (Q(options__icontains=kw) for kw in kws)) |
@@ -83,7 +82,6 @@ def general_read_obj(request, obj_type):
     except Exception as e:
         general_exception_handling(e)
 
-    # print context
     return context
 
 
@@ -202,8 +200,13 @@ def create_choice(request):
 
 @login_required
 @post_only_json
+def read_choice_all(request):
+    return general_read_obj(request, Choice)
+
+
+@login_required
+@post_only_json
 def read_choice(request):
-    # return general_read_obj(request, Choice)
     ret = {
         "results": {
             "category1": {
@@ -215,10 +218,9 @@ def read_choice(request):
                 "results": []
             },
         },
-        # "action":
     }
 
-    # TODO: related keywords
+    # TODO: retrieve related keywords
     kws = request.POST.getlist("kws[]")
     for kw in kws:
         if kw != "":
@@ -226,14 +228,14 @@ def read_choice(request):
                 "title": kw,
                 "description": "more results with "+kw,
             })
-    # END_TODO
+    # TODO end
 
     context = general_read_obj(request, Choice)
     if context["result"] == consts.SUCCESSFUL:
         ret["results"]["category2"]["results"] = context["objs"]
 
-    # print ret
     return ret
+
 
 @login_required
 @post_only_json

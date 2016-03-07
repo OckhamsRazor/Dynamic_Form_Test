@@ -12,9 +12,11 @@ $("#new_post_with_template_button").click(
                 React.unmountComponentAtNode(
                     document.getElementById("template_modal_1_content")
                 );
+
+                // TODO: READ_TEMPLATE_URL should get only one template!
                 var templateModalMain =
                     React.render(<TemplateModalMain
-                        entries={data.objs.entries} />,
+                        entries={data.objs[0].entries} />,
                     document.getElementById(
                         "template_modal_1_content"
                     )

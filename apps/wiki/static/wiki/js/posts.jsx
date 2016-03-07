@@ -19,7 +19,7 @@ class OptionField extends React.Component {
     render() {
         return(
             <div className="inline fields">
-                <div className="thirteen wide wide field option_value">
+                <div className="thirteen wide field option_value">
                     <input type='text' name='values[]'
                     id={"option_"+this.props.idx+"_name"} />
                 </div>
@@ -152,15 +152,18 @@ class ChoiceModalNew extends React.Component {
 
 class Choice extends React.Component {
     onChoiceChange() {
-        // close the modal; set the entry's value as selected item
         var self = $(React.findDOMNode(this));
-        alert(self.find("input").val());
+        this.props.onSelected(1, self.find("input").val());
+        $(".choice_modal.search")
+            .modal("hide")
+        ;
     }
 
     rendered() {
         $(React.findDOMNode(this))
+            .find(".dropdown")
             .dropdown({
-                onChange: onChoiceChange
+                onChange: this.onChoiceChange.bind(this)
             })
         ;
     }
@@ -169,24 +172,32 @@ class Choice extends React.Component {
         this.rendered();
     }
 
-    // componentDidUpdate() {
-        // this.rendered();
-    // }
+    componentDidUpdate() {
+        this.rendered();
+    }
 
     render() {
         return(
-            <div className='ui selection dropdown choice'>
-                <input type='hidden'/>
-                <div className='default text'>{this.props.title}</div>
-                <i className='dropdown icon'></i>
-                <div className='menu'>
-                    {this.props.options.map((opt, cid) =>
-                        <div className='item' data-value={cid} key={cid}>
-                            {opt}
+            <tr>
+                <td className="center aligned">
+                    <div className='ui selection dropdown choice'>
+                        <input type='hidden'/>
+                        <div className='default text'>{this.props.title}</div>
+                        <i className='dropdown icon'></i>
+                        <div className='menu'>
+                            {this.props.options.map((opt, cid) =>
+                                <div className='item'
+                                data-value={opt} key={cid}>
+                                    {opt}
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
-            </div>
+                    </div>
+                </td>
+                <td className="center aligned">
+                    {this.props.description}
+                </td>
+            </tr>
         );
     }
 }
@@ -194,7 +205,7 @@ Choice.defaultProps = {
     title: "",
     options: [],
     description: "",
-    // cid: -1
+    onSelected: null,
 };
 
 class ChoiceModalSearch extends React.Component {
@@ -221,12 +232,8 @@ class ChoiceModalSearch extends React.Component {
                     method: 'post',
                     data: {
                         csrfmiddlewaretoken: Util.getCookie("csrftoken"),
-                        // kws: $(this).find("input").val().split(" ")
                     },
                     beforeSend: function(settings) {
-                        // console.log(settings);
-                        // console.log($(this));
-                        // console.log($(this).find("input").val());
                         settings.data.kws = $(this)
                             .find("input")
                             .val()
@@ -234,34 +241,26 @@ class ChoiceModalSearch extends React.Component {
                         ;
                         return settings;
                     },
-                    // onResponse: function(response) {
-                    //     // response.action = {
-                    //     //     url: "#",
-                    //     //     text: "View possible results",
-                    //     // };
-                    //     ret = response;
-                    //     if (response.results.length > 1) {
-                    //         var query = this.urlData.query;
-                    //         ret =
-                    //     }
-                    //     return response;
-                    // },
                     onError: function(errorMessage, element, xhr) {
-                        // alert(errorMessage);
                         console.log(xhr.responseText);
                     },
                 },
                 searchFields: ['title', 'options', 'description'],
                 minCharacters : 2,
                 onSelect: function(result, response) {
-                    // if (typeof result.author == "undefined") {
-                    //     response.shift();
-                    // console.log(response);
-                    // } else {
-                    //     // console.log(result);
-                    // }
+                    if (typeof result.author == "undefined") {
+                        var onSuccess = function(data, textStatus, XMLHttpRequest) {
+                            if (data.result == Util.ResponseStatus.SUCCESSFUL)
+                                this.setState({items: data.objs});
+                        }.bind(this);
+                        Wiki.getChoices([result.title], onSuccess);
+                    } else {
+                        this.setState({
+                            items: [result]
+                        });
+                    }
                     return true; // true: close search results preview
-                }
+                }.bind(this)
             })
         ;
     }
@@ -275,15 +274,26 @@ class ChoiceModalSearch extends React.Component {
     }
 
     render() {
-        var Choices = (this.state.items.length == 0)
-            ? <h2>Sorry, No Results.</h2>
-            : this.state.items.map((item, idx) => {
+        var Choices = <h2>Sorry, No Results.</h2>;
+        if (this.state.items.length != 0) {
+            var table = this.state.items.map((item, idx) =>
                 <Choice title={item.title}
                     options={item.options}
                     description={item.description}
+                    onSelected={this.props.onSelected}
                     key={idx}/>
-            })
-        ;
+                )
+            ;
+            Choices = <table className="ui table">
+                <thead><tr>
+                    <th className="six wide center aligned">Options</th>
+                    <th className="ten wide center aligned">Description</th>
+                </tr></thead>
+                <tbody>
+                    {table}
+                </tbody>
+            </table>;
+        }
         return(
             <div>
                 <div className="ui category search">
@@ -300,12 +310,9 @@ class ChoiceModalSearch extends React.Component {
         );
     }
 }
-
-                // <div className='ui icon input'>
-                //     <input type="text" placeholder='Search...'
-                //         id='choice_search_field'/>
-                //     <i className='search icon'></i>
-                // </div>
+ChoiceModalSearch.defaultProps = {
+    onSelected: null,
+};
 
 class EntryTypeSelect extends React.Component {
     componentDidMount() {
@@ -459,7 +466,7 @@ class NewEntryValue extends React.Component {
                         ;
                         React.unmountComponentAtNode(content);
                         var cModalSearch = React.render(
-                            <ChoiceModalSearch />,
+                            <ChoiceModalSearch onSelected={this.props.onEntryValueChange}/>,
                             content
                         );
                         Wiki.setChoiceModalSearch(cModalSearch);
@@ -470,7 +477,7 @@ class NewEntryValue extends React.Component {
                             // })
                             .modal("show")
                         ;
-                    })
+                    }.bind(this))
                 ;
                 break;
             default:
@@ -625,6 +632,9 @@ class NewEntry extends React.Component {
                     <div className='nine wide field entry_value'>
                         <NewEntryValue type={this.props.type}
                             idx={this.props.idx}
+                            value={this.props.value}
+                            value2={this.props.value2}
+                            value3={this.props.value3}
                             onEntryValueChange={
                                 this.props.onEntryValueChange
                             } />
