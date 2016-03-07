@@ -17,3 +17,7 @@
 #template_modal_1_content td:first-of-type {
     white-space: nowrap;
 }
+
+#choice_modal_search div.selection {
+    margin: 10px;
+}

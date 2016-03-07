@@ -49,6 +49,16 @@ class Choice(PostElement):
     options = MyListField()
     description = models.TextField(max_length="300")
 
+    def to_json(self):
+        json = super(Choice, self).to_json()
+        json["title"] = self.title
+        json["description"] = self.description
+        json["options"] = []
+        for option in self.options:
+            json["options"].append(option)
+
+        return json
+
 
 class Template(PostElement):
     """docstring for Template"""
