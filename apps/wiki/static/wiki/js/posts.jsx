@@ -1,5 +1,33 @@
 "use strict"
 
+class PostConfirmationBody extends React.Component {
+    render() {
+        // TODO: value 1~3
+        var Entries = this.props.entries.map((entry, idx) =>
+            <tr>
+                <td className="center aligned">{entry.name}</td>
+                <td>{entry.type}</td>
+                <td>{entry.value}</td>
+            </tr>
+        );
+        return(
+            <table className="ui celled definition table">
+                <thead>
+                    <tr>
+                        <th className="four wide"></th>
+                        <th className="four wide">Type</th>
+                        <th className="eight wide">Value</th>
+                    </tr>
+                </thead>
+                <tbody>{Entries}</tbody>
+            </table>
+        );
+    }
+}
+PostConfirmationBody.defaultProps = {
+    entries: [],
+};
+
 class OptionField extends React.Component {
     rendered() {
         $(React.findDOMNode(this))
@@ -395,7 +423,8 @@ class NewEntryValue extends React.Component {
             default:
                 break;
         }
-        Posts.postFormValidationSettings["fields"] = Posts.postFormValidationRules;
+        Posts.postFormValidationSettings["fields"] = Posts.postFormValidationRules
+        ;
         $("#new_post_form")
             .form("destroy")
             .form(
@@ -794,9 +823,28 @@ class NewPostForm extends React.Component {
             on: 'blur',
             inline: 'true',
             onSuccess: function() {
-                alert("on success");
+                var newPostEntries = [];
+                for (var entryId in this.state.entries) {
+                    var entry = this.state.entries[entryId];
+                    if (entry && entry.isActive)
+                        newPostEntries.push(entry);
+                }
+                React.unmountComponentAtNode(
+                    document.getElementById(
+                        "post_content_modal_content"
+                    )
+                );
+                React.render(<PostConfirmationBody
+                    entries={newPostEntries} />,
+                    document.getElementById(
+                        "post_content_modal_content"
+                    )
+                );
+                $(".post_content_modal")
+                    .modal("show")
+                ;
                 return false;
-            },
+            }.bind(this),
             onFailure: function() {
                 alert("on failure");
                 return false;
