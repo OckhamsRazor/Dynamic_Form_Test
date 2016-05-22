@@ -10,26 +10,27 @@ $("#new_post_with_template_button").click(
             datatype: "text",
             success: function(data, textStatus, httpRequest) {
                 React.unmountComponentAtNode(
-                    document.getElementById("template_modal_1_content")
+                    document.getElementById("content_modal_content")
                 );
 
                 // TODO: READ_TEMPLATE_URL should get only one template!
                 var templateModalMain =
-                    React.render(<TemplateModalMain
+                    React.render(<ContentModal
+                        modalType={FormTypes["TEMPLATE"]}
                         entries={data.objs[0].entries} />,
                     document.getElementById(
-                        "template_modal_1_content"
+                        "content_modal_content"
                     )
                 );
                 Posts.setTemplateModalMain(templateModalMain);
-                $(".template_modal.main .header")
+                $(".content_modal .header")
                     .html("Template Editor")
                 ;
-                $(".template_modal.main .primary.button")
+                $(".content_modal .primary.button")
                     .html("Apply <i class='ui checkmark icon'></i>")
                 ;
 
-                $(".template_modal.main")
+                $(".content_modal")
                     .modal({
                         closable: false,
                         selector: {

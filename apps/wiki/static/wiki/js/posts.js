@@ -22,6 +22,10 @@ Posts = function() {
      */
     var PostUrls_ = Object.freeze({
         CREATE_POST_URL: "/wiki/create_post/",
+        READ_POST_URL: "/wiki/read_post",
+        UPDATE_POST_URL: "/wiki/update_post",
+        POST_TITLE_EXISTS_URL: "/wiki/post_title_exists",
+
         CREATE_TEMPLATE_URL: "/wiki/create_template/",
         READ_TEMPLATE_URL: "/wiki/read_template/",
         UPDATE_TEMPLATE_URL: "/wiki/update_template/",
@@ -58,11 +62,13 @@ Posts = function() {
 
     };
 
-    var submit_ = function() {
-        var data = $("#new_post_form").serialize();
-        // $.ajax({
-
-        // });
+    var submitPost_ = function(title, formdata) {
+        Wiki.generalSubmitWithUniqueTitle(
+            title, formdata, "post",
+            PostUrls_["POST_TITLE_EXISTS_URL"],
+            PostUrls_["CREATE_POST_URL"],
+            PostUrls_["UPDATE_POST_URL"],
+        );
     };
 
     /* UPDATE, DELETE */
@@ -111,7 +117,7 @@ Posts = function() {
             title, formdata, "template",
             PostUrls_["TEMPLATE_TITLE_EXISTS_URL"],
             PostUrls_["CREATE_TEMPLATE_URL"],
-            PostUrls_["UPDATE_TEMPLATE_URL"]
+            PostUrls_["UPDATE_TEMPLATE_URL"],
         );
     };
 
@@ -139,9 +145,46 @@ Posts = function() {
             return !isNaN(e);
         };
 
+
         /**
-         * entry editor
+         * template modal(s)
          */
+        $(".content_modal")
+            .modal({
+                // allowMultiple: true,
+                closable: false,
+                selector: {
+                    approve: ".actions .primary"
+                }
+            })
+            // .modal("setting", "transition", "scale")
+        ;
+
+        $("#template_title_form")
+            .form({
+                fields: {
+                    title: {
+                        identifier: "template_title_value",
+                        rules: [
+                            {
+                                type: "empty",
+                                prompt: "Please enter the template name."
+                            }
+                        ]
+                    }
+                },
+                inline: true
+            })
+        ;
+
+        /**
+         * choice editor
+         */
+        // $(".choice_modal.edit")
+
+    };
+
+    var entryEditorInit_ = function() {
         for (var typeEnum in EntryTypeName_) {
             var type = EntryTypeName_[typeEnum];
             $("#entry_editor_type_menu")
@@ -191,51 +234,15 @@ Posts = function() {
                 onChange: onEntryEditorTypeChange_
             })
         ;
-
-        /**
-         * template modal(s)
-         */
-        $(".template_modal.main")
-            .modal({
-                // allowMultiple: true,
-                closable: false,
-                selector: {
-                    approve: ".actions .primary"
-                }
-            })
-            // .modal("setting", "transition", "scale")
-        ;
-
-        $("#template_title_form")
-            .form({
-                fields: {
-                    title: {
-                        identifier: "template_title_value",
-                        rules: [
-                            {
-                                type: "empty",
-                                prompt: "Please enter the template name."
-                            }
-                        ]
-                    }
-                },
-                inline: true
-            })
-        ;
-
-        /**
-         * choice editor
-         */
-        // $(".choice_modal.edit")
-
     };
 
     var onEntryEditorTypeChange_ = function(newType) {
         // saveTemplateAsModalEditRemoveError_();
-        $("#entry_editor .selection .prompt").each(function() {
+        // console.log("LALALA");
+        $("#entry_editor_form .selection .prompt").each(function() {
             $(this).remove();
         });
-        $("#entry_editor .selection .error").each(function() {
+        $("#entry_editor_form .selection .error").each(function() {
             $(this).removeClass("error");
         });
 
@@ -270,18 +277,19 @@ Posts = function() {
         }
 
         entryEditorValidationSettings_["fields"] = entryEditorValidationRules_;
-        $("#entry_editor")
+        $("#entry_editor_form")
             .form(
                 entryEditorValidationSettings_
             )
         ;
     };
 
-    var templateModalEditRemoveError_ = function() {
-        $("#entry_editor .prompt").each(function() {
+    // var templateModalEditRemoveError_ = function() {
+    var entryEditorRemoveError_ = function() {
+        $("#entry_editor_form .prompt").each(function() {
             $(this).remove();
         });
-        $("#entry_editor .error").each(function() {
+        $("#entry_editor_form .error").each(function() {
             $(this).removeClass("error");
         });
     };
@@ -331,11 +339,12 @@ Posts = function() {
             buttonSettings_();
             semanticUiInit_();
         },
+        entryEditorInit: entryEditorInit_,
         onEntryEditorTypeChange: onEntryEditorTypeChange_,
-        templateModalEditRemoveError:
-            templateModalEditRemoveError_,
+        entryEditorRemoveError: entryEditorRemoveError_,
         templateModalTitleRemoveError:
             templateModalTitleRemoveError_,
+        submitPost: submitPost_,
         saveTemplateAs: saveTemplateAs_,
         loadTemplate: loadTemplate_,
     };

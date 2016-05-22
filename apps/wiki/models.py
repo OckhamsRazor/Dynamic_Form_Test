@@ -9,14 +9,6 @@ from utils.utils import get_user
 from Web import settings
 
 
-class Page(models.Model):
-    """
-    Wiki page with certain topic (e.g. Cell Phone)
-    Page contains many Posts (user-customed wiki page)
-    """
-    posts = MyListField(models.ForeignKey('Post'))
-
-
 class PostElement(models.Model):
     """
     Basic properties for post-related elements
@@ -41,6 +33,16 @@ class PostElement(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Page(PostElement):
+    """
+    Wiki page with certain topic (e.g. Cell Phone)
+    Page contains many Posts (user-customed wiki page)
+    """
+    name = models.CharField(max_length=30)
+    posts = MyListField(models.ForeignKey('Post'))
+    verified = models.BooleanField(default=False)
 
 
 class Choice(PostElement):

@@ -9,7 +9,15 @@ urlpatterns = patterns('',
     url(r'^main/$', views.main, name='wiki_main'),
 
     url(r'^new_post/$', views.new_post, name='new_post'),
+    url(
+        r'^post_title_exists/$',
+        views.post_title_exists,
+        name='post_title_exists'
+    ),
     url(r'^create_post/$', views.create_post, name='create_post'),
+    url(r'^read_post/$', views.read_post, name='read_post'),
+    url(r'^update_post/$', views.update_post, name='update_post'),
+    url(r'^delete_post/$', views.delete_post, name='delete_post'),
 
     url(r'^template/main/$', views.view_templates, name='template_main'),
     url(

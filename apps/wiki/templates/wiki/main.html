@@ -32,55 +32,13 @@
     </div>
   {% endblock body_main_1_content %}
 
-  <div class="ui main modal template_modal">
-    <!-- <i class="close icon"></i> -->
-    <div class="header">
-      Template Content
-    </div>
-    <div class="content" id="template_modal_1_content">
-    </div>
-    <div class="actions">
-      <div class="ui negative button">
-        Discard
-      </div>
-      <div class="ui primary button">
-        Next
-        <i class="ui right chevron icon"></i>
-      </div>
-    </div>
-  </div>
-  <div class="ui edit small long modal template_modal">
+  <div class="ui small long modal entry_editor">
     <i class="close icon"></i>
     <div class="header">
       Entry Editor
     </div>
     <div class="content">
-      <form id="entry_editor" class="ui form">
-        <div>
-          <div class="field">
-            <label>Name</label>
-            <input type="text" name="name" id="entry_editor_name"/>
-          </div>
-          <div class="field">
-            <label>Type</label>
-            <div class='ui selection dropdown'>
-              <input type='hidden' name="type" id="entry_editor_type"/>
-              <div class="default text"></div>
-              <i class='dropdown icon'></i>
-              <div class='menu' id="entry_editor_type_menu"></div>
-            </div>
-          </div>
-          <div class="field">
-            <label>Default Value</label>
-            <textarea name="value" id="entry_editor_value"></textarea>
-          </div>
-          <div class="field">
-            <label>Description</label>
-            <textarea name="description" id="entry_editor_description">
-            </textarea>
-          </div>
-        </div>
-      </form>
+      <form id="entry_editor_form" class="ui form"></form>
     </div>
     <div class="actions">
       <div class="ui negative button">
@@ -92,7 +50,7 @@
       </div>
     </div>
   </div>
-  <div class="ui template_title united modal template_modal">
+  <div class="ui template_title modal">
     <!-- <i class="close icon"></i> -->
     <div class="header">
       Template Title
@@ -128,8 +86,6 @@
       Choice Editor
     </div>
     <div class="content">
-<!--             <form id="choice_editor" class="ui form">
-            </form> -->
       <div class="ui top attached tabular menu">
         <a class="item active" data-tab="new">New</a>
         <a class="item" data-tab="search">Search</a>
@@ -161,12 +117,12 @@
     </div>
   </div>
 
-  <div class="ui modal post_content_modal">
-    <i class="close icon"></i>
+  <div class="ui modal content_modal">
+    <!-- <i class="close icon"></i> -->
     <div class="header">
-      Post Content Confirmation
+      Content Confirmation
     </div>
-    <div class="content" id="post_content_modal_content">
+    <div class="content" id="content_modal_content">
     </div>
     <div class="actions">
       <div class="ui negative button">

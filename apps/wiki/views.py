@@ -2,6 +2,7 @@
 import operator
 
 from django.contrib.auth.decorators import login_required
+# from django.core.exceptions import
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render, get_object_or_404
@@ -303,3 +304,47 @@ def update_post(request):
 @login_required
 def delete_post(request):
     pass
+
+
+def save_post(request, isNew):
+    result = consts.FAILED
+
+    user = request.user
+    title = request.POST["title"].capitalize()
+    description = request.POST["description"]
+    names = request.POST.getlist("names[]")
+    types = request.POST.getlist("types[]")
+    values = request.POST.getlist("values[]")
+    entry_descriptions = request.POST.getlist("entry_descriptions[]")
+
+    page = None
+    page_name = request.POST["page"].capitalize()
+    try:
+        page = Page.objects.get(name=page_name)
+    except Page.DoesNotExist:
+        page = Page(author=user, name=page_name).save()
+
+    entries = []
+    try:
+        for idx, name in enumerate(names):
+            entry = Entry(
+                author=user, key=name, value=[default_values[idx]],
+                type=types[idx], description=entry_descriptions[idx]
+            )
+            entries.append(entry)
+        if isNew:
+            Template(
+                author=user, title=title,
+                entries=entries, description=description
+            ).save()
+        else:
+            Template.objects.select_for_update().filter(
+                Q(title=title) & Q(author_id=user.id)
+            ).update(
+                entries=entries, description=description
+            )
+        result = consts.SUCCESSFUL
+    except Exception as e:
+        general_exception_handling(e)
+
+    return result

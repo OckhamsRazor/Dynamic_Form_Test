@@ -1,33 +1,5 @@
 "use strict"
 
-class PostConfirmationBody extends React.Component {
-    render() {
-        // TODO: value 1~3
-        var Entries = this.props.entries.map((entry, idx) =>
-            <tr>
-                <td className="center aligned">{entry.name}</td>
-                <td>{entry.type}</td>
-                <td>{entry.value}</td>
-            </tr>
-        );
-        return(
-            <table className="ui celled definition table">
-                <thead>
-                    <tr>
-                        <th className="four wide"></th>
-                        <th className="four wide">Type</th>
-                        <th className="eight wide">Value</th>
-                    </tr>
-                </thead>
-                <tbody>{Entries}</tbody>
-            </table>
-        );
-    }
-}
-PostConfirmationBody.defaultProps = {
-    entries: [],
-};
-
 class OptionField extends React.Component {
     rendered() {
         $(React.findDOMNode(this))
@@ -804,9 +776,29 @@ class NewPostForm extends React.Component {
             });
         }
     }
-    submit() {
-        // $("#new_post_form").form("submit");
+
+    // TODO: values 1~3
+    submit(newPostEntries) {
+        var title = $("#title").val();
+        var data = {
+            names: [],
+            types: [],
+            values: [],
+            descriptions: []
+        };
+        for (var entryIdx in newPostEntries) {
+            var entry = newPostEntries[entryIdx];
+            if (entry && entry.isActive) {
+                var nameToEnum = Posts.getEntryTypeNameToEnum();
+                data["names"].push(entry.name);
+                data["types"].push(nameToEnum[entry.type]);
+                data["values"].push(entry.value);
+                data["descriptions"].push(entry.description);
+            }
+        }
+        Posts.submitPost(title, data);
     }
+
     componentDidMount() {
         Posts.postFormValidationRules = {
             title: {
@@ -829,24 +821,42 @@ class NewPostForm extends React.Component {
                     if (entry && entry.isActive)
                         newPostEntries.push(entry);
                 }
-                React.unmountComponentAtNode(
-                    document.getElementById(
-                        "post_content_modal_content"
-                    )
-                );
-                React.render(<PostConfirmationBody
-                    entries={newPostEntries} />,
-                    document.getElementById(
-                        "post_content_modal_content"
-                    )
-                );
-                $(".post_content_modal")
-                    .modal("show")
-                ;
+                if (newPostEntries.length != 0) {
+                    $(".content_modal .header")
+                        .html($("#title").val())
+                    ;
+                    React.unmountComponentAtNode(
+                        document.getElementById(
+                            "content_modal_content"
+                        )
+                    );
+                    React.render(
+                        <ContentModal modalType={FormTypes["POST"]}
+                            entries={newPostEntries} />,
+                        document.getElementById(
+                            "content_modal_content"
+                        )
+                    );
+                    $(".content_modal")
+                        .modal({
+                            selector: {
+                                approve: ".actions .primary"
+                            },
+                            onApprove: function() {
+                                this.submit(newPostEntries);
+                                return false;
+                            }.bind(this),
+                        })
+                        .modal("show")
+                    ;
+                } else {
+                    Util.sendNotification(
+                        "ERROR", "Valid Entry not found."
+                    );
+                }
                 return false;
             }.bind(this),
             onFailure: function() {
-                alert("on failure");
                 return false;
             }
         };
@@ -868,26 +878,30 @@ class NewPostForm extends React.Component {
                         newPostEntries.push(entry);
                 }
                 if (newPostEntries.length != 0) {
+                    $(".content_modal .header")
+                       .html("Template Content Confirmation");
+                    ;
                     React.unmountComponentAtNode(
                         document.getElementById(
-                            "template_modal_1_content"
+                            "content_modal_content"
                         )
                     );
                     var templateModalMain =
-                        React.render(<TemplateModalMain
+                        React.render(<ContentModal
+                            modalType={FormTypes["TEMPLATE"]}
                             entries={newPostEntries} />,
                         document.getElementById(
-                            "template_modal_1_content"
+                            "content_modal_content"
                         )
                     );
-                    $(".template_modal.main")
+                    $(".content_modal")
                         .modal({
                             closable: false,
                             selector: {
                                 approve: ".actions .primary"
                             },
                             onApprove: function() {
-                                $(".template_modal.template_title")
+                                $(".template_title")
                                     .modal({
                                         closable: false,
                                         selector: {
@@ -905,7 +919,7 @@ class NewPostForm extends React.Component {
                                         }.bind(this),
                                         onDeny: function() {
                                             Posts.templateModalTitleRemoveError();
-                                            $(".template_modal.main")
+                                            $(".content_modal")
                                                .modal("show")
                                             ;
                                         }

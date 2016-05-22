@@ -9,9 +9,11 @@ Util = function() {
      * consts
      */
 
+    // DEPRECATED
     var OK_ICON_URL_ = '/static/util/img/OK.gif';
     var ERROR_ICON_URL_ = '/static/util/img/error.gif';
     var LOADING_ICON_URL_ = '/static/util/img/loading.gif';
+
     var ResponseStatus_ = Object.freeze({
 
         /**
@@ -116,6 +118,10 @@ Util = function() {
     var capitalizeTheFirst_ = function(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     };
+
+    var deepcopy_ = function(obj) {
+        return jQuery.extend(true, {}, obj);
+    }
 
     // DEPRECATED
     var lengthCheck_ = function(
@@ -230,6 +236,7 @@ Util = function() {
         sendConfirm: sendConfirm_,
         isNonEmptyStr: isNonEmptyStr_,
         capitalizeTheFirst: capitalizeTheFirst_,
+        deepcopy: deepcopy_,
         lengthCheck: lengthCheck_,
         formShowError: formShowError_,
         statusOk: statusOk_,
